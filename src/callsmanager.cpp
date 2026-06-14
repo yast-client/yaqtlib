@@ -203,7 +203,11 @@ void CallsManager::handleCallReady() {
 
     QByteArray key = QByteArray::fromBase64(state.value("encryption_key").toString().toUtf8());
     auto encryptionKey = std::make_shared<std::array<uint8_t, 256>>();
-    memcpy(encryptionKey->data(), key.constData(), 256);
+    encryptionKey->fill(0);
+    if (key.size() == 256)
+        memcpy(encryptionKey->data(), key.constData(), 256);
+    else
+        WARN("Invalid encryption key" << key.size());
 
     const QString outputDevice = CallAudio::getOutputDeviceName(),
             inputDevice = CallAudio::getInputDeviceName();
