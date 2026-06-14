@@ -155,7 +155,7 @@ void CallsManager::resetInstance() {
         instance.reset();
     }
 
-    currentCallReadyState = CallReadyState::Reconnecting;
+    currentCallReadyState = tgcalls::State::Reconnecting;
 
     mceInterface->resetCallState();
     emit callDiscarded();
@@ -273,11 +273,10 @@ void CallsManager::handleCallReady() {
     }
 
     descriptor.stateUpdated = [this, call](tgcalls::State state) {
-        if (!call || call->state != CallState::Ready)
+        if (!call || call->state != CallState::Ready || currentCallReadyState == state)
             return;
 
-        currentCallReadyState = static_cast<CallReadyState>(state);
-
+        currentCallReadyState = state;
         LOG("State updated" << static_cast<int>(state) << static_cast<int>(call->state) << getCurrentCallState());
         emit currentCallStateChanged();
     };
@@ -345,14 +344,14 @@ CallsManager::CurrentCallState CallsManager::getCurrentCallState() const {
             return CurrentCallState::Connecting;
 
         switch (currentCallReadyState) {
-        case CallReadyState::WaitInit:
-        case CallReadyState::WaitInitAck:
+        case tgcalls::State::WaitInit:
+        case tgcalls::State::WaitInitAck:
             return CurrentCallState::Connecting;
-        case CallReadyState::Established:
+        case tgcalls::State::Established:
             return CurrentCallState::Connected;
-        case CallReadyState::Failed:
+        case tgcalls::State::Failed:
             return CurrentCallState::UnknownError;
-        case CallReadyState::Reconnecting:
+        case tgcalls::State::Reconnecting:
             return CurrentCallState::Connecting;
         default:
             return CurrentCallState::Connecting;

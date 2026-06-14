@@ -78,15 +78,6 @@ public:
     Q_INVOKABLE void toggleSpeakerphone(bool enabled);
     Q_INVOKABLE void toggleMicrophoneIsMuted(bool muted);
 
-private:
-    enum class CallReadyState {
-        WaitInit,
-        WaitInitAck,
-        Established,
-        Failed,
-        Reconnecting
-    };
-
 signals:
     void pendingIncomingCall(int callId);
     void incomingCallNotPending(int callId);
@@ -121,7 +112,7 @@ private:
 
     QHash<int, QSharedPointer<Call>> activeCalls;
     qlonglong currentCallId = 0;
-    CallReadyState currentCallReadyState = CallReadyState::Reconnecting;
+    tgcalls::State currentCallReadyState = tgcalls::State::Reconnecting;
     int signalBars = 0;
     bool remoteBatteryLevelIsLow = false;
     bool remoteAudioMuted = false;
