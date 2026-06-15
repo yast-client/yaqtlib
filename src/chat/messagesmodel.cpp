@@ -207,6 +207,7 @@ void MessagesModel::handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMe
                 messageIndexMap.insert(messages.at(i)->messageId, i);
             endMoveRows();
         }
+        // FIXME: is this ok for albums?
 
         emit messageSendSucceeded();
         tdLibWrapper->viewMessage(this->chatId, messageId, false);

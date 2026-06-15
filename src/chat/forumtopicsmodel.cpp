@@ -318,6 +318,7 @@ void ForumTopicsModel::handleNewMessageReceived(qlonglong chatId, const QVariant
 void ForumTopicsModel::handleForumTopicRolesChanged(int forumTopicIndex, const QVector<int> changedRoles, qlonglong prevLastMessageId) {
     if (changedRoles.isEmpty())
         return;
+    LOG("Forum topic updated" << forumTopicIndex);
 
     if (prevLastMessageId && changedRoles.contains(ForumTopic::RoleLastMessageId)) {
         topicLastMessageIdIndexMap.remove(prevLastMessageId);
@@ -365,6 +366,7 @@ void ForumTopicsModel::handleMessageContentUpdated(qlonglong chatId, qlonglong m
     if (this->chatId == chatId && topicLastMessageIdIndexMap.contains(messageId)) {
         int forumTopicIndex = topicLastMessageIdIndexMap.value(messageId);
         ForumTopic *topic = topics.at(forumTopicIndex);
+        LOG("Forum topic last message content updated" << forumTopicIndex << topic->id);
         handleForumTopicRolesChanged(forumTopicIndex, topic->updateLastMessageContent(content));
     }
 }
@@ -373,6 +375,7 @@ void ForumTopicsModel::handleMessageSendSucceeded(qlonglong chatId, qlonglong ol
     if (this->chatId == chatId && topicLastMessageIdIndexMap.contains(messageId)) {
         int forumTopicIndex = topicLastMessageIdIndexMap.value(messageId);
         ForumTopic *topic = topics.at(forumTopicIndex);
+        LOG("Forum topic last message send succeeded" << forumTopicIndex << topic->id);
         const qlonglong prevLastMessageId = topic->lastMessageId();
         handleForumTopicRolesChanged(forumTopicIndex, topic->updateLastMessage(message), prevLastMessageId);
     }
