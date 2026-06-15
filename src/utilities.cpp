@@ -52,6 +52,7 @@ namespace {
     const QString CONTAINS_UNREAD_MENTION("contains_unread_mention");
     const QString UNREAD_REACTIONS("unread_reactions");
     const QString LINK_PREVIEW("link_preview");
+    const QString IS_OUTGOING("is_outgoing");
 
     const QString MESSAGE_SENDER_TYPE_USER("messageSenderUser");
     const QString MESSAGE_SENDER_TYPE_CHAT("messageSenderChat");
@@ -69,8 +70,12 @@ namespace {
     const QString MESSAGE_CONTENT_TYPE_DOCUMENT("messageDocument");
     const QString MESSAGE_CONTENT_TYPE_LOCATION("messageLocation");
     const QString MESSAGE_CONTENT_TYPE_VENUE("messageVenue");
+    const QString MESSAGE_CONTENT_TYPE_GAME("messageGame");
+    const QString MESSAGE_CONTENT_TYPE_POLL("messagePoll");
     const QString MESSAGE_CONTENT_TYPE_CHAT_CHANGE_PHOTO("messageChatChangePhoto");
     const QString MESSAGE_CONTENT_TYPE_CHAT_DELETE_PHOTO("messageChatDeletePhoto");
+    const QString MESSAGE_CONTENT_TYPE_CALL("messageCall");
+    const QString MESSAGE_CONTENT_TYPE_GROUP_CALL("messageGroupCall");
 
     const QString ENTITIES("entities");
     const QString TYPE_PLAIN_TEXT("plainText");
@@ -376,7 +381,7 @@ QVariantMap Utilities::enhanceMessageTextWithCustomInsertions(const QVariantMap 
     return {{TEXT, result}, {"customInsertions", customInsertionsVariants}};
 }
 
-QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
+QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
     // NOTE: currently, if type is MessageTextSimple, ignoreEntities is always true
 
     if (messageContent.isEmpty()) return QString();
@@ -461,7 +466,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, con
         const QString title = venue.value(TITLE).toString();
         return simple ? (!title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue")) : ("<b>" + title + "</b>, " + venue.value(ADDRESS).toString());
     }
-    if (contentType == "messagePoll") {
+    if (contentType == MESSAGE_CONTENT_TYPE_POLL) {
         if (!simple) return "";
 
         const QVariantMap poll = messageContent.value("poll").toMap();
@@ -476,7 +481,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, con
             return !question.isEmpty() ? tr("Anonymous Poll: %1").arg(question) : tr("Anonymous Poll");
         return !question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll");
     }
-    if (contentType == "messageGame") {
+    if (contentType == MESSAGE_CONTENT_TYPE_GAME) {
         if (!simple) return "";
         const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
         return !shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game");
@@ -611,6 +616,10 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, con
         return tr("removed \"%1\" from the poll").arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
+    if (contentType == MESSAGE_CONTENT_TYPE_CALL)
+        return simple ? getMessageCallText(messageContent, outgoing) : "";
+    if (contentType == MESSAGE_CONTENT_TYPE_GROUP_CALL)
+        return simple ? getMessageGroupCallText(messageContent, outgoing) : "";
 
     return myself
             ? tr("sent an unsupported message: %1", "myself; %1 is message type").arg(contentType.mid(7))
@@ -621,6 +630,7 @@ QString Utilities::getMessageText(const QVariantMap &message, MessageText type, 
     const QVariantMap messageSender = message.value(SENDER_ID).toMap();
     return getMessageTextInternal(
                 message.value(CONTENT).toMap(),
+                message.value(IS_OUTGOING).toBool(),
                 messageSender.value(_TYPE).toString(),
                 messageSender.value(USER_ID).toLongLong(),
                 message.value(_TYPE).toString() == SPONSORED_MESSAGE,
@@ -635,6 +645,7 @@ QString Utilities::getMessageText(const QVariantMap &message, MessageText type, 
 QString Utilities::getMessageContentText(const QVariantMap &messageContent, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
     return getMessageTextInternal(
                 messageContent,
+                false,
                 MESSAGE_SENDER_TYPE_CHAT, // Skips all user-related checks
                 0,
                 false,
@@ -652,6 +663,7 @@ QVariantMap Utilities::getMessageTextWithCustomEntities(const QVariantMap &messa
     QList<QVariantMap> customInsertions;
     const QString result = getMessageTextInternal(
                 message.value(CONTENT).toMap(),
+                message.value(IS_OUTGOING).toBool(),
                 messageSender.value(_TYPE).toString(),
                 messageSender.value(USER_ID).toLongLong(),
                 message.value(_TYPE).toString() == SPONSORED_MESSAGE,
@@ -695,20 +707,22 @@ bool Utilities::messageContentIsService(const QString &contentType) {
         MESSAGE_CONTENT_TYPE_ANIMATION,
         MESSAGE_CONTENT_TYPE_AUDIO,
         MESSAGE_CONTENT_TYPE_DOCUMENT,
-        "messageGame",
+        MESSAGE_CONTENT_TYPE_GAME,
         // "messageInvoice",
         MESSAGE_CONTENT_TYPE_LOCATION,
         // "messagePassportDataSent",
         // "messagePaymentSuccessful",
         MESSAGE_CONTENT_TYPE_PHOTO,
-        "messagePoll",
+        MESSAGE_CONTENT_TYPE_POLL,
         // "messageProximityAlertTriggered",
         MESSAGE_CONTENT_TYPE_STICKER,
         MESSAGE_CONTENT_TYPE_VENUE,
         MESSAGE_CONTENT_TYPE_VIDEO,
         MESSAGE_CONTENT_TYPE_VIDEO_NOTE,
         MESSAGE_CONTENT_TYPE_VOICE_NOTE,
-        MESSAGE_CONTENT_TYPE_DICE
+        MESSAGE_CONTENT_TYPE_DICE,
+        MESSAGE_CONTENT_TYPE_CALL,
+        MESSAGE_CONTENT_TYPE_GROUP_CALL
     };
 
     return !nonServiceContentTypes.contains(contentType);
@@ -1150,4 +1164,26 @@ qreal Utilities::getChatActionsProgress(bool isUser, const QList<ChatData::ChatA
         totalProgress += action.progress();
 
     return static_cast<qreal>(totalProgress) / (chatActions.size() * 100);
+}
+
+QString Utilities::getMessageCallText(const QVariantMap &messageCall, bool outgoing) {
+    const QString discardReasonType = messageCall.value("discard_reason").toMap().value(_TYPE).toString();
+    bool declined = discardReasonType == "callDiscardReasonDeclined" || discardReasonType == "callDiscardReasonMissed";
+
+    if (messageCall.value("is_video").toBool())
+        return declined
+                ? (outgoing ? tr("Canceled Video Call", "outgoing") : tr("Missed Video Call", "incoming"))
+                : (outgoing ? tr("Outgoing Video Call") : tr("Incoming Video Call"));
+
+    return declined
+            ? (outgoing ? tr("Canceled Call", "outgoing") : tr("Missed Call", "incoming"))
+            : (outgoing ? tr("Outgoing Call") : tr("Incoming Call"));
+}
+
+QString Utilities::getMessageGroupCallText(const QVariantMap &messageGroupCall, bool outgoing) {
+    if (outgoing)
+        return tr("Outgoing Group Call");
+    if (messageGroupCall.value("was_missed").toBool())
+        return tr("Missed Group Call");
+    return tr("Incoming Group Call");
 }

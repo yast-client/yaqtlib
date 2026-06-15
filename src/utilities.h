@@ -67,6 +67,8 @@ public:
 
     Q_INVOKABLE static bool messageContentIsService(const QString &contentType);
     Q_INVOKABLE static QVariant getMessageMinithumbnail(const QVariantMap &messageContent);
+    Q_INVOKABLE static QString getMessageCallText(const QVariantMap &messageCall, bool outgoing);
+    Q_INVOKABLE static QString getMessageGroupCallText(const QVariantMap &messageGroupCall, bool outgoing);
 
     Q_INVOKABLE static QVariantMap newFormattedText(const QString &text, const QVariantList &entities = QVariantList());
     Q_INVOKABLE static QVariantList formattedTextEntitiesFromReplacements(QList<QVariantMap> &replacements, QString &text);
@@ -108,7 +110,7 @@ private:
     static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QChar &original, const QString &replacement);
     static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QRegularExpression &original, const QString &replacement);
 
-    QString getMessageTextInternal(const QVariantMap &messageContent, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities = nullptr, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
+    QString getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities = nullptr, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
     static QString getUnknownUserName(const QVariantMap &user);
 
