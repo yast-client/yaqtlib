@@ -197,6 +197,17 @@ void MessagesModel::handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMe
         LOG("Message was replaced at index" << pos);
         const QModelIndex messageIndex(index(pos));
         emit dataChanged(messageIndex, messageIndex, changedRoles);
+
+        if (messages.size() - 1 > pos) {
+            int newPos = messages.size() - 1;
+            LOG("Moving sent message from" << pos << "to" << newPos);
+            beginMoveRows(QModelIndex(), pos, pos, QModelIndex(), newPos + 1);
+            messages.move(pos, newPos);
+            for (int i = pos; i <= newPos; ++i)
+                messageIndexMap.insert(messages.at(i)->messageId, i);
+            endMoveRows();
+        }
+
         emit messageSendSucceeded();
         tdLibWrapper->viewMessage(this->chatId, messageId, false);
     }
