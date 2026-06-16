@@ -611,9 +611,9 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     }
     // TODO: open the poll when clicking on the message
     if (contentType == "messagePollOptionAdded")
-        return tr("added \"%1\" to the poll").arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
+        return (myself ? tr("added \"%1\" to the poll", "myself") : tr("added \"%1\" to the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
     if (contentType == "messagePollOptionDeleted")
-        return tr("removed \"%1\" from the poll").arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
+        return (myself ? tr("removed \"%1\" from the poll", "myself") : tr("removed \"%1\" from the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
     if (contentType == MESSAGE_CONTENT_TYPE_CALL)
@@ -1140,7 +1140,10 @@ QString Utilities::formatChatActions(bool isUser, const QHash<TDLibWrapper::Mess
         actionText = isUser ? tr("sending a video message") : tr("%1 is sending a video message", "", totalCount);
         break;
     case TDLibWrapper::ChatActionType::WatchingAnimations:
-        actionText = (isUser ? tr("watching %1") : tr("%1 is watching %2", "", totalCount)).arg(mainAction.progressOrEmoji.toString());
+        actionText = (isUser
+                        ? tr("watching %1", "The other party is watching an animation, %1 is the emoji describing the animation being watched")
+                        : tr("%1 is watching %2", "%1 is watching an animation, %2 is the emoji describing the animation being watched", totalCount)
+                    ).arg(mainAction.progressOrEmoji.toString());
         break;
     default:
         // Should never reach here
