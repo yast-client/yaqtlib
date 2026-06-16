@@ -27,6 +27,7 @@
 #include "mceinterface.h"
 #include "utilities.h"
 #include "dbusadaptor.h"
+#include "ngfinterface.h"
 
 #ifdef USE_CALLS
 #include "callsmanager.h"
@@ -35,7 +36,8 @@
 class NotificationManager : public QObject {
     Q_OBJECT
 
-    Q_PROPERTY(qlonglong activeChatId MEMBER activeChatId WRITE setActiveChatId)
+    Q_PROPERTY(qlonglong activeChatId MEMBER activeChatId WRITE setActiveChatId NOTIFY activeChatIdChanged)
+    Q_PROPERTY(bool enableNgfCallsRingtone MEMBER enableNgfCallsRingtone WRITE setEnableNgfCallsRingtone NOTIFY enableNgfCallsRingtoneChanged)
 
 public:
     NotificationManager(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, MceInterface *mceInterface, DBusAdaptor *dbusAdaptor,
@@ -49,6 +51,11 @@ public:
 
     void setActiveChatId(qlonglong chatId);
     void setUseSignalActions(bool value);
+    void setEnableNgfCallsRingtone(bool value);
+
+signals:
+    void activeChatIdChanged();
+    void enableNgfCallsRingtoneChanged();
 
 private slots:
     void handleUpdateActiveNotifications(const QVariantList &notificationGroups);
@@ -95,7 +102,7 @@ private:
 
     void publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound = false, const QString &soundFilePath = QString(), TDLibFile *chatPhotoFile = nullptr);
     void controlLedNotification(bool enabled) const;
-    void controlCallMceState(bool enabled) const;
+    void controlCallState(bool enabled);
     void updateNotificationGroup(const QVariantMap &type, int groupId, qlonglong chatId, int totalCount,
         const QVariantList &addedNotifications, const QVariantList &removedNotificationIds = QVariantList(),
         Settings::NotificationFeedback feedback = Settings::NotificationFeedbackNone,
@@ -111,6 +118,7 @@ private:
     CallsManager *callsManager;
     QHash<int, Notification*> callNotifications;
 #endif
+    NgfInterface *ngfInterface;
     QString appName;
     QString dbusPath;
     QString dbusServiceName;
@@ -118,6 +126,7 @@ private:
     bool useSignalActions;
     QMap<int, QSharedPointer<NotificationGroup>> notificationGroups;
     QString appIconFile;
-    qlonglong activeChatId;
+    qlonglong activeChatId = 0;
     QMap<int, qlonglong> pendingChatPhotoChats;
+    bool enableNgfCallsRingtone = false;
 };

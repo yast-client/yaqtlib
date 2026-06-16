@@ -178,6 +178,7 @@ target_sources(yaqtlib PRIVATE
     src/chat/invertedmediamessagesmodel.cpp
     src/userprofilepicturesmodel.cpp
     src/chat/chatphotosmodel.cpp
+    src/ngfinterface.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -219,4 +220,5 @@ target_sources(yaqtlib PRIVATE
     src/chat/invertedmediamessagesmodel.h
     src/userprofilepicturesmodel.h
     src/chat/chatphotosmodel.h
+    src/ngfinterface.h
 )

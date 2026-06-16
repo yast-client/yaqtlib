@@ -76,6 +76,8 @@ namespace {
     const QString ACTION_REACT("react");
     const QString ACTION_ACCEPT("accept");
     const QString ACTION_DISCARD("discard");
+
+    const QString NGF_EVENT_RINGTONE("ringtone");
 }
 
 NotificationManager::NotificationGroup::NotificationGroup(NotificationGroupType type, int group, qlonglong chat, int count, Notification *notification) :
@@ -112,13 +114,13 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
 #ifdef USE_CALLS
     callsManager(callsManager),
 #endif
+    ngfInterface(new NgfInterface(this)),
     appName(appName),
     dbusPath(dbusPath),
     dbusServiceName(dbusServiceName),
     dbusInterface(dbusInterface),
     useSignalActions(useSignalActions),
-    appIconFile(appIconPath.toLocalFile()),
-    activeChatId(0)
+    appIconFile(appIconPath.toLocalFile())
 {
     LOG("Initializing");
 
@@ -194,7 +196,10 @@ NotificationManager::NotificationGroupType NotificationManager::getGroupType(con
 
 void NotificationManager::setActiveChatId(qlonglong chatId) {
     LOG("Set active chat ID to" << chatId);
-    this->activeChatId = chatId;
+    if (this->activeChatId != chatId) {
+        this->activeChatId = chatId;
+        emit activeChatIdChanged();
+    }
 }
 
 void NotificationManager::handleUpdateActiveNotifications(const QVariantList &notificationGroups) {
@@ -636,7 +641,7 @@ void NotificationManager::publishCallNotification(int callId, TDLibFile *chatPho
     });
 
     notification->publish();
-    this->controlCallMceState(true);
+    this->controlCallState(true);
 }
 
 void NotificationManager::removeCallNotification(int id) {
@@ -647,7 +652,7 @@ void NotificationManager::removeCallNotification(int id) {
         delete notification;
 
         if (callNotifications.isEmpty())
-            this->controlCallMceState(false);
+            this->controlCallState(false);
     }
 }
 #endif
@@ -657,7 +662,16 @@ void NotificationManager::controlLedNotification(bool enabled) const {
     mceInterface->setLedPattern(PATTERN, enabled);
 }
 
-void NotificationManager::controlCallMceState(bool enabled) const {
+void NotificationManager::controlCallState(bool enabled) {
+    LOG("Toggling call state" << enabled);
+
+    if (enableNgfCallsRingtone) {
+        if (enabled)
+            ngfInterface->play(NGF_EVENT_RINGTONE);
+        else
+            ngfInterface->stop(NGF_EVENT_RINGTONE);
+    }
+
     static const QString STATE_RINGING = QStringLiteral("ringing");
     if (enabled)
         mceInterface->setCallState(STATE_RINGING);
@@ -693,6 +707,21 @@ void NotificationManager::setUseSignalActions(bool value) {
             group->nemoNotification->setUrgency(Notification::Low);
 
             group->nemoNotification->publish();
+        }
+    }
+}
+
+void NotificationManager::setEnableNgfCallsRingtone(bool value) {
+    if (enableNgfCallsRingtone != value) {
+        LOG("Toggling ngfd calls ringtone" << value);
+        enableNgfCallsRingtone = value;
+        emit enableNgfCallsRingtoneChanged();
+
+        if (!callNotifications.isEmpty()) {
+            if (enableNgfCallsRingtone)
+                ngfInterface->play(NGF_EVENT_RINGTONE);
+            else
+                ngfInterface->stop(NGF_EVENT_RINGTONE);
         }
     }
 }
