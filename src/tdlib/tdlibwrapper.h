@@ -283,7 +283,7 @@ public:
     TDLibResponse *sendRequestWithId(const QVariantMap &requestObject, QObject *receiver, ResponseSlot slot);
 
     // Direct TDLib functions
-    void close();
+    Q_INVOKABLE void close();
     Q_INVOKABLE void setAuthenticationPhoneNumber(const QString &phoneNumber);
     Q_INVOKABLE void setAuthenticationCode(const QString &authenticationCode);
     Q_INVOKABLE void setAuthenticationPassword(const QString &authenticationPassword);
