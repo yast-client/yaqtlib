@@ -49,11 +49,11 @@ public:
     Q_ENUM(CurrentCallState)
 
     struct Call {
-        qlonglong uniqueId;
-        qlonglong userId;
-        bool outgoing;
-        bool video;
-        CallState state;
+        qlonglong uniqueId = 0;
+        qlonglong userId = 0;
+        bool outgoing = false;
+        bool video = false;
+        CallState state = CallState::Discarded;
         QVariantMap stateData;
 
         Call() {}

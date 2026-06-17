@@ -10,11 +10,11 @@ class NgfInterface : public QDBusInterface {
 public:
     explicit NgfInterface(QObject *parent = nullptr);
 
-    void play(const QString &event, const QVariantMap &props = QVariantMap());
+    static QVariantMap playProperties(const QString &mode = QString(), const QString &soundFileName = QString(), const QString &type = "voip");
+
+    void play(const QString &event, const QVariantMap &props = playProperties());
     void pause(const QString &event);
     void stop(const QString &event);
-
-    QVariantMap playProperties(const QString &mode = QString(), const QString &soundFileName = QString(), const QString &type = "voip");
 
 private slots:
     void handleEventStatusChanged(quint32 serverEventId, quint32 status);

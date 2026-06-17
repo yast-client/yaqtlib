@@ -110,10 +110,10 @@ void CallsManager::handleCallUpdated(int id, qlonglong uniqueId, qlonglong userI
     const bool wasPending = call->state == CallState::Pending;
     call->update(uniqueId, userId, outgoing, video, state);
 
-    if (newCall && !call->outgoing) {
+    if (newCall && !call->outgoing && call->state == CallState::Pending) {
         LOG("New incoming call" << id);
         emit pendingIncomingCall(id);
-    } else if (!call->outgoing && wasPending && call->state != CallState::Pending) {
+    } else if (!call->outgoing && (newCall || wasPending) && call->state != CallState::Pending) {
         LOG("Incoming call is no longer pending" << id);
         emit incomingCallNotPending(id);
     }
