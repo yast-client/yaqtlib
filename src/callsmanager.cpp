@@ -147,7 +147,7 @@ void CallsManager::handleCallUpdated(int id, qlonglong uniqueId, qlonglong userI
     }
 }
 
-void CallsManager::resetInstance() {
+void CallsManager::resetInstance(bool resetReadyTimestamp) {
     if (instance) {
         instance->stop([](tgcalls::FinalState) {
             LOG("tgcalls instance stopped");
@@ -160,7 +160,12 @@ void CallsManager::resetInstance() {
     mceInterface->resetCallState();
     emit callDiscarded();
 
-    if (signalBars != 0) {
+    if (resetReadyTimestamp && currentCallReadyTimestamp) {
+        currentCallReadyTimestamp = 0;
+        emit currentCallReadyTimestampChanged();
+    }
+
+    if (signalBars) {
         signalBars = 0;
         emit signalBarsChanged();
     }
@@ -177,7 +182,7 @@ void CallsManager::resetInstance() {
 }
 
 void CallsManager::setCurrentCallId(int id) {
-    resetInstance();
+    resetInstance(true);
     if (currentCallId)
         activeCalls.remove(currentCallId);
     currentCallId = id;
@@ -279,6 +284,12 @@ void CallsManager::handleCallReady() {
         currentCallReadyState = state;
         LOG("State updated" << static_cast<int>(state) << static_cast<int>(call->state) << getCurrentCallState());
         emit currentCallStateChanged();
+
+        if (!currentCallReadyTimestamp && currentCallReadyState == tgcalls::State::Established) {
+            LOG("Call connection was established, setting ready timestamp");
+            currentCallReadyTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
+            emit currentCallReadyTimestampChanged();
+        }
     };
     descriptor.signalBarsUpdated = [this](int bars) {
         LOG("Signal bars updated" << bars);
@@ -409,8 +420,9 @@ void CallsManager::handleNewCallSignalingDataReceived(int callId, const QByteArr
 }
 
 void CallsManager::discardCurrentCall() {
-    LOG("Discarding current call");
-    tdLibWrapper->discardCall(currentCallId);
+    int duration = currentCallReadyTimestamp ? (QDateTime::currentMSecsSinceEpoch() / 1000 - currentCallReadyTimestamp) : 0;
+    LOG("Discarding current call" << currentCallId << duration);
+    tdLibWrapper->discardCall(currentCallId, duration);
 }
 
 void CallsManager::acceptCall(int callId) {

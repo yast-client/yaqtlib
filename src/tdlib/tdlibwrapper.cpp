@@ -3408,12 +3408,14 @@ void TDLibWrapper::createCall(qlonglong userId, const QVariantMap &protocol, boo
     });
 }
 
-void TDLibWrapper::discardCall(int callId) {
+void TDLibWrapper::discardCall(int callId, int duration) {
     LOG("Discarding a call" << callId);
-    sendRequest({
-        {_TYPE, "discardCall"},
-        {CALL_ID, callId}
-    });
+    QVariantMap request{{_TYPE, "discardCall"}, {CALL_ID, callId}};
+
+    if (duration)
+        request.insert("duration", duration);
+
+    sendRequest(request);
 }
 
 void TDLibWrapper::sendCallSignalingData(int callId, const QByteArray &data) {

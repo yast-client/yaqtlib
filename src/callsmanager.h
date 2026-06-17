@@ -17,6 +17,8 @@ class CallsManager : public QObject {
     Q_PROPERTY(QVariantMap currentCallError READ currentCallError NOTIFY currentCallStateChanged)
     Q_PROPERTY(QStringList currentCallEmojis READ currentCallEmojis NOTIFY currentCallEmojisChanged)
 
+    Q_PROPERTY(int currentCallReadyTimestamp MEMBER currentCallReadyTimestamp NOTIFY currentCallReadyTimestampChanged)
+
     Q_PROPERTY(int signalBars MEMBER signalBars NOTIFY signalBarsChanged) // 0-4
     Q_PROPERTY(bool remoteBatteryLevelIsLow MEMBER remoteBatteryLevelIsLow NOTIFY remoteBatteryLevelIsLowChanged)
     Q_PROPERTY(bool remoteAudioMuted MEMBER remoteAudioMuted NOTIFY remoteAudioMutedChanged)
@@ -84,6 +86,7 @@ signals:
 
     void currentCallUserIdChanged();
     void currentCallStateChanged();
+    void currentCallReadyTimestampChanged();
     void callStarted();
     void callDiscarded();
     void signalBarsChanged();
@@ -101,7 +104,7 @@ private slots:
 private:
     static QVariantMap protocol();
     static CallState getTdCallState(const QString &type);
-    void resetInstance();
+    void resetInstance(bool resetReadyTimestamp = false);
     void setCurrentCallId(int id);
     void handleCallReady();
 
@@ -113,6 +116,7 @@ private:
     QHash<int, QSharedPointer<Call>> activeCalls;
     qlonglong currentCallId = 0;
     tgcalls::State currentCallReadyState = tgcalls::State::Reconnecting;
+    int currentCallReadyTimestamp = 0;
     int signalBars = 0;
     bool remoteBatteryLevelIsLow = false;
     bool remoteAudioMuted = false;

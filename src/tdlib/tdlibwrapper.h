@@ -475,7 +475,7 @@ public:
     Q_INVOKABLE void addSavedNotificationSound(int fileId);
     Q_INVOKABLE void getFile(int fileId);
     void createCall(qlonglong userId, const QVariantMap &protocol, bool isVideo = false);
-    void discardCall(int callId);
+    void discardCall(int callId, int duration = 0);
     void sendCallSignalingData(int callId, const QByteArray &data);
     void acceptCall(int callId, const QVariantMap &protocol);
     Q_INVOKABLE void addPollOption(qlonglong chatId, qlonglong messageId, const QString &text);
