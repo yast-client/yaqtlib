@@ -93,8 +93,8 @@ FernieMain::AppContext* FernieMain::registerTypes(int argc, char *argv[], QShare
     qmlRegisterType<ChatPhotosModel>(uri, 1, 0, "ChatPhotosModel");
 
     Settings *settings = new Settings(view.data());
-    context->setContextProperty("fernieSettings", settings);
-    qmlRegisterUncreatableType<Settings>(uri, 1, 0, "FernieSettings", QString());
+    context->setContextProperty("yaqtSettings", settings);
+    qmlRegisterUncreatableType<Settings>(uri, 1, 0, "YaqtSettings", QString());
 
     TDLibWrapper *tdLibWrapper = new TDLibWrapper(settings, view.data());
     context->setContextProperty("tdLibWrapper", tdLibWrapper);
