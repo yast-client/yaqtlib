@@ -717,11 +717,13 @@ void NotificationManager::setEnableNgfCallsRingtone(bool value) {
         enableNgfCallsRingtone = value;
         emit enableNgfCallsRingtoneChanged();
 
+#ifdef USE_CALLS
         if (!callNotifications.isEmpty()) {
             if (enableNgfCallsRingtone)
                 ngfInterface->play(NGF_EVENT_RINGTONE);
             else
                 ngfInterface->stop(NGF_EVENT_RINGTONE);
         }
+#endif
     }
 }
