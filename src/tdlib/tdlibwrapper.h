@@ -285,9 +285,11 @@ public:
     // Direct TDLib functions
     Q_INVOKABLE void close();
     Q_INVOKABLE void setAuthenticationPhoneNumber(const QString &phoneNumber);
-    Q_INVOKABLE void setAuthenticationCode(const QString &authenticationCode);
-    Q_INVOKABLE void setAuthenticationPassword(const QString &authenticationPassword);
-    Q_INVOKABLE void registerUser(const QString &firstName, const QString &lastName);
+    Q_INVOKABLE void checkAuthenticationCode(const QString &authenticationCode);
+    Q_INVOKABLE void checkAuthenticationPassword(const QString &password);
+    Q_INVOKABLE void setAuthenticationEmailAddress(const QString &email);
+    Q_INVOKABLE void checkAuthenticationEmailCode(const QString &code);
+    Q_INVOKABLE void registerUser(const QString &firstName, const QString &lastName, bool disableNotification = false);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void loadChats(bool archive = false);
     Q_INVOKABLE void loadChatsForFolder(int folderId);
@@ -489,7 +491,7 @@ public:
 
 signals:
     void myUserIdUpdated();
-    void authorizationStateChanged(const TDLibWrapper::AuthorizationState &authorizationState, const QVariantMap &authorizationStateData);
+    void authorizationStateChanged();
     void ready();
     void clearContent();
     void optionUpdated(const QString &optionName, const QVariant &optionValue);

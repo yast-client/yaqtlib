@@ -150,6 +150,7 @@ namespace {
     const QString CALL_ID("call_id");
     const QString PROTOCOL("protocol");
     const QString CLEAR_DRAFT("clear_draft");
+    const QString CODE("code");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -432,33 +433,51 @@ TDLibResponse *TDLibWrapper::sendRequestWithId(const QVariantMap &requestObject,
 }
 
 void TDLibWrapper::setAuthenticationPhoneNumber(const QString &phoneNumber) {
-    LOG("Set authentication phone number " << phoneNumber);
-    this->sendRequest(QVariantMap{
-                          {_TYPE, "setAuthenticationPhoneNumber"},
-                          {PHONE_NUMBER, phoneNumber},
-                          {"settings", QVariantMap{
-                               {"allow_flash_call", false},
-                               {"is_current_phone_number", true}
-                           }}
-                      });
+    LOG("Setting authentication phone number" << phoneNumber);
+    sendRequest({
+        {_TYPE, "setAuthenticationPhoneNumber"},
+        {PHONE_NUMBER, phoneNumber},
+        {"settings", QVariantMap{
+            {"allow_flash_call", false},
+            {"allow_missed_call", true},
+            {"has_unknown_phone_number", true}
+        }}
+    });
 }
 
-void TDLibWrapper::setAuthenticationCode(const QString &authenticationCode) {
-    LOG("Set authentication code " << authenticationCode);
-    this->sendRequest(QVariantMap{{_TYPE, "checkAuthenticationCode"}, {"code", authenticationCode}});
+void TDLibWrapper::checkAuthenticationCode(const QString &authenticationCode) {
+    LOG("Checking authentication code" << authenticationCode);
+    sendRequest({{_TYPE, "checkAuthenticationCode"}, {CODE, authenticationCode}});
 }
 
-void TDLibWrapper::setAuthenticationPassword(const QString &authenticationPassword) {
-    LOG("Set authentication password " << authenticationPassword);
-    this->sendRequest(QVariantMap{{_TYPE, "checkAuthenticationPassword"}, {"password", authenticationPassword}});
+void TDLibWrapper::checkAuthenticationPassword(const QString &password) {
+    LOG("Checking authentication password" << password);
+    sendRequest({{_TYPE, "checkAuthenticationPassword"}, {"password", password}});
 }
 
-void TDLibWrapper::registerUser(const QString &firstName, const QString &lastName) {
-    LOG("Register User " << firstName << lastName);
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::setAuthenticationEmailAddress(const QString &email) {
+    LOG("Setting authentication email address" << email);
+    sendRequest({{_TYPE, "setAuthenticationEmailAddress"}, {"email_address", email}});
+}
+
+void TDLibWrapper::checkAuthenticationEmailCode(const QString &code) {
+    LOG("Checking authentication email code" << code);
+    sendRequest({
+        {_TYPE, "checkAuthenticationEmailCode"},
+        {CODE, QVariantMap{
+            {_TYPE, "emailAddressAuthenticationCode"},
+            {CODE, code}
+        }}
+    });
+}
+
+void TDLibWrapper::registerUser(const QString &firstName, const QString &lastName, bool disableNotification) {
+    LOG("Registering the user" << firstName << lastName << "disable notification:" << disableNotification);
+    sendRequest({
         {_TYPE, "registerUser"},
         {FIRST_NAME, firstName},
-        {LAST_NAME, lastName}
+        {LAST_NAME, lastName},
+        {"disable_notification", disableNotification}
     });
 }
 
@@ -1842,7 +1861,7 @@ void TDLibWrapper::handleAuthorizationStateChanged(const QString &authorizationS
     }
 
     this->authorizationStateData = authorizationStateData;
-    emit authorizationStateChanged(this->authorizationState, this->authorizationStateData);
+    emit authorizationStateChanged();
 }
 
 void TDLibWrapper::handleOptionUpdated(const QString &optionName, const QVariant &optionValue) {
