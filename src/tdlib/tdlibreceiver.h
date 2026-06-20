@@ -160,6 +160,7 @@ signals:
     void messageReadDateReceived(qlonglong chatId, qlonglong messageId, const QVariant &readDate);
     void chatJoinResultReceived(const QString &type, const QVariantMap &info, bool isChannel, bool byInviteLink);
     void chatJoinRequestResultReceived(const QString &queryId, qlonglong chatId, const QString &resultType);
+    void httpUrlReceived(const QString &url, const QString &extra);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -280,7 +281,8 @@ private:
         {"callId", &TDLibReceiver::processCallId},
         {"updateCall", &TDLibReceiver::processUpdateCall},
         {"updateNewCallSignalingData", &TDLibReceiver::processUpdateNewCallSignalingData},
-        {"updateChatJoinResult", &TDLibReceiver::processUpdateChatJoinResult}
+        {"updateChatJoinResult", &TDLibReceiver::processUpdateChatJoinResult},
+        {"httpUrl", &TDLibReceiver::processHttpUrl}
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
@@ -416,4 +418,5 @@ private:
     void processMessageReadDate(const QVariantMap &receivedInformation);
     void processChatJoinResult(const QVariantMap &receivedInformation);
     void processUpdateChatJoinResult(const QVariantMap &receivedInformation);
+    void processHttpUrl(const QVariantMap &receivedInformation);
 };

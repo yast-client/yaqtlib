@@ -1307,3 +1307,10 @@ void TDLibReceiver::processUpdateChatJoinResult(const QVariantMap &receivedInfor
     LOG("Received updateChatJoinResult" << queryId << chatId << resultType);
     emit chatJoinRequestResultReceived(queryId, chatId, resultType);
 }
+
+void TDLibReceiver::processHttpUrl(const QVariantMap &receivedInformation) {
+    const QString url = receivedInformation.value("url").toString();
+    const QString extra = receivedInformation.value(_EXTRA).toString();
+    LOG("Received httpUrl" << url << extra);
+    emit httpUrlReceived(url, extra);
+}

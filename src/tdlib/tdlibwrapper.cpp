@@ -376,6 +376,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::messageReadDateReceived, this, &TDLibWrapper::messageReadDateReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinResultReceived, this, &TDLibWrapper::chatJoinResultReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinRequestResultReceived, this, &TDLibWrapper::chatJoinRequestResultReceived);
+    connect(this->tdLibReceiver, &TDLibReceiver::httpUrlReceived, this, &TDLibWrapper::httpUrlReceived);
 
     this->tdLibReceiver->start();
 }
@@ -3170,9 +3171,9 @@ void TDLibWrapper::pingProxy(const QVariantMap &proxy) {
     sendRequest({{_TYPE, "pingProxy"}, {PROXY, proxy}, {_EXTRA, proxy}});
 }
 
-void TDLibWrapper::getInternalLink(const QVariantMap &type, bool isHttp) {
-    LOG("Getting internal link HTTP:" << isHttp);
-    sendRequest({{_TYPE, "getInternalLink"}, {TYPE, type}, {"is_http", isHttp}});
+void TDLibWrapper::getInternalLink(const QVariantMap &type, const QString &extra, bool isHttp) {
+    LOG("Getting internal link" << type.value(_TYPE).toString() << "is http:" << isHttp << extra);
+    sendRequest({{_TYPE, "getInternalLink"}, {TYPE, type}, {"is_http", isHttp}, {_EXTRA, extra}});
 }
 
 void TDLibWrapper::destroyInstance() {

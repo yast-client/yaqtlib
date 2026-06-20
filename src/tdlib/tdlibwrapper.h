@@ -456,7 +456,7 @@ public:
     Q_INVOKABLE inline void pingProxy(const QString &server, int port, const QVariantMap &type) {
         pingProxy(getProxyObject(server, port, type));
     }
-    Q_INVOKABLE void getInternalLink(const QVariantMap &type, bool isHttp = false);
+    Q_INVOKABLE void getInternalLink(const QVariantMap &type, const QString &extra, bool isHttp = false);
     Q_INVOKABLE void destroyInstance();
     Q_INVOKABLE inline QVariantMap scopeNotificationSettings(NotificationSettingsScope scope) {
         return scopesNotificationSettings.value(scope);
@@ -638,6 +638,7 @@ signals:
     void messageReadDateReceived(qlonglong chatId, qlonglong messageId, const QVariant &readDate);
     void chatJoinResultReceived(const QString &type, const QVariantMap &info, bool isChannel, bool byInviteLink);
     void chatJoinRequestResultReceived(const QString &queryId, qlonglong chatId, const QString &resultType);
+    void httpUrlReceived(const QString &url, const QString &extra);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);
