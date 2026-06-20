@@ -2921,13 +2921,13 @@ void TDLibWrapper::processChatJoinRequests(qlonglong chatId, bool approve, const
 QString TDLibWrapper::connectionStateText() {
     switch (connectionState) {
     case WaitingForNetwork:
-        return tr("Waiting for network...");
+        return tr("Waiting for network…");
     case Connecting:
-        return tr("Connecting to network...");
+        return tr("Connecting to network…");
     case ConnectingToProxy:
-        return tr("Connecting to proxy...");
+        return tr("Connecting to proxy…");
     case Updating:
-        return tr("Updating content...");
+        return tr("Updating content…");
     default:
         return QString();
     }
