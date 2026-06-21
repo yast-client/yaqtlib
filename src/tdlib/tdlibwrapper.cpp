@@ -2934,17 +2934,24 @@ QString TDLibWrapper::connectionStateText() {
     }
 }
 
-void TDLibWrapper::getInternalLinkType(const QString &link) {
-    LOG("Getting internal link type for" << link);
-    this->sendRequest({
-                          {_TYPE, "getInternalLinkType"},
-                          {LINK, link},
-                          {_EXTRA, "getInternalLinkType:"+link} // only for errors
-                      });
+void TDLibWrapper::getInternalLinkType(const QString &link, const QString &extra) {
+    LOG("Getting internal link type for" << link << "extra:" << extra);
+    this->sendRequest({{_TYPE, "getInternalLinkType"}, {LINK, link}, {_EXTRA, extra}});
 }
 
-void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType) {
+void TDLibWrapper::getInternalLinkType(const QString &link) {
+    getInternalLinkType(link, "getInternalLinkType:"+link);
+}
+
+void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, const QString &extra) {
     const QString type = linkType.value(_TYPE).toString();
+
+    if (!extra.startsWith("getInternalLinkType:")) {
+        LOG("Internal link type with non-default extra value received" << linkType << extra);
+        emit internalLinkTypeReceived(linkType, extra);
+        return;
+    }
+
     LOG("Internal link type received" << type);
 
     if (type == "internalLinkTypePublicChat")

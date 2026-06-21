@@ -1115,8 +1115,9 @@ void TDLibReceiver::processChatJoinRequests(const QVariantMap &receivedInformati
 }
 
 void TDLibReceiver::processInternalLinkType(const QVariantMap &receivedInformation) {
-    LOG("Received internalLinkType" << receivedInformation.value(_TYPE).toString());
-    emit internalLinkTypeReceived(receivedInformation);
+    const QString extra = receivedInformation.value(_EXTRA).toString();
+    LOG("Received internalLinkType" << receivedInformation.value(_TYPE).toString() << "extra:" << extra);
+    emit internalLinkTypeReceived(receivedInformation, extra);
 }
 
 void TDLibReceiver::processDeepLinkInfo(const QVariantMap &receivedInformation) {

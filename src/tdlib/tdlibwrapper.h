@@ -431,6 +431,7 @@ public:
     Q_INVOKABLE void getChatJoinRequests(qlonglong chatId, const QVariantMap &offsetRequest = QVariantMap(), const QString &query = QString(), int limit = 25);
     Q_INVOKABLE void processChatJoinRequest(qlonglong chatId, qlonglong userId, bool approve);
     Q_INVOKABLE void processChatJoinRequests(qlonglong chatId, bool approve, const QString &inviteLink = QString());
+    Q_INVOKABLE void getInternalLinkType(const QString &link, const QString &extra);
     Q_INVOKABLE void getInternalLinkType(const QString &link);
     Q_INVOKABLE void checkChatInviteLink(const QString &link);
     Q_INVOKABLE void clickChatSponsoredMessage(qlonglong chatId, qlonglong messageId, bool isMediaClick = false, bool fromFullscreen = false);
@@ -644,6 +645,9 @@ signals:
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);
     void linkUnsupportedByApp(const QString &type);
 
+    // For non-default extra value
+    void internalLinkTypeReceived(const QVariantMap &type, const QString &extra);
+
     // Signals not directly used by TDLibWrapper
     void chatListsCalculateUnreadState();
 
@@ -697,7 +701,7 @@ private slots:
     void handleFoundChatMessagesReceived(qlonglong chatId, int extra, int extra2, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
     void handleCountReceived(int count, const QString &extra);
     void handleChatPendingJoinRequestsUpdated(qlonglong chatId, const QVariantMap &pendingJoinRequests);
-    void handleInternalLinkTypeReceived(const QVariantMap &type);
+    void handleInternalLinkTypeReceived(const QVariantMap &linkType, const QString &extra);
     void handleUserReceived(const QVariantMap &user, bool doOpenOnFound);
     void handleChatViewAsTopicsUpdated(qlonglong chatId, bool viewAsTopics);
     void handleStickersReceived(const QVariantList &stickers, const QString &extra);

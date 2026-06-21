@@ -130,7 +130,7 @@ signals:
     void forumTopicInfoUpdated(qlonglong chatId, int forumTopicId, const QVariantMap &info);
     void chatPendingJoinRequestsUpdated(qlonglong chatId, const QVariantMap &pendingJoinRequests);
     void chatJoinRequestsReceived(qlonglong chatId, int totalCount, const QVariantList &requests);
-    void internalLinkTypeReceived(const QVariantMap &internalLinkType);
+    void internalLinkTypeReceived(const QVariantMap &internalLinkType, const QString &extra);
     void deepLinkInfoReceived(const QVariantMap &text, bool needUpdateApplication);
     void userReceived(const QVariantMap &user, bool doOpenOnFound);
     void chatInviteLinkInfoReceived(const QString &link, const QVariantMap &info);
