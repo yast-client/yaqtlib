@@ -483,6 +483,7 @@ public:
     void acceptCall(int callId, const QVariantMap &protocol);
     Q_INVOKABLE void addPollOption(qlonglong chatId, qlonglong messageId, const QString &text);
     Q_INVOKABLE void getMessageReadDate(qlonglong chatId, qlonglong messageId);
+    Q_INVOKABLE void getAndOpenSupportUser();
 
 public:
     const Group* getGroup(qlonglong groupId) const;

@@ -3501,3 +3501,8 @@ void TDLibWrapper::handleAvailableReactionsReceived(qlonglong chatId, qlonglong 
 
     emit availableReactionsReceived(chatId, messageId, reactions, unavailabilityReason);
 }
+
+void TDLibWrapper::getAndOpenSupportUser() {
+    LOG("Getting the support user");
+    this->sendRequest({{_TYPE, "getSupportUser"}, {_EXTRA, true}});
+}
