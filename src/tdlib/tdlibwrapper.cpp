@@ -2095,13 +2095,11 @@ void TDLibWrapper::handleChatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chat
 void TDLibWrapper::handleChatUnreadMentionCountUpdated(qlonglong chatId, int unreadMentionCount) {
     this->getChatDataForce(chatId)->chatData.insert(UNREAD_MENTION_COUNT, unreadMentionCount);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadMentionCount});
-    emit chatUnreadMentionCountUpdated(chatId, unreadMentionCount);
 }
 
 void TDLibWrapper::handleChatUnreadReactionCountUpdated(qlonglong chatId, int unreadReactionCount) {
     this->getChatDataForce(chatId)->chatData.insert(UNREAD_REACTION_COUNT, unreadReactionCount);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadReactionCount});
-    emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
 }
 
 void TDLibWrapper::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {

@@ -569,9 +569,7 @@ signals:
     void okReceived(const QVariant &extra);
     void sessionsReceived(int inactive_session_ttl_days, const QVariantList &sessions);
     void availableReactionsReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &reactions, ReactionUnavailabilityReason unavailabilityReason);
-    void chatUnreadMentionCountUpdated(qlonglong chatId, int unreadMentionCount);
     void messageMentionRead(qlonglong chatId, qlonglong messageId);
-    void chatUnreadReactionCountUpdated(qlonglong chatId, int unreadReactionCount);
     void reactionsUpdated();
     void messagePropertiesReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &messageProperties);
     void storageStatisticsFastReceived(const QVariantMap &statistics);
