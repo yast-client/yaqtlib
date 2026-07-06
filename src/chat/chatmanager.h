@@ -76,7 +76,6 @@ class ChatManager : public QObject {
 
     Q_PROPERTY(ForumTopicsModel* topicsModel MEMBER topicsModel NOTIFY topicsModelChanged)
 
-    Q_PROPERTY(qlonglong pinnedMessageId MEMBER pinnedMessageId NOTIFY pinnedMessageChanged)
     Q_PROPERTY(TDLibWrapper::ChatActionType chatMainActionType READ chatMainActionType NOTIFY chatActionsChanged)
     Q_PROPERTY(QString chatActionsText READ chatActionsText NOTIFY chatActionsChanged)
     Q_PROPERTY(qreal chatActionsProgress READ chatActionsProgress NOTIFY chatActionsChanged)
@@ -128,7 +127,6 @@ signals:
     void topicsModelChanged();
     void chatIdChanged();
     void infoInitializedChanged();
-    void pinnedMessageChanged();
     void chatActionsChanged();
     void chatInformationChanged();
     void viewAsTopicsChanged();
@@ -145,7 +143,6 @@ private slots:
     void handleNewChatDiscovered(qlonglong chatId);
     void handleChatRolesUpdated(qlonglong chatId, const QVector<int> changedRoles = QVector<int>());
     void handleChatPendingJoinRequestsUpdated(qlonglong chatId);
-    void handleChatPinnedMessageUpdated(qlonglong chatId, qlonglong pinnedMessageId);
     void handleUserUpdated(qlonglong userId);
     void handleBasicGroupUpdated(qlonglong groupId);
     void handleSupergroupUpdated(qlonglong groupId);
@@ -166,7 +163,6 @@ private:
     TDLibWrapper *tdLibWrapper;
 
     qlonglong chatId;
-    qlonglong pinnedMessageId;
     bool mainModelsInitializationScheduled;
     qlonglong mainModelsInitializationScheduledFromMessageId;
 

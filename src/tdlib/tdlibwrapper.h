@@ -305,7 +305,6 @@ public:
     Q_INVOKABLE void getMessageLinkInfo(const QString &url);
     Q_INVOKABLE void getExternalLinkInfo(const QString &url, const QString &extra = "");
     Q_INVOKABLE void getCallbackQueryAnswer(const QString &chatId, const QString &messageId, const QVariantMap &payload);
-    Q_INVOKABLE void getChatPinnedMessage(qlonglong chatId);
     Q_INVOKABLE void getChatSponsoredMessages(qlonglong chatId);
     Q_INVOKABLE void setOptionInteger(const QString &optionName, qlonglong optionValue);
     Q_INVOKABLE void setOptionBoolean(const QString &optionName, bool optionValue);
@@ -522,7 +521,7 @@ signals:
     void newMessageReceived(qlonglong chatId, const QVariantMap &message);
     void copyToDownloadsSuccessful(const QString &fileName, const QString &filePath);
     void copyToDownloadsError();
-    void receivedMessage(qlonglong chatId, qlonglong messageId, const QVariantMap &message);
+    void messageReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &message, const QString &extra);
     void messageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
     void activeNotificationsUpdated(const QVariantList &notificationGroups);
     void notificationGroupUpdated(const QVariantMap &update);
@@ -554,7 +553,7 @@ signals:
     void chatPhotosReceived(qlonglong chatId, const QVariantList &photos, int totalCount);
     void chatPhotoUpdated(qlonglong chatId, const QVariantMap &photo);
     void chatTitleUpdated(qlonglong chatId, const QString &title);
-    void chatPinnedMessageUpdated(qlonglong chatId, qlonglong pinnedMessageId);
+    void messageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned);
     void usersReceived(const QString &extra, const QVariantList &userIds, int totalCount);
     void messageSendersReceived(const QString &extra, const QVariantList &messageSenders, int totalCount);
     void errorReceived(int code, const QString &message, const QVariant &extra);
@@ -671,8 +670,6 @@ private slots:
     void handleSecretChatReceived(qlonglong secretChatId, const QVariantMap &secretChat);
     void handleSecretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat);
     void handleErrorReceived(int code, const QString &message, const QVariant &extra);
-    void handleMessageInformation(qlonglong chatId, qlonglong messageId, const QVariantMap &receivedInformation);
-    void handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned);
     void handleUserPrivacySettingRules(const QVariantMap &rules);
     void handleUpdatedUserPrivacySettingRules(const QVariantMap &updatedRules);
     void handleSponsoredMessagesReceived(qlonglong chatId, const QVariantList &messages, int messagesBetween);

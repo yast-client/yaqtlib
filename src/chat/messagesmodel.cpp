@@ -22,7 +22,7 @@ MessagesModel::MessagesModel(TDLibWrapper *tdLibWrapper, QObject *parent) : Mess
 }
 
 void MessagesModel::setupTDLibWrapper() {
-    connect(this->tdLibWrapper, &TDLibWrapper::receivedMessage, this, &MessagesModel::handleMessageReceived);
+    connect(this->tdLibWrapper, &TDLibWrapper::messageReceived, this, &MessagesModel::handleMessageReceived);
     connect(this->tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &MessagesModel::handleMessageSendSucceeded);
     connect(this->tdLibWrapper, &TDLibWrapper::messageContentUpdated, this, &MessagesModel::handleMessageContentUpdated);
     connect(this->tdLibWrapper, &TDLibWrapper::messageEditedUpdated, this, &MessagesModel::handleMessageEditedUpdated);

@@ -98,9 +98,8 @@ void ReadableMessagesModel::handleNewMessageReceived(const QVariantMap &message)
             insertMessages(messagesToBeAdded);
             setMessagesAlbum(messagesToBeAdded);
             emit newMessageReceived(message);
-        } else {
+        } else
             LOG("New message in this chat, but not relevant as less recent messages need to be loaded first!");
-        }
     }
 }
 

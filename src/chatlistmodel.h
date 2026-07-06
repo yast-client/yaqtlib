@@ -51,7 +51,6 @@ protected slots:
 
 private slots:
     void handleChatRolesChanged(qlonglong chatId, const QVector<int> changedRoles);
-    void handleChatPinnedMessageUpdated(qlonglong chatId, qlonglong pinnedMessageId);
     void handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
     void handleRelativeTimeRefreshTimer();
 

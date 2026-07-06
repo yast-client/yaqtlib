@@ -83,7 +83,6 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Uti
     }
 
     connect(tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &ChatListModel::handleChatRolesChanged);
-    //connect(tdLibWrapper, &TDLibWrapper::chatPinnedMessageUpdated, this, &ChatListModel::handleChatPinnedMessageUpdated); // also disabled for now
     //connect(tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &ChatListModel::handleMessageSendSucceeded); // disabled for now, let's see if it will fix (or break) anything
 
     connect(tdLibWrapper, &TDLibWrapper::chatListsCalculateUnreadState, this, &ChatListModel::calculateUnreadState);
@@ -346,16 +345,6 @@ void ChatListModel::handleChatPositionUpdated(qlonglong chatId, qlonglong order,
         chatList.at(chatIndex)->order = order;
         chatIndex = updateChatOrder(chatIndex);
         updateChatIsPinned(chatIndex, isPinned);
-    }
-}
-
-void ChatListModel::handleChatPinnedMessageUpdated(qlonglong chatId, qlonglong pinnedMessageId)
-{
-    if (chatIndexMap.contains(chatId)) {
-        LOG("Updating pinned message for" << chatId);
-        const int chatIndex = chatIndexMap.value(chatId);
-        ChatData *chat = chatList.at(chatIndex)->data;
-        chat->chatData.insert(PINNED_MESSAGE_ID, pinnedMessageId);
     }
 }
 

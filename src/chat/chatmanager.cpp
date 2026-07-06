@@ -221,7 +221,6 @@ ChatManager::ChatManager(QObject *parent)
     : QObject(parent),
       tdLibWrapper(nullptr),
       chatId(0),
-      pinnedMessageId(0),
       mainModelsInitializationScheduled(false),
       mainModelsInitializationScheduledFromMessageId(0),
 
@@ -250,7 +249,6 @@ void ChatManager::setTDLibWrapper(QObject *obj) {
 
         if (tdLibWrapper) {
             connect(this->tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &ChatManager::handleChatRolesUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::chatPinnedMessageUpdated, this, &ChatManager::handleChatPinnedMessageUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::userUpdated, this, &ChatManager::handleUserUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::basicGroupUpdated, this, &ChatManager::handleBasicGroupUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::supergroupUpdated, this, &ChatManager::handleSupergroupUpdated);
@@ -385,14 +383,6 @@ void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> ch
         }
         LOG("Chat roles updated" << chatId << changedRoles);
         emit chatInformationChanged();
-    }
-}
-
-void ChatManager::handleChatPinnedMessageUpdated(qlonglong id, qlonglong pinnedMessageId) {
-    if (id == chatId) {
-        LOG("Pinned message updated" << chatId);
-        this->pinnedMessageId = pinnedMessageId;
-        emit pinnedMessageChanged();
     }
 }
 

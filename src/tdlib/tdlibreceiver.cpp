@@ -24,7 +24,6 @@ namespace {
     const QString POSITIONS("positions");
     const QString PHOTO("photo");
     const QString ORDER("order");
-    const QString IS_PINNED("is_pinned");
     const QString BASIC_GROUP("basic_group");
     const QString SUPERGROUP("supergroup");
     const QString LAST_MESSAGE("last_message");
@@ -348,12 +347,12 @@ void TDLibReceiver::processUpdateNewMessage(const QVariantMap &receivedInformati
     emit newMessageReceived(chatId, cleanupMap(message));
 }
 
-void TDLibReceiver::processMessage(const QVariantMap &receivedInformation)
-{
+void TDLibReceiver::processMessage(const QVariantMap &receivedInformation) {
     const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
     const qlonglong messageId = receivedInformation.value(ID).toLongLong();
-    LOG("Received message " << chatId << messageId << receivedInformation.value(_EXTRA).toString());
-    emit messageInformation(chatId, messageId, cleanupMap(receivedInformation));
+    const QString extra = receivedInformation.value(_EXTRA).toString();
+    LOG("Received message" << chatId << messageId << extra);
+    emit messageReceived(chatId, messageId, cleanupMap(receivedInformation), extra);
 }
 
 void TDLibReceiver::processMessageLinkInfo(const QVariantMap &receivedInformation) {
@@ -541,8 +540,7 @@ void TDLibReceiver::processUpdateChatTitle(const QVariantMap &receivedInformatio
     emit chatTitleUpdated(receivedInformation.value(CHAT_ID).toLongLong(), receivedInformation.value(TITLE).toString());
 }
 
-void TDLibReceiver::processUpdateMessageIsPinned(const QVariantMap &receivedInformation)
-{
+void TDLibReceiver::processUpdateMessageIsPinned(const QVariantMap &receivedInformation) {
     LOG("Received UpdateMessageIsPinned");
     emit messageIsPinnedUpdated(receivedInformation.value(CHAT_ID).toLongLong(), receivedInformation.value(MESSAGE_ID).toLongLong(), receivedInformation.value("is_pinned").toBool());
 }

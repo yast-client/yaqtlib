@@ -266,7 +266,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::sponsoredMessagesReceived, this, &TDLibWrapper::handleSponsoredMessagesReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::messageLinkInfoReceived, this, &TDLibWrapper::messageLinkInfoReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::newMessageReceived, this, &TDLibWrapper::newMessageReceived);
-    connect(this->tdLibReceiver, &TDLibReceiver::messageInformation, this, &TDLibWrapper::handleMessageInformation);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageReceived, this, &TDLibWrapper::messageReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::messageSendSucceeded, this, &TDLibWrapper::messageSendSucceeded);
     connect(this->tdLibReceiver, &TDLibReceiver::activeNotificationsUpdated, this, &TDLibWrapper::activeNotificationsUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::notificationGroupUpdated, this, &TDLibWrapper::notificationGroupUpdated);
@@ -293,7 +293,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::supergroupFullInfoUpdated, this, &TDLibWrapper::supergroupFullInfoUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::chatPhotos, this, &TDLibWrapper::chatPhotosReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::chatPermissionsUpdated, this, &TDLibWrapper::handleChatPermissionsUpdated);
-    connect(this->tdLibReceiver, &TDLibReceiver::messageIsPinnedUpdated, this, &TDLibWrapper::handleMessageIsPinnedUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageIsPinnedUpdated, this, &TDLibWrapper::messageIsPinnedUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::usersReceived, this, &TDLibWrapper::usersReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::messageSendersReceived, this, &TDLibWrapper::messageSendersReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::errorReceived, this, &TDLibWrapper::handleErrorReceived);
@@ -2268,24 +2268,6 @@ void TDLibWrapper::handleOkReceived(const QVariant &extra) {
     }
 
     emit okReceived(extra);
-}
-
-void TDLibWrapper::handleMessageInformation(qlonglong chatId, qlonglong messageId, const QVariantMap &receivedInformation) {
-    QString extra = receivedInformation.value(_EXTRA).toString();
-    if (extra.startsWith("getChatPinnedMessage:")) {
-        emit chatPinnedMessageUpdated(chatId, messageId);
-    }
-
-    emit receivedMessage(chatId, messageId, receivedInformation);
-}
-
-void TDLibWrapper::handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned) {
-    if (isPinned) {
-        emit chatPinnedMessageUpdated(chatId, messageId);
-    } else {
-        emit chatPinnedMessageUpdated(chatId, 0);
-        this->getChatPinnedMessage(chatId);
-    }
 }
 
 void TDLibWrapper::handleUserPrivacySettingRules(const QVariantMap &rules) {
