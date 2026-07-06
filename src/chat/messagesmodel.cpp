@@ -195,89 +195,78 @@ void MessagesModel::handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMe
     }
 }
 
-void MessagesModel::handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent) {
-    LOG("Message content updated" << chatId << messageId);
-    if (chatId == this->chatId && messageIndexMap.contains(messageId)) {
-        LOG("We know the message that was updated" << messageId);
+MessageData *MessagesModel::handleMessageFieldUpdated(qlonglong chatId, qlonglong messageId, std::function<QVector<int> (int, MessageData *)> updater) {
+    if (this->chatId == chatId && messageIndexMap.contains(messageId)) {
         const int pos = messageIndexMap.value(messageId);
-        MessageData* messageData = messages.at(pos);
-        const QVector<int> changedRoles(messageData->setContent(newContent));
-        LOG("Message was updated at index" << pos);
+        MessageData *messageData = messages.at(pos);
+        const QVector<int> roles = updater(pos, messageData);
+        if (roles.isEmpty())
+            return nullptr;
         const QModelIndex messageIndex(index(pos));
-        emit dataChanged(messageIndex, messageIndex, changedRoles);
+        emit dataChanged(messageIndex, messageIndex, roles);
         emit messageUpdated(pos);
-        handleAlbumMessageUpdated(messageData->mediaAlbumId());
+        return messageData;
     }
+    return nullptr;
+}
+
+MessageData *MessagesModel::handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent) {
+    MessageData *message = handleMessageFieldUpdated(chatId, messageId, [messageId, newContent](int index, MessageData *message) {
+        LOG("Message content was updated" << messageId << "at index" << index);
+        return message->setContent(newContent);
+    });
+    if (message)
+        handleAlbumMessageUpdated(message->mediaAlbumId());
+    return message;
 }
 
 void MessagesModel::handleMessageInteractionInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &updatedInfo) {
-    if (chatId == this->chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId, -1);
-        if (pos >= 0) {
-            LOG("Message interaction info was updated at index" << pos);
-            const QVector<int> changedRoles(messages.at(pos)->setInteractionInfo(updatedInfo));
-            const QModelIndex messageIndex(index(pos));
-            emit dataChanged(messageIndex, messageIndex, changedRoles);
-        }
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId, updatedInfo](int index, MessageData *message) {
+        LOG("Message interaction info was updated" << messageId << "at index" << index);
+        return message->setInteractionInfo(updatedInfo);
+    });
 }
 
 void MessagesModel::handleMessageEditedUpdated(qlonglong chatId, qlonglong messageId, int editDate, const QVariantMap &replyMarkup) {
-    if (chatId == this->chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId, -1);
-        if (pos >= 0) {
-            MessageData* messageData = messages.at(pos);
-            const QVector<int> changedRoles(messageData->setEditDateReplyMarkup(editDate, replyMarkup));
-            LOG("Message was edited" << messageId << "at index" << pos);
-            const QModelIndex messageIndex(index(pos));
-            emit dataChanged(messageIndex, messageIndex, changedRoles);
-            emit messageUpdated(pos);
-        }
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId, editDate, replyMarkup](int index, MessageData *message) {
+        LOG("Message was edited" << messageId << "at index" << index);
+        return message->setEditDateReplyMarkup(editDate, replyMarkup);
+    });
 }
 
 void MessagesModel::handleMessageSuggestedPostInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &suggestedPostInfo) {
-    if (this->chatId == chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId);
-        MessageData *messageData = messages.at(pos);
-        LOG("Message suggested post info updated" << messageId << "at index" << pos);
-        const QModelIndex messageIndex(index(pos));
-        emit dataChanged(messageIndex, messageIndex, messageData->setSuggestedPostInfo(suggestedPostInfo));
-        emit messageUpdated(pos);
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId, suggestedPostInfo](int index, MessageData *message) {
+        LOG("Message suggested post info updated" << messageId << "at index" << index);
+        return message->setSuggestedPostInfo(suggestedPostInfo);
+    });
 }
 
 void MessagesModel::handleMessageMentionRead(qlonglong chatId, qlonglong messageId) {
-    if (this->chatId == chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId);
-        MessageData *messageData = messages.at(pos);
-        LOG("Message mention read" << messageId << "at index" << pos);
-        const QModelIndex messageIndex(index(pos));
-        emit dataChanged(messageIndex, messageIndex, messageData->setMentionRead());
-        emit messageUpdated(pos);
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId](int index, MessageData *message) {
+        LOG("Message mention was read" << messageId << "at index" << index);
+        return message->setMentionRead();
+    });
 }
 
 void MessagesModel::handleMessageContentOpened(qlonglong chatId, qlonglong messageId) {
-    if (this->chatId == chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId);
-        MessageData *messageData = messages.at(pos);
-        LOG("Message content opened" << messageId << "at index" << pos);
-        const QModelIndex messageIndex(index(pos));
-        emit dataChanged(messageIndex, messageIndex, messageData->setContentOpened()); // TODO: begin self destruct timer here (if it's just a UI thing, do it from QML)
-        emit messageUpdated(pos);
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId](int index, MessageData *message) {
+        LOG("Message content was opened" << messageId << "at index" << index);
+        return message->setContentOpened();
+    });
 }
 
 void MessagesModel::handleMessageFactCheckUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &factCheck) {
-    if (this->chatId == chatId && messageIndexMap.contains(messageId)) {
-        const int pos = messageIndexMap.value(messageId);
-        MessageData *messageData = messages.at(pos);
-        LOG("Message fact check updated" << messageId << "at index" << pos);
-        const QModelIndex messageIndex(index(pos));
-        emit dataChanged(messageIndex, messageIndex, messageData->setFactCheck(factCheck));
-        emit messageUpdated(pos);
-    }
+    handleMessageFieldUpdated(chatId, messageId, [messageId, factCheck](int index, MessageData *message) {
+        LOG("Message fact check updated" << messageId << "at index" << index);
+        return message->setFactCheck(factCheck);
+    });
+}
+
+void MessagesModel::handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned) {
+    handleMessageFieldUpdated(chatId, messageId, [messageId, isPinned](int index, MessageData *message) {
+        LOG("Message is pinned updated" << messageId << isPinned << "at index" << index);
+        return message->setIsPinned(isPinned);
+    });
 }
 
 void MessagesModel::handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds) {
@@ -357,11 +346,10 @@ void MessagesModel::insertMessages(const QList<MessageData*> newMessages) {
         }
         const qlonglong firstNewId = newMessages.first()->messageId;
         LOG("Inserting messages, last known ID:" << lastKnownId << ", first new ID:" << firstNewId);
-        if (lastKnownId < firstNewId) {
+        if (lastKnownId < firstNewId)
             appendMessages(newMessages);
-        } else {
+        else
             prependMessages(newMessages);
-        }
     }
 }
 

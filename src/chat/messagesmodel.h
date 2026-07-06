@@ -39,7 +39,6 @@ signals:
 private slots:
     void handleMessageReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &message);
     void handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
-    void handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent);
     void handleMessageEditedUpdated(qlonglong chatId, qlonglong messageId, int editDate, const QVariantMap &replyMarkup);
     void handleMessageInteractionInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &updatedInfo);
     void handleMessageSuggestedPostInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &suggestedPostInfo);
@@ -47,11 +46,16 @@ private slots:
     void handleMessageContentOpened(qlonglong chatId, qlonglong messageId);
     void handleMessageFactCheckUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &factCheck);
 
+protected slots:
+    virtual MessageData *handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent);
+    virtual void handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned);
+
 private:
     void updateAlbumMessages(qlonglong albumId, bool checkDeleted);
     void handleAlbumMessageUpdated(qlonglong albumId);
     void updateAlbumMessages(QList<qlonglong> albumIds, bool checkDeleted);
     void setMessagesAlbum(MessageData *message);
+    MessageData *handleMessageFieldUpdated(qlonglong chatId, qlonglong messageId, std::function<QVector<int>(int, MessageData*)> updater);
 
 protected:
     virtual void setupTDLibWrapper();

@@ -66,6 +66,7 @@ struct MessageData {
     QVector<int> setMentionRead();
     QVector<int> setContentOpened();
     QVector<int> setFactCheck(const QVariantMap &factCheck);
+    QVector<int> setIsPinned(bool isPinned);
 
     int lastMessageSenderUserId() const;
     qlonglong lastMessageSenderChatId() const;
