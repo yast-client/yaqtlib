@@ -18,7 +18,7 @@ public:
 
 signals:
     void newMessageReceived(const QVariantMap &message);
-    void unreadCountUpdated(int unreadCount, const QString &lastReadInboxMessageId);
+    void unreadCountUpdated();
 
     void lastReadInboxMessageIdChanged();
     void lastReadOutboxMessageIdChanged();

@@ -22,7 +22,6 @@ ReadableMessagesModel::ReadableMessagesModel(QObject *parent) :
     connect(this, &ReadableMessagesModel::messagesReceived, this, &ReadableMessagesModel::lastReadInboxMessageIndexChanged);
     connect(this, &ReadableMessagesModel::newMessageReceived, this, &ReadableMessagesModel::lastReadInboxMessageIndexChanged);
     connect(this, &ReadableMessagesModel::unreadCountUpdated, this, &ReadableMessagesModel::lastReadInboxMessageIndexChanged);
-
 }
 
 ReadableMessagesModel::ReadableMessagesModel(TDLibWrapper *tdLibWrapper, QObject *parent) : ReadableMessagesModel(parent) {

@@ -373,13 +373,17 @@ void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> ch
             LOG("Chat actions text updated" << chatId);
             emit chatActionsChanged();
         }
-        if (changedRoles.contains(ChatData::RoleLastReadInboxMessageId) && this->chatMessagesModel) {
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadInboxMessageId)) {
             LOG("Chat last read inbox message ID updated" << chatId);
-            emit this->chatMessagesModel->lastReadInboxMessageIdChanged();
+            emit chatMessagesModel->lastReadInboxMessageIdChanged();
         }
-        if (changedRoles.contains(ChatData::RoleLastReadOutboxMessageId) && this->chatMessagesModel) {
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadOutboxMessageId)) {
             LOG("Chat last read outbox message ID updated" << chatId);
-            emit this->chatMessagesModel->lastReadOutboxMessageIdChanged();
+            emit chatMessagesModel->lastReadOutboxMessageIdChanged();
+        }
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleUnreadCount)) {
+            LOG("Chat unread count updated" << chatId);
+            emit chatMessagesModel->unreadCountUpdated();
         }
         LOG("Chat roles updated" << chatId << changedRoles);
         emit chatInformationChanged();

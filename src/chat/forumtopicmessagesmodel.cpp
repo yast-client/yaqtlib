@@ -45,6 +45,8 @@ void ForumTopicMessagesModel::handleRolesUpdated(const QVector<int> &roles) {
         emit lastReadInboxMessageIdChanged();
     if (roles.contains(ForumTopic::RoleLastReadOutboxMessageId))
         emit lastReadOutboxMessageIdChanged();
+    if (roles.contains(ForumTopic::RoleUnreadCount))
+        emit unreadCountUpdated();
 
     emit forumTopicDataChanged();
 }
