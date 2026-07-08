@@ -48,8 +48,11 @@ protected:
 
     virtual void handlePrepareMessagesReceived(int totalCount, UpdateType fromUpdate);
 
+    virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message);
+    void fetchAndInsertMessage(qlonglong messageId);
+
 protected:
     QMap<UpdateType, bool> waitingFor; // what updates we're currently waiting for
-    bool startReached, endReached;
-    qlonglong highlightedMessageId;
+    bool startReached = false, endReached = false;
+    qlonglong highlightedMessageId = 0;
 };

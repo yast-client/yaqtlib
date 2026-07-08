@@ -302,6 +302,7 @@ public:
     Q_INVOKABLE void sendDiceMessage(qlonglong chatId, const QString &emoji, qlonglong replyToMessageId = 0, const QVariantMap &topicId = QVariantMap(), bool clearDraft = false);
     Q_INVOKABLE void forwardMessages(const QString &chatId, const QString &fromChatId, const QVariantList &messageIds, bool sendCopy, bool removeCaption);
     Q_INVOKABLE void getMessage(qlonglong chatId, qlonglong messageId);
+    void getMessage(qlonglong chatId, qlonglong messageId, QObject *receiver, ResponseSlot slot);
     Q_INVOKABLE void getMessageLinkInfo(const QString &url);
     Q_INVOKABLE void getExternalLinkInfo(const QString &url, const QString &extra = "");
     Q_INVOKABLE void getCallbackQueryAnswer(const QString &chatId, const QString &messageId, const QVariantMap &payload);
@@ -465,6 +466,7 @@ public:
     Q_INVOKABLE void addPollOption(qlonglong chatId, qlonglong messageId, const QString &text);
     Q_INVOKABLE void getMessageReadDate(qlonglong chatId, qlonglong messageId);
     Q_INVOKABLE void getAndOpenSupportUser();
+    void processError(const QVariantMap &error);
 
 public:
     const Group* getGroup(qlonglong groupId) const;

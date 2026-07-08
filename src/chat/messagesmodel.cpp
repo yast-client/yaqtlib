@@ -530,3 +530,15 @@ void MessagesModel::markGeneratedContentAsRead(int i) {
             LOG("Generated content already read" << message->messageId);
     }
 }
+
+void MessagesModel::removeMessage(qlonglong messageId) {
+    if (!messageIndexMap.contains(messageId))
+        return;
+
+    int index = messageIndexMap.value(messageId);
+    LOG("Removing message" << messageId << index);
+    beginRemoveRows(QModelIndex(), index, index);
+    messages.removeAt(index);
+    messageIndexMap.remove(messageId);
+    endRemoveRows();
+}

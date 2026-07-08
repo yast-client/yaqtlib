@@ -11,9 +11,7 @@ namespace {
     const QString _TYPE("@type");
 }
 
-MediaMessagesModel::MediaMessagesModel(QObject *parent)
-    : JumpableMessagesModel(parent),
-      searchMessagesFilter(TDLibWrapper::SearchMessagesFilterEmpty)
+MediaMessagesModel::MediaMessagesModel(QObject *parent) : JumpableMessagesModel(parent)
 {}
 
 void MediaMessagesModel::setTDLibWrapper(QObject *obj) {
@@ -41,6 +39,18 @@ void MediaMessagesModel::setSearchMessagesFilter(TDLibWrapper::SearchMessagesFil
         this->searchMessagesFilter = filter;
         LOG("Filter set" << filter);
         emit searchMessagesFilterChanged();
+    }
+}
+
+void MediaMessagesModel::setMaintainCount(bool maintainCount) {
+    if (this->maintainCount() != maintainCount) {
+        LOG("Toggling count maintenance" << maintainCount);
+        this->totalCount = maintainCount ? 0 : -1;
+        if (maintainCount && chatId && !messages.isEmpty())
+            tdLibWrapper->getChatMessageCount(chatId, this->searchMessagesFilter);
+
+        emit maintainCountChanged();
+        emit totalCountChanged();
     }
 }
 
@@ -106,21 +116,32 @@ void MediaMessagesModel::loadHistoryForMessageImpl(qlonglong messageId) {
     this->loadMessagesWithLimit(UpdateInitial, messageId, -26, 51);
 }
 
+void MediaMessagesModel::updateTotalCount(int count) {
+    if (maintainCount() && this->totalCount != count) {
+        LOG("Updating total messages count" << count);
+        this->totalCount = count;
+        emit totalCountChanged();
+    }
+}
+
 void MediaMessagesModel::handleChatMessageCountReceived(int count, qlonglong chatId, TDLibWrapper::SearchMessagesFilter filter, bool onlyLocal) {
-    Q_UNUSED(onlyLocal) // TODO: we should first try to get count with onlyLocal = true,
-    // then if we have an error (or -1 as result) try again with onlyLocal = false
-    // see tgx implementatinon as well as tdlib docs for more info
+    Q_UNUSED(onlyLocal)
 
     if (this->chatId == chatId && this->searchMessagesFilter == filter) {
-        endReached = true;
-        emit endReachedChanged();
-        if (count == 0) {
-            LOG("No messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter));
-            startReached = true;
-        } else {
-            LOG("Found" << count << "messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter) << ", loading messages");
-            emit notEmptyDetected();
-            loadMessages(UpdateInitial);
+        LOG("Chat message count received" << chatId << filter);
+        updateTotalCount(count);
+
+        if (loading()) {
+            endReached = true;
+            emit endReachedChanged();
+            if (count == 0) {
+                LOG("No messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter));
+                startReached = true;
+            } else {
+                LOG("Found" << count << "messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter) << ", loading messages");
+                emit notEmptyDetected();
+                loadMessages(UpdateInitial);
+            }
         }
     }
 }
@@ -130,6 +151,7 @@ void MediaMessagesModel::handleMessagesReceived(qlonglong chatId, TDLibWrapper::
         LOG("Messages received next id:" << nextFromMessageId);
         JumpableMessagesModel::handleMessagesReceived(extra, messages, totalCount);
         this->nextFromMessageId = nextFromMessageId;
+        updateTotalCount(totalCount);
     }
 }
 
@@ -144,4 +166,80 @@ void MediaMessagesModel::handleNewMessageReceived(qlonglong chatId, const QVaria
             emit notEmptyDetected();
         }
     }
+}
+
+MessageData *MediaMessagesModel::handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent) {
+    MessageData *message = JumpableMessagesModel::handleMessageContentUpdated(chatId, messageId, newContent);
+    if (this->chatId != chatId)
+        return message;
+
+    switch (searchMessagesFilter) {
+    case TDLibWrapper::SearchMessagesFilterAnimation:
+    case TDLibWrapper::SearchMessagesFilterAudio:
+    case TDLibWrapper::SearchMessagesFilterDocument:
+    case TDLibWrapper::SearchMessagesFilterVideo:
+    case TDLibWrapper::SearchMessagesFilterPhotoAndVideo:
+        break;
+    default:
+        return message;
+    }
+
+    if (message) {
+        if (!Utilities::messageMatchesSearchFilter(message->messageData, searchMessagesFilter)) {
+            LOG("Message content type changed, no longer matches the filter, removing");
+            removeMessage(messageId);
+        }
+    } else if (!Utilities::messageContentTypeMatchesSearchFilter(newContent.value(_TYPE).toString(), searchMessagesFilter)) {
+        LOG("Message content type changed, now matches the filter, adding");
+        fetchAndInsertMessage(messageId);
+    }
+
+    return message;
+}
+
+void MediaMessagesModel::handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong messageId, bool isPinned) {
+    if (searchMessagesFilter == TDLibWrapper::SearchMessagesFilterPinned) {
+        if (this->chatId != chatId)
+            return;
+
+        if (isPinned) {
+            if (!messageIndexMap.contains(messageId)) {
+                LOG("Adding a newly pinned message" << messageId);
+                fetchAndInsertMessage(messageId);
+            }
+        } else {
+            LOG("Removing unpinned message" << messageId);
+            removeMessage(messageId);
+        }
+    } else
+        JumpableMessagesModel::handleMessageIsPinnedUpdated(chatId, messageId, isPinned);
+}
+
+void MediaMessagesModel::handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds) {
+    JumpableMessagesModel::handleMessagesDeleted(chatId, messageIds);
+    if (searchMessagesFilter == TDLibWrapper::SearchMessagesFilterPinned && this->chatId == chatId) {
+        LOG("Messages deleted, updating count");
+        tdLibWrapper->getChatMessageCount(chatId, this->searchMessagesFilter);
+    }
+}
+
+void MediaMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message) {
+    JumpableMessagesModel::insertMessageInOrder(messageId, message);
+    if (maintainCount()) {
+        this->totalCount++;
+        emit totalCountChanged();
+    }
+}
+
+void MediaMessagesModel::removeMessage(qlonglong messageId) {
+    JumpableMessagesModel::removeMessage(messageId);
+    if (maintainCount()) {
+        this->totalCount--;
+        emit totalCountChanged();
+    }
+}
+
+int MediaMessagesModel::calculateScrollPosition() const {
+    const int pos = JumpableMessagesModel::calculateScrollPosition();
+    return pos >= 0 ? pos : (messages.size() - 1);
 }

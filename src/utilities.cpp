@@ -899,9 +899,7 @@ QVariantMap Utilities::findSmallestPhotoSize(const QVariantList &photoSizes) {
     return result;
 }
 
-bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrapper::SearchMessagesFilter filter) {
-    const QString contentType = message.value(CONTENT).toMap().value(_TYPE).toString();
-
+bool Utilities::messageContentTypeMatchesSearchFilter(const QString &contentType, TDLibWrapper::SearchMessagesFilter filter) {
     switch (filter) {
     case TDLibWrapper::SearchMessagesFilterEmpty:
         return true;
@@ -925,7 +923,13 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
         return contentType == MESSAGE_CONTENT_TYPE_VOICE_NOTE || contentType == MESSAGE_CONTENT_TYPE_VIDEO_NOTE;
     case TDLibWrapper::SearchMessagesFilterVoiceNote:
         return contentType == MESSAGE_CONTENT_TYPE_VOICE_NOTE;
+    default:
+        return true;
+    }
+}
 
+bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrapper::SearchMessagesFilter filter) {
+    switch (filter) {
     case TDLibWrapper::SearchMessagesFilterFailedToSend:
         return message.value(SENDING_STATE).toMap().value(_TYPE).toString() == TYPE_MESSAGE_SENDING_STATE_FAILED;
     case TDLibWrapper::SearchMessagesFilterMention:
@@ -938,9 +942,9 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
         return !message.value(UNREAD_REACTIONS).toList().isEmpty();
     case TDLibWrapper::SearchMessagesFilterUrl:
         return !message.value(CONTENT).toMap().value(LINK_PREVIEW).toMap().isEmpty();
+    default:
+        return messageContentTypeMatchesSearchFilter(message.value(CONTENT).toMap().value(_TYPE).toString(), filter);
     }
-
-    return false;
 }
 
 void Utilities::handleLink(const QString &link) {

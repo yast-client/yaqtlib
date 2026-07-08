@@ -3,12 +3,7 @@
 #define DEBUG_MODULE JumpableMessagesModel
 #include "debuglog.h"
 
-JumpableMessagesModel::JumpableMessagesModel(QObject *parent) :
-    MessagesModel(parent),
-    startReached(false),
-    endReached(false),
-    highlightedMessageId(0)
-{
+JumpableMessagesModel::JumpableMessagesModel(QObject *parent) : MessagesModel(parent) {
     connect(this, &JumpableMessagesModel::endReachedChanged, this, &JumpableMessagesModel::loadingChanged);
 }
 
@@ -80,7 +75,7 @@ void JumpableMessagesModel::handleMessagesReceived(qlonglong chatId, int extra, 
 }
 
 void JumpableMessagesModel::handleMessagesReceived(int extra, const QVariantList &messages, int totalCount) {
-    UpdateType fromUpdate = (UpdateType)extra;
+    UpdateType fromUpdate = static_cast<UpdateType>(extra);
     LOG("Received messages" << fromUpdate << messages.size() << totalCount);
 
     auto notifyMessagesLoaded = [&]() {
@@ -114,4 +109,38 @@ void JumpableMessagesModel::handleMessagesReceived(int extra, const QVariantList
 
 int JumpableMessagesModel::calculateScrollPosition() const {
     return this->messageIndexMap.value(this->highlightedMessageId, -1);
+}
+
+void JumpableMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message) {
+    // sponsored messages are not supported here
+    LOG("Inserting a message in order" << messageId);
+    if (messageId > messages.last()->messageId) {
+        if (endReached)
+            appendMessages({new MessageData(message, messageId)});
+    } else if (messageId < messages.first()->messageId) {
+        if (startReached)
+            prependMessages({new MessageData(message, messageId)});
+    } else {
+        for (int i=0; i < messages.length(); i++) {
+            if (messages.at(i)->messageId < messageId) {
+                beginInsertRows(QModelIndex(), i-1, i-1);
+                messages.insert(i-1, new MessageData(message, messageId));
+                messageIndexMap.insert(messageId, i);
+                endInsertRows();
+            }
+        }
+    }
+
+}
+
+void JumpableMessagesModel::fetchAndInsertMessage(qlonglong messageId) {
+    tdLibWrapper->getMessage(chatId, messageId, this, [this, messageId](const QString &type, const QVariantMap &message) {
+        if (type == "message") {
+            LOG("Fetched the message to insert" << messageId);
+            insertMessageInOrder(messageId, message);
+        } else {
+            LOG("Error when fetching the message to insert" << messageId);
+            tdLibWrapper->processError(message);
+        }
+    });
 }

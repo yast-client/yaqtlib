@@ -70,6 +70,7 @@ protected:
     inline virtual void processMessageData(MessageData* message) {}
     inline virtual bool messageIsFirstInSequence(const int index, const MessageData *message) const { return index == 0; }
     inline virtual bool messageIsLastInSequence(const int index, const MessageData *message) const { return index == messages.size() - 1; }
+    virtual void removeMessage(qlonglong messageId);
 
 protected slots:
     virtual void handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds);

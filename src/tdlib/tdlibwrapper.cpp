@@ -132,6 +132,7 @@ namespace {
     const QString PROTOCOL("protocol");
     const QString CLEAR_DRAFT("clear_draft");
     const QString CODE("code");
+    const QString TYPE_GET_MESSAGE("getMessage");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -689,12 +690,20 @@ void TDLibWrapper::forwardMessages(const QString &chatId, const QString &fromCha
 
 void TDLibWrapper::getMessage(qlonglong chatId, qlonglong messageId) {
     LOG("Retrieving message" << chatId << messageId);
-    this->sendRequest(QVariantMap{
-        {_TYPE, "getMessage"},
+    sendRequest({
+        {_TYPE, TYPE_GET_MESSAGE},
         {CHAT_ID, chatId},
-        {MESSAGE_ID, messageId},
-        {_EXTRA, QString("getMessage:%1:%2").arg(chatId).arg(messageId)}
+        {MESSAGE_ID, messageId}
     });
+}
+
+void TDLibWrapper::getMessage(qlonglong chatId, qlonglong messageId, QObject *receiver, ResponseSlot slot) {
+    LOG("Retrieving message with response slot" << chatId << messageId);
+    sendRequestWithId({
+        {_TYPE, TYPE_GET_MESSAGE},
+        {CHAT_ID, chatId},
+        {MESSAGE_ID, messageId}
+    }, receiver, slot);
 }
 
 void TDLibWrapper::getMessageLinkInfo(const QString &url) {
@@ -721,15 +730,6 @@ void TDLibWrapper::getCallbackQueryAnswer(const QString &chatId, const QString &
         {CHAT_ID, chatId},
         {MESSAGE_ID, messageId},
         {"payload", payload}
-    });
-}
-
-void TDLibWrapper::getChatPinnedMessage(qlonglong chatId) {
-    LOG("Retrieving pinned message" << chatId);
-    this->sendRequest(QVariantMap{
-        {_TYPE, "getChatPinnedMessage"},
-        {CHAT_ID, chatId},
-        {_EXTRA, "getChatPinnedMessage:" + QString::number(chatId)}
     });
 }
 
@@ -3466,4 +3466,11 @@ void TDLibWrapper::handleAvailableReactionsReceived(qlonglong chatId, qlonglong 
 void TDLibWrapper::getAndOpenSupportUser() {
     LOG("Getting the support user");
     this->sendRequest({{_TYPE, "getSupportUser"}, {_EXTRA, true}});
+}
+
+void TDLibWrapper::processError(const QVariantMap &error) {
+    if (error.value(_TYPE).toString() == "error") {
+        LOG("Processing provided error");
+        tdLibReceiver->processError(error);
+    }
 }

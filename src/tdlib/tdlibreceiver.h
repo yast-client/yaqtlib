@@ -337,7 +337,6 @@ private:
     void processUpdateMessageIsPinned(const QVariantMap &receivedInformation);
     void processUsers(const QVariantMap &receivedInformation);
     void processMessageSenders(const QVariantMap &receivedInformation);
-    void processError(const QVariantMap &receivedInformation);
     void processUpdateServiceNotification(const QVariantMap &receivedInformation);
     void processSecretChat(const QVariantMap &receivedInformation);
     void processUpdateSecretChat(const QVariantMap &receivedInformation);
@@ -401,4 +400,7 @@ private:
     void processChatJoinResult(const QVariantMap &receivedInformation);
     void processUpdateChatJoinResult(const QVariantMap &receivedInformation);
     void processHttpUrl(const QVariantMap &receivedInformation);
+
+public:
+    void processError(const QVariantMap &receivedInformation);
 };
