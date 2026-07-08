@@ -467,6 +467,7 @@ public:
     Q_INVOKABLE void getMessageReadDate(qlonglong chatId, qlonglong messageId);
     Q_INVOKABLE void getAndOpenSupportUser();
     void processError(const QVariantMap &error);
+    Q_INVOKABLE void unpinAllChatMessages(qlonglong chatId);
 
 public:
     const Group* getGroup(qlonglong groupId) const;

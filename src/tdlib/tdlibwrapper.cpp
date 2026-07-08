@@ -3465,7 +3465,7 @@ void TDLibWrapper::handleAvailableReactionsReceived(qlonglong chatId, qlonglong 
 
 void TDLibWrapper::getAndOpenSupportUser() {
     LOG("Getting the support user");
-    this->sendRequest({{_TYPE, "getSupportUser"}, {_EXTRA, true}});
+    sendRequest({{_TYPE, "getSupportUser"}, {_EXTRA, true}});
 }
 
 void TDLibWrapper::processError(const QVariantMap &error) {
@@ -3473,4 +3473,9 @@ void TDLibWrapper::processError(const QVariantMap &error) {
         LOG("Processing provided error");
         tdLibReceiver->processError(error);
     }
+}
+
+void TDLibWrapper::unpinAllChatMessages(qlonglong chatId) {
+    LOG("Unpinning all chat messages" << chatId);
+    sendRequest({{_TYPE, "unpinAllChatMessages"}, {CHAT_ID, chatId}});
 }
