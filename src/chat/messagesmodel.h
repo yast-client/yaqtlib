@@ -68,8 +68,8 @@ protected:
     int findLastSentMessageIndex() const;
     virtual bool handleInsertMessages(const QVariantList &messages, QList<MessageData*> &newMessagesList, bool setAlbum = true, bool reverseOrder = false);
     inline virtual void processMessageData(MessageData* message) {}
-    inline virtual bool messageIsFirstInSequence(const int index, const MessageData *message) const { return index == 0; }
-    inline virtual bool messageIsLastInSequence(const int index, const MessageData *message) const { return index == messages.size() - 1; }
+    inline virtual bool messageIsFirstInSequence(const int index, const MessageData *message) const { return true; }
+    inline virtual bool messageIsLastInSequence(const int index, const MessageData *message) const { return true; }
     virtual void removeMessage(qlonglong messageId);
 
 protected slots:
