@@ -174,7 +174,7 @@ target_sources(yaqtlib PRIVATE
     src/basemessagabledata.cpp
     src/chat/forumtopicmessagesmodel.cpp
     src/chat/forumtopic.cpp
-    src/ferniemain.cpp
+    src/mainhelper.cpp
     src/chat/invertedmediamessagesmodel.cpp
     src/userprofilepicturesmodel.cpp
     src/chat/chatphotosmodel.cpp
@@ -216,7 +216,7 @@ target_sources(yaqtlib PRIVATE
     src/basemessagabledata.h
     src/chat/forumtopicmessagesmodel.h
     src/chat/forumtopic.h
-    src/ferniemain.h
+    src/mainhelper.h
     src/chat/invertedmediamessagesmodel.h
     src/userprofilepicturesmodel.h
     src/chat/chatphotosmodel.h

@@ -21,7 +21,7 @@
 #include "callsmanager.h"
 #endif
 
-namespace FernieMain {
+namespace MainHelper {
     static const char *uri = "io.yaqtlib";
 
     struct AppContext {

@@ -1,4 +1,4 @@
-#include "ferniemain.h"
+#include "mainhelper.h"
 
 #include "tdlib/tdlibfile.h"
 #include "tdlib/tdlibresponse.h"
@@ -26,7 +26,7 @@
 
 Q_IMPORT_PLUGIN(TgsIOPlugin)
 
-FernieMain::AppContext::AppContext(QSharedPointer<QQuickView> view,
+MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view,
                                    TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities,
                                    const QString &appName, const QUrl &appIconPath, const QString &dbusPath,
                                    const QString &dbusServiceName, const QString &dbusInterface, bool useSignalActions) :
@@ -55,7 +55,7 @@ FernieMain::AppContext::AppContext(QSharedPointer<QQuickView> view,
     suggestedActionsManager(tdLibWrapper, view.data())
 {}
 
-FernieMain::AppContext* FernieMain::registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view,
+MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view,
                                                   const QString &appName = QGuiApplication::applicationName(), const QUrl &appIconPath,
                                                   const QString &dbusPath, const QString &dbusServiceName,
                                                   bool useSignalActions, const QString &dbusInterface) {
@@ -118,7 +118,7 @@ FernieMain::AppContext* FernieMain::registerTypes(int argc, char *argv[], QShare
     return appContext;
 }
 
-void FernieMain::registerDBusService(QSharedPointer<QGuiApplication> app, QSharedPointer<QQuickView> view, const QString &serviceName, const QString &path) {
+void MainHelper::registerDBusService(QSharedPointer<QGuiApplication> app, QSharedPointer<QQuickView> view, const QString &serviceName, const QString &path) {
     LOG("Initializing DBus connectivity");
     QDBusConnection sessionBusConnection = QDBusConnection::sessionBus();
 
