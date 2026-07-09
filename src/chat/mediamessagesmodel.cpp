@@ -243,3 +243,11 @@ int MediaMessagesModel::calculateScrollPosition() const {
     const int pos = JumpableMessagesModel::calculateScrollPosition();
     return pos >= 0 ? pos : (messages.size() - 1);
 }
+
+int MediaMessagesModel::messageIndexBeforeOrAtId(qlonglong messageId) const {
+    LOG("Getting the message before or at ID" << messageId);
+    for (int i = messages.length() - 1; i >= 0; i--)
+        if (messages.at(i)->messageId <= messageId)
+            return i;
+    return -1;
+}

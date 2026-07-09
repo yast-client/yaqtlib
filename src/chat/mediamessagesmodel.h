@@ -18,6 +18,7 @@ public:
 
     Q_INVOKABLE virtual bool clear() override;
     Q_INVOKABLE void init(qlonglong chatId, qlonglong fromMessageId = 0);
+    Q_INVOKABLE int messageIndexBeforeOrAtId(qlonglong messageId) const;
 
     Q_INVOKABLE virtual int calculateScrollPosition() const;
 
