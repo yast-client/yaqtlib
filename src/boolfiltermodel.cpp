@@ -20,21 +20,16 @@
 #define DEBUG_MODULE BoolFilterModel
 #include "debuglog.h"
 
-BoolFilterModel::BoolFilterModel(QObject *parent) : QSortFilterProxyModel(parent)
-{
+BoolFilterModel::BoolFilterModel(QObject *parent) : QSortFilterProxyModel(parent) {
     setDynamicSortFilter(true);
-//    setFilterCaseSensitivity(Qt::CaseInsensitive);
-//    setFilterFixedString(QString());
     filterValue = true;
 }
 
-void BoolFilterModel::setSource(QObject *model)
-{
+void BoolFilterModel::setSource(QObject *model) {
     setSourceModel(qobject_cast<QAbstractItemModel*>(model));
 }
 
-void BoolFilterModel::setSourceModel(QAbstractItemModel *model)
-{
+void BoolFilterModel::setSourceModel(QAbstractItemModel *model) {
     if (sourceModel() != model) {
         LOG(model);
         QSortFilterProxyModel::setSourceModel(model);
@@ -43,8 +38,7 @@ void BoolFilterModel::setSourceModel(QAbstractItemModel *model)
     }
 }
 
-void BoolFilterModel::setFilterRoleName(QString role)
-{
+void BoolFilterModel::setFilterRoleName(QString role) {
     if (filterRoleName != role) {
         filterRoleName = role;
         LOG(role);
@@ -53,72 +47,56 @@ void BoolFilterModel::setFilterRoleName(QString role)
     }
 }
 
-void BoolFilterModel::setFilterValue(bool value)
-{
-    if(value != filterValue) {
+void BoolFilterModel::setFilterValue(bool value) {
+    if (value != filterValue) {
         filterValue = value;
         invalidateFilter();
     }
 }
 
-int BoolFilterModel::mapRowFromSource(int i, int fallbackDirection)
-{
-    QModelIndex myIndex = mapFromSource(sourceModel()->index(i, 0));
-    LOG("mapping index" << i << "to source model:" << myIndex.row() << "valid?" << myIndex.isValid());
-    if(myIndex.isValid()) {
-        return myIndex.row();
+int BoolFilterModel::mapRowFromSource(int i, int fallbackDirection) {
+    if (!sourceModel() || i < 0)
+        return -1;
+
+    auto tryMap = [this](int i) {
+        const QModelIndex index = mapFromSource(sourceModel()->index(i, 0));
+        LOG("mapping index" << i << "to source model:" << index.row() << "valid?" << index.isValid());
+        return index.isValid() ? index.row() : -1;
+    };
+
+    if (int mapped = tryMap(i); mapped != -1)
+        return mapped;
+
+    if (fallbackDirection > 0) {
+        LOG("fallback ++:");
+        for (i++; i < sourceModel()->rowCount(); i++)
+            if (int mapped = tryMap(i); mapped != -1)
+                return mapped;
+    } else if (fallbackDirection < 0) {
+        LOG("fallback --:");
+        for (i--; i >= 0; i--)
+            if (int mapped = tryMap(i); mapped != -1)
+                return mapped;
     }
 
-    if(fallbackDirection > 0) {
-        int max = sourceModel()->rowCount();
-        i += 1;
-        while (i < max) {
-            myIndex = mapFromSource(sourceModel()->index(i, 0));
-
-            LOG("fallback ++ " << i << "to source model:" << myIndex.row() << "valid?" << myIndex.isValid());
-            if(myIndex.isValid()) {
-                return myIndex.row();
-            }
-            i += 1;
-        }
-    } else if(fallbackDirection < 0) {
-        i -= 1;
-        while (i > -1) {
-            myIndex = mapFromSource(sourceModel()->index(i, 0));
-            LOG("fallback -- " << i << "to source model:" << myIndex.row() << "valid?" << myIndex.isValid());
-            if(myIndex.isValid()) {
-                return myIndex.row();
-            }
-            i -= 1;
-        }
-    }
-
-    return myIndex.row(); // may still be -1
+    return -1;
 }
 
-int BoolFilterModel::mapRowToSource(int i)
-{
+int BoolFilterModel::mapRowToSource(int i) {
+    if (!sourceModel())
+        return -1;
+
     QModelIndex sourceIndex = mapToSource(index(i, 0));
     return sourceIndex.row();
 }
-bool BoolFilterModel::filterAcceptsRow(int sourceRow,
-         const QModelIndex &sourceParent) const
- {
-//    sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(); //.toString().contains( /*string for column 0*/ ))
-//    LOG("Filter Role " <<  filterRole());
-//    QModelIndex index = this->sourceModel()->index(sourceRow,1,sourceParent);
-//    sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(filterRole()).toBool();
-//    LOG("Filter index DATA"<< sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(filterRole())); //<<  index << index.isValid());
-//    LOG("Filter parent " <<  sourceParent << sourceParent.isValid());
-//    LOG("Filter Model Value" << sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(filterRole()).toBool());
-//    LOG("Filter Model filterValue" << filterValue);
-//    LOG("Filter Model result" << (sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(filterRole()).toBool() == filterValue));
-//    LOG("Filter Model MESSAGE" << sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data());
+
+bool BoolFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+    if (!sourceModel())
+        return false;
     return sourceModel()->index(sourceRow, 0, sourceParent.child(sourceRow, 0)).data(filterRole()).toBool() == filterValue;
  }
 
-int BoolFilterModel::findRole(QAbstractItemModel *model, QString role)
-{
+int BoolFilterModel::findRole(QAbstractItemModel *model, QString role) {
     if (model && !role.isEmpty()) {
         const QByteArray roleName(role.toUtf8());
         const QHash<int,QByteArray> roleMap(model->roleNames());
@@ -136,8 +114,7 @@ int BoolFilterModel::findRole(QAbstractItemModel *model, QString role)
     return -1;
 }
 
-void BoolFilterModel::updateFilterRole()
-{
+void BoolFilterModel::updateFilterRole() {
     const int role = findRole(sourceModel(), filterRoleName);
     setFilterRole((role >= 0) ? role : Qt::DisplayRole);
 }

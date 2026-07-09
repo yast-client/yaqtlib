@@ -19,8 +19,7 @@
 
 #include <QSortFilterProxyModel>
 
-class BoolFilterModel : public QSortFilterProxyModel
-{
+class BoolFilterModel : public QSortFilterProxyModel {
     Q_OBJECT
     Q_PROPERTY(QString filterRoleName MEMBER filterRoleName WRITE setFilterRoleName NOTIFY filterRoleNameChanged)
     Q_PROPERTY(bool filterValue MEMBER filterValue WRITE setFilterValue NOTIFY filterValueChanged)
