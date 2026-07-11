@@ -44,7 +44,7 @@ public:
     Q_INVOKABLE QString getMessageText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QString getMessageContentText(const QVariantMap &messageContent, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QVariantMap getMessageTextWithCustomEntities(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
-    Q_INVOKABLE QString getAlbumMessagesText(const QVariantList &messages, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
+    Q_INVOKABLE QString getAlbumMessagesText(const QVariantList &messages, bool ignoreDocumentsAudios = true, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
     Q_INVOKABLE static bool messageContentIsService(const QString &contentType);
     Q_INVOKABLE static QVariant getMessageMinithumbnail(const QVariantMap &messageContent);
