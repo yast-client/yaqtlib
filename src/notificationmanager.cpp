@@ -464,14 +464,14 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         };
 
         remoteActions.append(Notification::remoteAction(
-                                 ACTION_MARK_AS_READ, tr("Mark as read", "Notification button"),
+                                 ACTION_MARK_AS_READ, tr("Read", "Shorter version of 'Mark as read' for a notification button. The buttons must fit on a single line."),
                                  useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
                                  "markMessageAsRead", remoteActionArguments
                                  ));
 
         if (showPreview && !chat->isChannel()) {
             // Ignore useSignalBasedActions here
-            QVariantMap replyAction = Notification::remoteAction(ACTION_REPLY, tr("Reply", "Reply to a message in a notification"),
+            QVariantMap replyAction = Notification::remoteAction(ACTION_REPLY, tr("Reply", "Shorter version for a notification button. The buttons must fit on a single line."),
                                                                 dbusServiceName, dbusPath, dbusInterface,
                                                                 "replyToMessage", remoteActionArguments).toMap();
             // See https://github.com/sailfishos/nemo-qml-plugin-notifications/blob/d4d0a0ce8257b90293b8df469830f0e288faeeae/src/notification.cpp#L213
