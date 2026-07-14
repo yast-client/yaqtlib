@@ -536,11 +536,6 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
     nemoNotification->setHintValue(HINT_VIBRA, needFeedback);
 
     if (needFeedback) {
-        nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, true);
-        nemoNotification->setHintValue(HINT_DISPLAY_ON, false);
-        nemoNotification->setHintValue(HINT_VISIBILITY, QString());
-        nemoNotification->setUrgency(Notification::Low);
-    } else {
         nemoNotification->setHintValue(HINT_DISPLAY_ON, settings->notificationTurnsDisplayOn());
         nemoNotification->setHintValue(HINT_VISIBILITY, VISIBILITY_PUBLIC);
         nemoNotification->setUrgency(Notification::Normal);
@@ -549,6 +544,11 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, suppressSound);
         if (!suppressSound && !soundFilePath.isEmpty())
             nemoNotification->setSound(soundFilePath);
+    } else {
+        nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, true);
+        nemoNotification->setHintValue(HINT_DISPLAY_ON, false);
+        nemoNotification->setHintValue(HINT_VISIBILITY, QString());
+        nemoNotification->setUrgency(Notification::Low);
     }
 
     nemoNotification->publish();
