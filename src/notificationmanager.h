@@ -19,6 +19,7 @@ class NotificationManager : public QObject {
 
     Q_PROPERTY(qlonglong activeChatId MEMBER activeChatId WRITE setActiveChatId NOTIFY activeChatIdChanged)
     Q_PROPERTY(bool enableNgfCallsRingtone MEMBER enableNgfCallsRingtone WRITE setEnableNgfCallsRingtone NOTIFY enableNgfCallsRingtoneChanged)
+    Q_PROPERTY(bool forceInChatOutgoingNgf MEMBER forceInChatOutgoingNgf WRITE setForceInChatOutgoingNgf NOTIFY forceInChatOutgoingNgfChanged)
 
 public:
     NotificationManager(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, MceInterface *mceInterface, DBusAdaptor *dbusAdaptor,
@@ -27,16 +28,18 @@ public:
 #endif
                         const QString &appName, const QUrl &appIconPath = QUrl(),
                         const QString &dbusPath = QString(), const QString &dbusServiceName = QString(), const QString &dbusInterface = "io.yaqtlib.default",
-                        bool useSignalActions = false);
+                        bool useSignalActions = false, const QUrl &incomingSoundPath = QUrl(), const QUrl &outgoingSoundPath = QUrl());
     ~NotificationManager() override;
 
     void setActiveChatId(qlonglong chatId);
     void setUseSignalActions(bool value);
     void setEnableNgfCallsRingtone(bool value);
+    void setForceInChatOutgoingNgf(bool value);
 
 signals:
     void activeChatIdChanged();
     void enableNgfCallsRingtoneChanged();
+    void forceInChatOutgoingNgfChanged();
 
 private slots:
     void handleUpdateActiveNotifications(const QVariantList &notificationGroups);
@@ -47,6 +50,9 @@ private slots:
     void updateAllNotifications();
     void handleDefaultReactionTypeChanged();
     void updateNotificationForChat(qlonglong chatId, TDLibFile *chatPhotoFile = nullptr);
+
+    void handleNewMessageReceived(qlonglong chatId, const QVariantMap &message);
+    void handleMessageSendSucceeded(qlonglong chatId);
 
 #ifdef USE_CALLS
     void publishCallNotification(int callId, TDLibFile *chatPhotoFile = nullptr);
@@ -89,6 +95,8 @@ private:
         Settings::NotificationFeedback feedback = Settings::NotificationFeedbackNone,
         qlonglong notificationSoundId = 0);
 
+    bool useInChatNgf() const;
+
 private:
     TDLibWrapper *tdLibWrapper;
     Settings *settings;
@@ -110,4 +118,6 @@ private:
     qlonglong activeChatId = 0;
     QMap<int, qlonglong> pendingChatPhotoChats;
     bool enableNgfCallsRingtone = false;
+    bool forceInChatOutgoingNgf = false;
+    QString incomingSoundPath, outgoingSoundPath;
 };

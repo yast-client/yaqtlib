@@ -4,6 +4,7 @@
 #include <QDBusInterface>
 #include <QDBusPendingCall>
 
+// A basic interface to ngfd since libngf-qt is not available in harbour
 class NgfInterface : public QDBusInterface {
     Q_OBJECT
 

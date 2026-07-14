@@ -49,8 +49,10 @@ namespace {
     const QString HINT_VISIBILITY("x-nemo-visibility");             // QString
     const QString VISIBILITY_PUBLIC("public");
 
+    // action & ngf event
+    const QString DEFAULT("default");
+
     // Actions
-    const QString ACTION_DEFAULT("default");
     const QString ACTION_CLOSE("close");
     const QString ACTION_MARK_AS_READ("mark_as_read");
     const QString ACTION_REPLY("reply");
@@ -59,6 +61,8 @@ namespace {
     const QString ACTION_DISCARD("discard");
 
     const QString NGF_EVENT_RINGTONE("ringtone");
+    const QString NGF_EVENT_VIBRA("vibra");
+    const QString NGF_PROPERTY_SOUND_FILE("sound.filename");
 }
 
 NotificationManager::NotificationGroup::NotificationGroup(NotificationGroupType type, int group, qlonglong chat, int count, Notification *notification) :
@@ -86,7 +90,7 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
 #endif
                                          const QString &appName = QGuiApplication::applicationName(), const QUrl &appIconPath,
                                          const QString &dbusPath, const QString &dbusServiceName, const QString &dbusInterface,
-                                         bool useSignalActions) :
+                                         bool useSignalActions, const QUrl &incomingSoundPath, const QUrl &outgoingSoundPath) :
     tdLibWrapper(tdLibWrapper),
     settings(settings),
     mceInterface(mceInterface),
@@ -101,16 +105,18 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
     dbusServiceName(dbusServiceName),
     dbusInterface(dbusInterface),
     useSignalActions(useSignalActions),
-    appIconFile(appIconPath.toLocalFile())
+    appIconFile(appIconPath.toLocalFile()),
+    incomingSoundPath(incomingSoundPath.toLocalFile()),
+    outgoingSoundPath(outgoingSoundPath.toLocalFile())
 {
     LOG("Initializing");
 
-    connect(this->tdLibWrapper, &TDLibWrapper::activeNotificationsUpdated, this, &NotificationManager::handleUpdateActiveNotifications);
-    connect(this->tdLibWrapper, &TDLibWrapper::notificationGroupUpdated, this, &NotificationManager::handleUpdateNotificationGroup);
-    connect(this->tdLibWrapper, &TDLibWrapper::notificationUpdated, this, &NotificationManager::handleUpdateNotification);
-    connect(this->tdLibWrapper, SIGNAL(newChatDiscovered(qlonglong, const QVariantMap &)), this, SLOT(updateNotificationForChat(qlonglong)));
-    connect(this->tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &NotificationManager::handleChatRolesUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::defaultReactionTypeChanged, this, &NotificationManager::handleDefaultReactionTypeChanged);
+    connect(tdLibWrapper, &TDLibWrapper::activeNotificationsUpdated, this, &NotificationManager::handleUpdateActiveNotifications);
+    connect(tdLibWrapper, &TDLibWrapper::notificationGroupUpdated, this, &NotificationManager::handleUpdateNotificationGroup);
+    connect(tdLibWrapper, &TDLibWrapper::notificationUpdated, this, &NotificationManager::handleUpdateNotification);
+    connect(tdLibWrapper, SIGNAL(newChatDiscovered(qlonglong, const QVariantMap &)), this, SLOT(updateNotificationForChat(qlonglong)));
+    connect(tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &NotificationManager::handleChatRolesUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::defaultReactionTypeChanged, this, &NotificationManager::handleDefaultReactionTypeChanged);
 
     connect(settings, &Settings::notificationSuppressContentChanged, this, &NotificationManager::updateAllNotifications);
     connect(settings, &Settings::notificationShowDefaultReactionChanged, this, &NotificationManager::updateAllNotifications);
@@ -119,6 +125,9 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
     connect(callsManager, SIGNAL(pendingIncomingCall(int)), this, SLOT(publishCallNotification(int)));
     connect(callsManager, &CallsManager::incomingCallNotPending, this, &NotificationManager::removeCallNotification);
 #endif
+
+    connect(tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &NotificationManager::handleNewMessageReceived);
+    connect(tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &NotificationManager::handleMessageSendSucceeded);
 
     this->controlLedNotification(false);
 
@@ -514,7 +523,7 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
 
     // Ignore useSignalBasedActions here
     remoteActions.append(Notification::remoteAction(
-                             ACTION_DEFAULT, "",
+                             DEFAULT, "",
                              dbusServiceName, dbusPath, dbusInterface,
                              "openMessage", remoteActionArguments
                              ));
@@ -608,7 +617,7 @@ void NotificationManager::publishCallNotification(int callId, TDLibFile *chatPho
     notification->setRemoteActions({
         // TODO: open a fullscreen call UI when clicking whole notification
         /*Notification::remoteAction(
-            ACTION_DEFAULT, "",
+            DEFAULT, "",
             dbusServiceName, dbusPath, dbusInterface,
             "openCall", remoteActionArguments
         ),*/
@@ -677,7 +686,7 @@ void NotificationManager::setUseSignalActions(bool value) {
                 QVariantMap action = actionVariant.toMap();
                 const QString actionName = action.value(QStringLiteral("name")).toString();
 
-                if (actionName != ACTION_DEFAULT && actionName != ACTION_REPLY)
+                if (actionName != DEFAULT && actionName != ACTION_REPLY)
                     action.insert(QStringLiteral("service"), useSignalActions ? "" : dbusServiceName);
                 newActions.append(action);
             }
@@ -709,5 +718,35 @@ void NotificationManager::setEnableNgfCallsRingtone(bool value) {
                 ngfInterface->stop(NGF_EVENT_RINGTONE);
         }
 #endif
+    }
+}
+
+void NotificationManager::setForceInChatOutgoingNgf(bool value) {
+    if (forceInChatOutgoingNgf != value) {
+        LOG("Toggling forced in-chat outgoing NGF" << value);
+        forceInChatOutgoingNgf = value;
+        forceInChatOutgoingNgfChanged();
+    }
+}
+
+inline bool NotificationManager::useInChatNgf() const {
+    return settings->inChatNgf() && QGuiApplication::applicationState() == Qt::ApplicationActive;
+}
+
+void NotificationManager::handleNewMessageReceived(qlonglong chatId, const QVariantMap &message) {
+    if (useInChatNgf() && !incomingSoundPath.isEmpty()
+            && !message.value("is_outgoing").toBool() && !message.contains("sending_state")
+            && activeChatId == chatId && !tdLibWrapper->chatIsMuted(chatId)) {
+        LOG("Playing incoming message NGF");
+        ngfInterface->play(DEFAULT, {{NGF_PROPERTY_SOUND_FILE, incomingSoundPath}});
+        ngfInterface->play(NGF_EVENT_VIBRA);
+    }
+}
+
+void NotificationManager::handleMessageSendSucceeded(qlonglong chatId) {
+    if (useInChatNgf() && (activeChatId == chatId || forceInChatOutgoingNgf)) {
+        LOG("Playing outgoing message NGF");
+        ngfInterface->play(DEFAULT, {{NGF_PROPERTY_SOUND_FILE, outgoingSoundPath}});
+        ngfInterface->play(NGF_EVENT_VIBRA);
     }
 }

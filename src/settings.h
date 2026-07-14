@@ -55,12 +55,12 @@ private:
     }
 
 public:
-
     ENUM_SETTING(NotificationFeedback, notificationFeedback, NotificationFeedbackAll)
     SETTING_(bool, notificationTurnsDisplayOn)
     SETTING(bool, notificationSoundsEnabled, true)
     SETTING_(bool, notificationSuppressContent)
     SETTING(bool, notificationShowDefaultReaction, true)
+    SETTING(bool, inChatNgf, true)
 
     SETTING(bool, storageOptimizer, true)
 

@@ -29,7 +29,8 @@ Q_IMPORT_PLUGIN(TgsIOPlugin)
 MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view,
                                    TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities,
                                    const QString &appName, const QUrl &appIconPath, const QString &dbusPath,
-                                   const QString &dbusServiceName, const QString &dbusInterface, bool useSignalActions) :
+                                   const QString &dbusServiceName, const QString &dbusInterface, bool useSignalActions,
+                                   const QUrl &incomingSoundPath, const QUrl &outgoingSoundPath) :
     settings(settings),
     tdLibWrapper(tdLibWrapper),
     mceInterface(view.data()),
@@ -47,7 +48,8 @@ MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view,
 #ifdef USE_CALLS
                         &callsManager,
 #endif
-                        appName, appIconPath, dbusPath, dbusServiceName, dbusInterface, useSignalActions),
+                        appName, appIconPath, dbusPath, dbusServiceName, dbusInterface, useSignalActions,
+                        incomingSoundPath, outgoingSoundPath),
     stickerManager(tdLibWrapper),
     knownUsersModel(tdLibWrapper, view.data()),
     knownUsersProxyModel(view.data()),
@@ -58,7 +60,9 @@ MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view,
 MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view,
                                                   const QString &appName = QGuiApplication::applicationName(), const QUrl &appIconPath,
                                                   const QString &dbusPath, const QString &dbusServiceName,
-                                                  bool useSignalActions, const QString &dbusInterface) {
+                                                  bool useSignalActions,
+                                                  const QUrl &incomingSoundPath, const QUrl &outgoingSoundPath,
+                                                  const QString &dbusInterface) {
     QQmlContext *context = view->rootContext();
 
     qmlRegisterType<TDLibFile>(uri, 1, 0, "TDLibFile");
@@ -87,7 +91,9 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     context->setContextProperty("utilities", utilities);
     qmlRegisterUncreatableType<Utilities>(uri, 1, 0, "Utilities", QString());
 
-    AppContext *appContext = new AppContext(view, tdLibWrapper, settings, utilities,appName, appIconPath, dbusPath, dbusServiceName, dbusInterface, useSignalActions);
+    AppContext *appContext = new AppContext(view, tdLibWrapper, settings, utilities,
+                                            appName, appIconPath, dbusPath, dbusServiceName, dbusInterface, useSignalActions,
+                                            incomingSoundPath, outgoingSoundPath);
 
     context->setContextProperty("chatFoldersModel", &appContext->chatFoldersModel);
     qmlRegisterUncreatableType<ChatFoldersModel>(uri, 1, 0, "ChatFoldersModel", QString());
