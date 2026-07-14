@@ -520,10 +520,13 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
                              ));
     nemoNotification->setRemoteActions(remoteActions);
 
+    // Don't show popup for currently open chat
+    if (activeChatId == notificationGroup->chatId && QGuiApplication::applicationState() == Qt::ApplicationActive)
+        needFeedback = false;
+
     nemoNotification->setHintValue(HINT_VIBRA, needFeedback);
 
-    // Don't show popup for currently open chat
-    if (!needFeedback || (activeChatId == notificationGroup->chatId && QGuiApplication::applicationState() == Qt::ApplicationActive)) {
+    if (needFeedback) {
         nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, true);
         nemoNotification->setHintValue(HINT_DISPLAY_ON, false);
         nemoNotification->setHintValue(HINT_VISIBILITY, QString());
@@ -533,9 +536,9 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         nemoNotification->setHintValue(HINT_VISIBILITY, VISIBILITY_PUBLIC);
         nemoNotification->setUrgency(Notification::Normal);
 
-        const bool doSuppressSound = !settings->notificationSoundsEnabled() && suppressSound;
-        nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, doSuppressSound);
-        if (!doSuppressSound && !soundFilePath.isEmpty())
+        suppressSound = !settings->notificationSoundsEnabled() && suppressSound;
+        nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, suppressSound);
+        if (!suppressSound && !soundFilePath.isEmpty())
             nemoNotification->setSound(soundFilePath);
     }
 
