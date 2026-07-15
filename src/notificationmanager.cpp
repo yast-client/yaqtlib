@@ -733,20 +733,27 @@ inline bool NotificationManager::useInChatNgf() const {
     return settings->inChatNgf() && QGuiApplication::applicationState() == Qt::ApplicationActive;
 }
 
+void NotificationManager::playInChatSound(const QString &soundPath) {
+    ngfInterface->play(DEFAULT, {{NGF_PROPERTY_SOUND_FILE, soundPath}});
+    ngfInterface->play(NGF_EVENT_VIBRA);
+}
+
+inline void NotificationManager::playInChatSound(bool incoming, const QVariantMap &) {
+    playInChatSound(incoming ? incomingSoundPath : outgoingSoundPath);
+}
+
 void NotificationManager::handleNewMessageReceived(qlonglong chatId, const QVariantMap &message) {
     if (useInChatNgf() && !incomingSoundPath.isEmpty()
             && !message.value("is_outgoing").toBool() && !message.contains("sending_state")
             && activeChatId == chatId && !tdLibWrapper->chatIsMuted(chatId)) {
         LOG("Playing incoming message NGF");
-        ngfInterface->play(DEFAULT, {{NGF_PROPERTY_SOUND_FILE, incomingSoundPath}});
-        ngfInterface->play(NGF_EVENT_VIBRA);
+        playInChatSound(true, message);
     }
 }
 
-void NotificationManager::handleMessageSendSucceeded(qlonglong chatId) {
+void NotificationManager::handleMessageSendSucceeded(qlonglong chatId, qlonglong, qlonglong, const QVariantMap &message) {
     if (useInChatNgf() && (activeChatId == chatId || forceInChatOutgoingNgf)) {
         LOG("Playing outgoing message NGF");
-        ngfInterface->play(DEFAULT, {{NGF_PROPERTY_SOUND_FILE, outgoingSoundPath}});
-        ngfInterface->play(NGF_EVENT_VIBRA);
+        playInChatSound(false, message);
     }
 }

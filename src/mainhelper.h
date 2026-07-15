@@ -27,32 +27,32 @@ namespace MainHelper {
     struct AppContext {
         Settings *settings;
         TDLibWrapper *tdLibWrapper;
-        MceInterface mceInterface;
+        MceInterface *mceInterface;
 #ifdef USE_CALLS
-        CallsManager callsManager;
+        CallsManager *callsManager;
 #endif
-        DBusAdaptor dbusAdaptor;
+        DBusAdaptor *dbusAdaptor;
         WaveformManager waveformManager;
         ChatFoldersModel chatFoldersModel;
-        NotificationManager notificationManager;
         StickerManager stickerManager;
         KnownUsersModel knownUsersModel;
         QSortFilterProxyModel knownUsersProxyModel;
         ContactsModel contactsModel;
         SuggestedActionsManager suggestedActionsManager;
 
-        AppContext(QSharedPointer<QQuickView> view,
-                   TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities,
-                   const QString &appName, const QUrl &appIconPath,
-                   const QString &dbusPath, const QString &dbusServiceName, const QString &dbusInterface, bool useSignalActions,
-                   const QUrl &incomingSoundPath, const QUrl &outgoingSoundPath);
+        AppContext(QSharedPointer<QQuickView> view, TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities);
     };
-    AppContext* registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view,
-                              const QString &appName, const QUrl &appIconPath = QUrl(),
-                              const QString &dbusPath = QString(), const QString &dbusServiceName = QString(),
-                              bool useSignalActions = false,
-                              const QUrl &incomingSoundPath = QUrl(), const QUrl &outgoingSoundPath = QUrl(),
-                              const QString &dbusInterface = "io.yaqtlib.default");
+
+    AppContext* registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view);
+
+    void registerNotificationManager(QSharedPointer<QQuickView> view, NotificationManager *manager);
+    NotificationManager *registerNotificationManager(QSharedPointer<QQuickView> view, const AppContext *appContext,
+                                                     const QString &appName, const QUrl &appIconPath = QUrl(),
+                                                     const QString &dbusPath = QString(), const QString &dbusServiceName = QString(),
+                                                     bool useSignalActions = false,
+                                                     const QUrl &incomingSoundPath = QUrl(), const QUrl &outgoingSoundPath = QUrl(),
+                                                     const QString &dbusInterface = "io.yaqtlib.default");
+
     inline void registerDebugLogJS(AppContext *context) {
         // Declare in header so definitions would not be ignored
         qmlRegisterSingletonType<DebugLogJS>(uri, 1, 0, "DebugLog", DebugLogJS::createSingleton);

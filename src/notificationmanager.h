@@ -51,13 +51,13 @@ private slots:
     void handleDefaultReactionTypeChanged();
     void updateNotificationForChat(qlonglong chatId, TDLibFile *chatPhotoFile = nullptr);
 
-    void handleNewMessageReceived(qlonglong chatId, const QVariantMap &message);
-    void handleMessageSendSucceeded(qlonglong chatId);
-
 #ifdef USE_CALLS
     void publishCallNotification(int callId, TDLibFile *chatPhotoFile = nullptr);
     void removeCallNotification(int id);
 #endif
+
+    void handleNewMessageReceived(qlonglong chatId, const QVariantMap &message);
+    void handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
 
 private:
     enum NotificationGroupType {
@@ -97,7 +97,11 @@ private:
 
     bool useInChatNgf() const;
 
-private:
+protected:
+    void playInChatSound(const QString &soundPath);
+    virtual void playInChatSound(bool incoming, const QVariantMap &message);
+
+protected:
     TDLibWrapper *tdLibWrapper;
     Settings *settings;
     MceInterface *mceInterface;
