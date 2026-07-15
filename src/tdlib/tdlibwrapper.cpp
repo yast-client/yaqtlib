@@ -625,7 +625,7 @@ void TDLibWrapper::sendStickerMessage(qlonglong chatId, const QString &fileId, q
     LOG("Sending sticker message" << chatId << fileId << replyToMessageId);
     sendMessage(chatId, replyToMessageId, topicId, {
                     {_TYPE, "inputMessageSticker"},
-                    {STICKER, QVariantMap{{_TYPE, "inputFileRemote"}, {ID, fileId}}}
+                    {STICKER, QVariantMap{{STICKER, QVariantMap{{_TYPE, "inputFileRemote"}, {ID, fileId}}}}}
                 });
 }
 
