@@ -1,5 +1,8 @@
-#ifndef TGS_IMAGE_IO_PLUGIN
-#define TGS_IMAGE_IO_PLUGIN
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-FileCopyrightText: 2020 Slava Monich et al
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
 
 #include <QStringList>
 #include <QImageIOPlugin>
@@ -60,5 +63,3 @@ public:
     Capabilities capabilities(QIODevice* device, const QByteArray& format) const Q_DECL_OVERRIDE;
     QImageIOHandler* create(QIODevice* device, const QByteArray& format) const Q_DECL_OVERRIDE;
 };
-
-#endif // TGS_IMAGE_IO_PLUGIN

@@ -1,3 +1,7 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-FileCopyrightText: 2020-2021 Slava Monich at al
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "tdlibfile.h"
 
 #define DEBUG_MODULE TDLibFile

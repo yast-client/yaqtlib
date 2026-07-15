@@ -1,3 +1,7 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-FileCopyrightText: 2020 Slava Monich et al
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
 #include <QLoggingCategory>

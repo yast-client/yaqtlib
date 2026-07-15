@@ -1,3 +1,7 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-FileCopyrightText: 2020-22 Sebastian J. Wolf and other contributors
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "tdlibwrapper.h"
 #include "tdlibsecrets.h"
 #include "utilities.h"

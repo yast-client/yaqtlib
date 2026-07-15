@@ -1,3 +1,6 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "userprofilepicturesmodel.h"
 #include "utilities.h"
 

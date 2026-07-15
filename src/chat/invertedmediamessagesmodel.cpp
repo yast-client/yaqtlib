@@ -1,11 +1,12 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "invertedmediamessagesmodel.h"
 
 #define DEBUG_MODULE InvertedMediaMessagesModel
 #include "debuglog.h"
 
-InvertedMediaMessagesModel::InvertedMediaMessagesModel(QObject *parent) : MediaMessagesModel(parent) {
-
-}
+InvertedMediaMessagesModel::InvertedMediaMessagesModel(QObject *parent) : MediaMessagesModel(parent) {}
 
 void InvertedMediaMessagesModel::handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds) {
     LOG("Messages were deleted in a chat" << chatId);

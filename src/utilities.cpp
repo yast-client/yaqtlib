@@ -1,3 +1,7 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-FileCopyrightText: 2020-21 Sebastian J. Wolf and other contributors
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "utilities.h"
 #include <QMap>
 #include <QVariant>

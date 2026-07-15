@@ -1,3 +1,6 @@
+//@ SPDX-FileCopyrightText: 2024-present roundedrectangle
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
 #include <QQuickItem>
@@ -71,7 +74,7 @@ private slots:
 private:
     QUrl source;
     QIODevice *device;
-    TgsIOHandler *handler;
+    TgsIOHandler *handler; // TODO/TBD: should we remove TgsIOHandler?
     QNetworkAccessManager *networkManager;
     QImage currentImage;
     QTimer nextImageTimer;
