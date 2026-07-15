@@ -226,8 +226,8 @@ void MediaMessagesModel::handleMessagesDeleted(qlonglong chatId, const QList<qlo
     }
 }
 
-void MediaMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message) {
-    JumpableMessagesModel::insertMessageInOrder(messageId, message);
+void MediaMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted) {
+    JumpableMessagesModel::insertMessageInOrder(messageId, message, inverted);
     if (maintainCount()) {
         this->totalCount++;
         emit totalCountChanged();

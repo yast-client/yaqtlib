@@ -51,7 +51,7 @@ protected:
 
     virtual void handlePrepareMessagesReceived(int totalCount, UpdateType fromUpdate);
 
-    virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message);
+    virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted = false);
     void fetchAndInsertMessage(qlonglong messageId);
 
 protected:

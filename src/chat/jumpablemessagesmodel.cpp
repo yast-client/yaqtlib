@@ -114,26 +114,28 @@ int JumpableMessagesModel::calculateScrollPosition() const {
     return this->messageIndexMap.value(this->highlightedMessageId, -1);
 }
 
-void JumpableMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message) {
+void JumpableMessagesModel::insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted) {
     // sponsored messages are not supported here
     LOG("Inserting a message in order" << messageId);
-    if (messageId > messages.last()->messageId) {
+    auto makeData = [messageId, message]() { return new MessageData(message, messageId); };
+
+    if (messages.isEmpty()) {
+        if (endReached && startReached)
+            appendMessages({makeData()});
+    } else if (messageId > (inverted ? messages.first() : messages.last())->messageId) {
         if (endReached)
-            appendMessages({new MessageData(message, messageId)});
-    } else if (messageId < messages.first()->messageId) {
+            appendMessages({makeData()});
+    } else if (messageId < (inverted ? messages.last() : messages.first())->messageId) {
         if (startReached)
-            prependMessages({new MessageData(message, messageId)});
-    } else {
-        for (int i=0; i < messages.length(); i++) {
-            if (messages.at(i)->messageId < messageId) {
-                beginInsertRows(QModelIndex(), i-1, i-1);
-                messages.insert(i-1, new MessageData(message, messageId));
-                messageIndexMap.insert(messageId, i);
-                endInsertRows();
+            prependMessages({makeData()});
+    } else
+        for (int i = 0; i < messages.length(); i++) {
+            qlonglong id = messages.at(i)->messageId;
+            if (inverted ? (id < messageId) : (id > messageId)) {
+                insertMessagesAt(i, {makeData()});
+                break;
             }
         }
-    }
-
 }
 
 void JumpableMessagesModel::fetchAndInsertMessage(qlonglong messageId) {

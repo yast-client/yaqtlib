@@ -53,7 +53,7 @@ protected:
     virtual void loadMoreFutureImpl() override;
     virtual void loadHistoryForMessageImpl(qlonglong messageId) override;
 
-    virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message) override;
+    virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted) override;
     virtual void removeMessage(qlonglong messageId) override;
 
 

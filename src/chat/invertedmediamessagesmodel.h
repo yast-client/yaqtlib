@@ -20,6 +20,13 @@ protected:
     inline virtual bool handleInsertMessages(const QVariantList &messages, QList<MessageData*> &newMessagesList, bool setAlbum = true, bool reverseOrder = true) override {
         return MediaMessagesModel::handleInsertMessages(messages, newMessagesList, setAlbum, true);
     }
+    inline virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted = true) override {
+        JumpableMessagesModel::insertMessageInOrder(messageId, message, true);
+        if (maintainCount()) {
+            this->totalCount++;
+            emit totalCountChanged();
+        }
+    }
 
 protected slots:
     virtual void handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds) override;
