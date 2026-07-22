@@ -45,6 +45,15 @@ void MediaMessagesModel::setSearchMessagesFilter(TDLibWrapper::SearchMessagesFil
     }
 }
 
+void MediaMessagesModel::setQuery(const QString &value) {
+    if (this->query != value) {
+        this->query = value;
+        LOG("Search query set" << value);
+        emit queryChanged();
+        // TODO: re-initialize the model
+    }
+}
+
 void MediaMessagesModel::setMaintainCount(bool maintainCount) {
     if (this->maintainCount() != maintainCount) {
         LOG("Toggling count maintenance" << maintainCount);
@@ -69,7 +78,7 @@ void MediaMessagesModel::loadMessagesWithLimit(int extra, qlonglong fromMessageI
         return;
     }
     LOG("Loading messages" << extra << fromMessageId << offset << limit);
-    this->tdLibWrapper->searchChatMessages(this->chatId, QString(), extra, fromMessageId, this->searchMessagesFilter, limit, offset);
+    this->tdLibWrapper->searchChatMessages(this->chatId, this->query, extra, fromMessageId, this->searchMessagesFilter, limit, offset);
 }
 
 void MediaMessagesModel::init(qlonglong chatId, qlonglong fromMessageId) {

@@ -9,6 +9,7 @@ class MediaMessagesModel : public JumpableMessagesModel {
     Q_OBJECT
     Q_PROPERTY(QObject* tdlib MEMBER tdLibWrapper WRITE setTDLibWrapper NOTIFY tdlibChanged)
     Q_PROPERTY(TDLibWrapper::SearchMessagesFilter filter MEMBER searchMessagesFilter WRITE setSearchMessagesFilter NOTIFY searchMessagesFilterChanged)
+    Q_PROPERTY(QString query MEMBER query WRITE setQuery NOTIFY queryChanged)
     Q_PROPERTY(bool maintainCount READ maintainCount WRITE setMaintainCount NOTIFY maintainCountChanged)
     Q_PROPERTY(int totalCount MEMBER totalCount NOTIFY totalCountChanged)
 public:
@@ -16,6 +17,7 @@ public:
 
     void setTDLibWrapper(QObject* obj);
     void setSearchMessagesFilter(TDLibWrapper::SearchMessagesFilter filter);
+    void setQuery(const QString &value);
     inline bool maintainCount() { return totalCount >= 0; }
     void setMaintainCount(bool maintainCount);
 
@@ -32,6 +34,7 @@ signals:
     void notEmptyDetected();
     void maintainCountChanged();
     void totalCountChanged();
+    void queryChanged();
 
 private slots:
     void handleChatMessageCountReceived(int count, qlonglong chatId, TDLibWrapper::SearchMessagesFilter filter, bool onlyLocal);
@@ -62,6 +65,7 @@ protected:
 
 
     TDLibWrapper::SearchMessagesFilter searchMessagesFilter = TDLibWrapper::SearchMessagesFilterEmpty;
+    QString query;
     int totalCount = -1;
 
     qlonglong nextFromMessageId = 0;
