@@ -148,8 +148,7 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
             const int groupId = notification->hintValue(HINT_GROUP_ID).toInt(&groupOk);
             const qlonglong chatId = notification->hintValue(HINT_CHAT_ID).toLongLong(&chatOk);
             const int totalCount = notification->hintValue(HINT_TOTAL_COUNT).toInt(&countOk);
-            const bool isCall = notification->hintValue(HINT_IS_CALL).toBool();
-            if (isCall) {
+            if (notification->hintValue(HINT_IS_CALL).toBool()) {
                 LOG("Closing old call notification");
                 notification->close();
             } else if (typeOk && groupOk && chatOk && countOk && !notificationGroups.contains(groupId)) {
@@ -251,24 +250,9 @@ void NotificationManager::updateNotificationGroup(const QVariantMap &type, int g
             notificationGroups.insert(groupId, notificationGroup =
                 QSharedPointer<NotificationGroup>(new NotificationGroup(groupType, groupId, chatId, totalCount, notification)));
 
-            connect(notification, &Notification::actionInvoked, [this, chatId, notificationGroup](const QString &actionName) {
-                if (!useSignalActions) return;
+            connect(notification, &Notification::actionInvoked, this, &NotificationManager::handleNotificationActionInvoked);
 
-                const QString chatIdString = QString::number(chatId);
-                const auto getMessageInfo = [notificationGroup]() {
-                    const QVariantMap message = notificationGroup->lastNotification().value(TYPE).toMap().value(MESSAGE).toMap();
-                    return QPair{message.value(ID).toString(), message.value(TOPIC_ID).toMap()};
-                };
-
-                if (actionName == ACTION_MARK_AS_READ) {
-                    QPair info = getMessageInfo();
-                    dbusAdaptor->markMessageAsRead(chatIdString, info.first, info.second);
-                } else if (actionName == ACTION_REACT) {
-                    QPair info = getMessageInfo();
-                    dbusAdaptor->reactToMessage(chatIdString, info.first, info.second);
-                } else if (actionName == ACTION_CLOSE)
-                    dbusAdaptor->closeSecretChat(chatIdString);
-            });
+            connect(notification, &Notification::closed, this, &NotificationManager::handleNotificationClosed);
         }
 
         for (const QVariant &notificationVariant : addedNotifications) {
@@ -352,24 +336,37 @@ void NotificationManager::handleUpdateNotification(int groupId, const QVariantMa
     }
 }
 
-void NotificationManager::updateNotificationForChat(qlonglong chatId, TDLibFile *chatPhotoFile) {
-    // Silently update notifications
+void NotificationManager::iterateNotificationGroupsForChat(qlonglong chatId, std::function<void(QSharedPointer<NotificationGroup>)> callback) {
     for (QSharedPointer<NotificationGroup> group : notificationGroups)
         if (group->chatId == chatId) {
-            LOG("Updating notification for group ID" << group->notificationGroupId);
-            publishNotification(group, false, false, QString(), chatPhotoFile);
+            callback(group);
             break;
         }
+}
 
 #ifdef USE_CALLS
+void NotificationManager::iterateCallNotificationsForChat(qlonglong chatId, std::function<void(int, Notification*)> callback) {
     for (int callId : callNotifications.keys())
         if (tdLibWrapper->getChatData(chatId)->isPrivateOrSecretChat()) {
             const QSharedPointer<CallsManager::Call> call = callsManager->getCall(callId);
-            if (call && call->userId == chatId) {
-                LOG("Updating call notification" << callId);
-                publishCallNotification(callId, chatPhotoFile);
-            }
+            if (call && call->userId == chatId)
+                callback(callId, callNotifications.value(callId));
         }
+}
+#endif
+
+void NotificationManager::updateNotificationForChat(qlonglong chatId) {
+    // Silently update notifications
+    LOG("Updating notifications for chat" << chatId);
+    iterateNotificationGroupsForChat(chatId, [this](QSharedPointer<NotificationGroup> group) {
+        LOG("Updating notification for group ID" << group->notificationGroupId);
+        publishNotification(group, false);
+    });
+
+#ifdef USE_CALLS
+    iterateCallNotificationsForChat(chatId, [this](int callId, Notification*) {
+        publishCallNotification(callId);
+    });
 #endif
 }
 
@@ -380,61 +377,75 @@ void NotificationManager::handleChatRolesUpdated(qlonglong chatId, const QVector
     }
 }
 
-void NotificationManager::fillChatNotificationFields(Notification *notification, const ChatData *chat, TDLibFile *chatPhotoFile) {
+static void setNotificationIcon(Notification *notification, const QString &filePath) {
+    QImage image(filePath);
+
+    QImage result(image.size(), QImage::Format_ARGB32_Premultiplied);
+    result.fill(Qt::transparent);
+
+    QPainter p(&result);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPainterPath clipPath;
+    clipPath.addEllipse(image.rect());
+
+    p.setClipPath(clipPath);
+    p.drawImage(0, 0, image);
+    p.end();
+
+    notification->setIconData(result);
+}
+
+static void disableNotificationFeedback(Notification *notification) {
+    notification->setHintValue(HINT_VIBRA, false);
+    notification->setHintValue(HINT_SUPPRESS_SOUND, true);
+    notification->setHintValue(HINT_DISPLAY_ON, false);
+    notification->setHintValue(HINT_VISIBILITY, QString());
+    notification->setUrgency(Notification::Low);
+}
+
+void NotificationManager::fillChatNotificationFields(Notification *notification, const ChatData *chat, bool updateChatPhoto) {
     notification->setSummary(utilities->getChatTitle(chat));
 
-    auto setIcon = [&](const QString &filePath) {
-        QImage image(filePath);
-
-        QImage result(image.size(), QImage::Format_ARGB32_Premultiplied);
-        result.fill(Qt::transparent);
-
-        QPainter p(&result);
-        p.setRenderHint(QPainter::Antialiasing, true);
-        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
-
-        QPainterPath clipPath;
-        clipPath.addEllipse(image.rect());
-
-        p.setClipPath(clipPath);
-        p.drawImage(0, 0, image);
-        p.end();
-
-        notification->setIconData(result);
-    };
-
-    if (chatPhotoFile)
-        setIcon(chatPhotoFile->getPath());
-    else if (chat) {
+    if (updateChatPhoto && chat) {
         const QVariantMap photoSmall = chat->photoSmall();
         if (!photoSmall.isEmpty()) {
             TDLibFile *file = new TDLibFile(tdLibWrapper, photoSmall, this);
 
             if (file->isDownloadingCompleted()) {
-                setIcon(file->getPath());
+                setNotificationIcon(notification, file->getPath());
 
                 delete file;
             } else if (file->canBeDownloaded() || file->isDownloadingActive()) {
-                LOG("Downloading chat photo");
+                LOG("Downloading chat photo" << chat->chatId << file->getId());
                 pendingChatPhotoChats.insert(file->getId(), chat->chatId);
                 connect(file, &TDLibFile::downloadingCompletedChanged, this, &NotificationManager::handleChatPhotoDownloadingCompletedChanged);
-                if (file->canBeDownloaded())
-                    file->load();
+                file->load();
             } else
                 delete file;
         }
     }
 }
 
-void NotificationManager::publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound, const QString &soundFilePath, TDLibFile *chatPhotoFile) {
+QVariant NotificationManager::remoteAction(const QString &name, const QString &displayName, const QString &method, const QVariantList &arguments, bool forceDbus) {
+    if (!forceDbus && useSignalActions)
+        return Notification::remoteAction(name, displayName);
+
+    return Notification::remoteAction(name, displayName,
+                                      dbusServiceName, dbusPath, dbusInterface,
+                                      method, arguments);
+}
+
+void NotificationManager::publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound, const QString &soundFilePath, bool updateChatPhoto) {
     const QVariantMap lastNotification = notificationGroup->lastNotification();
     const QVariantMap notificationType = lastNotification.value(TYPE).toMap();
     const ChatData *chat = tdLibWrapper->getChatData(notificationGroup->chatId);
 
     Notification *nemoNotification = notificationGroup->nemoNotification;
-    fillChatNotificationFields(nemoNotification, chat, chatPhotoFile);
+    fillChatNotificationFields(nemoNotification, chat, updateChatPhoto);
 
-    nemoNotification->setTimestamp(QDateTime::fromMSecsSinceEpoch(lastNotification.value(DATE).toLongLong() * 1000));
+    nemoNotification->setTimestamp(QDateTime::fromTime_t(lastNotification.value(DATE).toInt()));
     nemoNotification->setItemCount(notificationGroup->totalCount);
     nemoNotification->setResident(true); // FIXME: decide if this is really needed
 
@@ -445,11 +456,8 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
     case NotificationGroupTypeSecretChat:
         nemoNotification->setBody(tr("This secret chat was created", "Notification"));
 
-        remoteActions.append(Notification::remoteAction(
-                                 useSignalActions ? ACTION_CLOSE : "", tr("Close", "Notification button for closing a newly created secret chat"),
-                                 useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
-                                 "closeSecretChat", remoteActionArguments
-                                 ));
+        remoteActions.append(remoteAction(ACTION_CLOSE, tr("Close", "Notification button for closing a newly created secret chat"),
+                                          "closeSecretChat", remoteActionArguments));
         break;
     case NotificationGroupTypeMessages:
     case NotificationGroupTypeMentions:
@@ -476,17 +484,13 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
             message.value(TOPIC_ID).toMap()
         };
 
-        remoteActions.append(Notification::remoteAction(
-                                 ACTION_MARK_AS_READ, tr("Read", "Shorter version of 'Mark as read' for a notification button. The buttons must fit on a single line."),
-                                 useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
-                                 "markMessageAsRead", remoteActionArguments
-                                 ));
+        remoteActions.append(remoteAction(ACTION_MARK_AS_READ, tr("Read", "Shorter version of 'Mark as read' for a notification button. The buttons must fit on a single line."),
+                                          "markMessageAsRead", remoteActionArguments));
 
         if (showPreview && !chat->isChannel()) {
-            // Ignore useSignalBasedActions here
-            QVariantMap replyAction = Notification::remoteAction(ACTION_REPLY, tr("Reply", "Shorter version for a notification button. The buttons must fit on a single line."),
-                                                                dbusServiceName, dbusPath, dbusInterface,
-                                                                "replyToMessage", remoteActionArguments).toMap();
+            // Ignore useSignalActions here
+            QVariantMap replyAction = remoteAction(ACTION_REPLY, tr("Reply", "Shorter version for a notification button. The buttons must fit on a single line."),
+                                                   "replyToMessage", remoteActionArguments, true).toMap();
             // See https://github.com/sailfishos/nemo-qml-plugin-notifications/blob/d4d0a0ce8257b90293b8df469830f0e288faeeae/src/notification.cpp#L213
             replyAction.insert(TYPE, "input");
 
@@ -497,11 +501,8 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
             const QVariantMap reactionType = tdLibWrapper->getDefaultReactionType();
             // TODO: hide action if already reacted or add indication that the reaction is already set to allow unreacting
             if (reactionType.value(_TYPE).toString() == "reactionTypeEmoji")
-                remoteActions.append(Notification::remoteAction(
-                                         ACTION_REACT, reactionType.value("emoji").toString(),
-                                         useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
-                                         "reactToMessage", remoteActionArguments
-                                         ));
+                remoteActions.append(remoteAction(ACTION_REACT, reactionType.value("emoji").toString(),
+                                                  "reactToMessage", remoteActionArguments));
         }
 
         break;
@@ -525,21 +526,16 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         nemoNotification->setSummary(summary.arg(nemoNotification->summary()));
     }
 
-    // Ignore useSignalBasedActions here
-    remoteActions.append(Notification::remoteAction(
-                             DEFAULT, "",
-                             dbusServiceName, dbusPath, dbusInterface,
-                             "openMessage", remoteActionArguments
-                             ));
+    // Ignore useSignalActions here
+    remoteActions.append(remoteAction(DEFAULT, QString(), "openMessage", remoteActionArguments, true));
     nemoNotification->setRemoteActions(remoteActions);
 
     // Don't show popup for currently open chat
     if (activeChatId == notificationGroup->chatId && QGuiApplication::applicationState() == Qt::ApplicationActive)
         needFeedback = false;
 
-    nemoNotification->setHintValue(HINT_VIBRA, needFeedback);
-
     if (needFeedback) {
+        nemoNotification->setHintValue(HINT_VIBRA, true);
         nemoNotification->setHintValue(HINT_DISPLAY_ON, settings->notificationTurnsDisplayOn());
         nemoNotification->setHintValue(HINT_VISIBILITY, VISIBILITY_PUBLIC);
         nemoNotification->setUrgency(Notification::Normal);
@@ -548,12 +544,8 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, suppressSound);
         if (!suppressSound && !soundFilePath.isEmpty())
             nemoNotification->setSound(soundFilePath);
-    } else {
-        nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, true);
-        nemoNotification->setHintValue(HINT_DISPLAY_ON, false);
-        nemoNotification->setHintValue(HINT_VISIBILITY, QString());
-        nemoNotification->setUrgency(Notification::Low);
-    }
+    } else
+        disableNotificationFeedback(nemoNotification);
 
     nemoNotification->publish();
 }
@@ -567,9 +559,23 @@ void NotificationManager::handleChatPhotoDownloadingCompletedChanged() {
         LOG("Chat photo downloaded for chat" << chatId << file->getId());
 
         const ChatData *chat = tdLibWrapper->getChatData(chatId);
-        if (chat && chat->photoSmall().value(ID).toLongLong() == file->getId())
-            updateNotificationForChat(chatId, file);
-        else
+        if (chat && chat->photoSmall().value(ID).toLongLong() == file->getId()) {
+            iterateNotificationGroupsForChat(chatId, [file](QSharedPointer<NotificationGroup> group) {
+                LOG("Updating chat photo for group ID" << group->notificationGroupId);
+                setNotificationIcon(group->nemoNotification, file->getPath());
+                disableNotificationFeedback(group->nemoNotification);
+                group->nemoNotification->publish();
+            });
+
+#ifdef USE_CALLS
+            iterateCallNotificationsForChat(chatId, [file](int callId, Notification *notification) {
+                LOG("Updating call notification chat photo" << callId);
+                setNotificationIcon(notification, file->getPath());
+                notification->publish();
+
+            });
+#endif
+        } else
             LOG("Chat not found or photo changed while downloading");
     }
 
@@ -591,11 +597,50 @@ void NotificationManager::handleDefaultReactionTypeChanged() {
     }
 }
 
+void NotificationManager::handleNotificationActionInvoked(const QString &actionName) {
+    if (!useSignalActions) return;
+
+    const Notification *notification = qobject_cast<Notification*>(QObject::sender());
+    const QString chatIdString = notification->hintValue(HINT_CHAT_ID).toString();
+    const QSharedPointer<NotificationGroup> group = notificationGroups.value(notification->hintValue(HINT_GROUP_ID).toInt());
+    if (chatIdString.isEmpty() || !group)
+        return;
+
+    const auto getMessageInfo = [group]() {
+        const QVariantMap message = group->lastNotification().value(TYPE).toMap().value(MESSAGE).toMap();
+        return QPair{message.value(ID).toString(), message.value(TOPIC_ID).toMap()};
+    };
+
+    LOG("Notification action invoked" << group->notificationGroupId << chatIdString << actionName);
+    if (actionName == ACTION_MARK_AS_READ) {
+        QPair info = getMessageInfo();
+        dbusAdaptor->markMessageAsRead(chatIdString, info.first, info.second);
+    } else if (actionName == ACTION_REACT) {
+        QPair info = getMessageInfo();
+        dbusAdaptor->reactToMessage(chatIdString, info.first, info.second);
+    } else if (actionName == ACTION_CLOSE)
+        dbusAdaptor->closeSecretChat(chatIdString);
+}
+
+void NotificationManager::handleNotificationClosed(uint reason) {
+    if (reason == Notification::DismissedByUser) {
+        const Notification *notification = qobject_cast<Notification*>(QObject::sender());
+        const QSharedPointer<NotificationGroup> group = notificationGroups.value(notification->hintValue(HINT_GROUP_ID).toInt());
+        if (!group)
+            return;
+
+        LOG("Notification dismissed by user");
+        tdLibWrapper->removeNotificationGroup(group->notificationGroupId, group->lastNotification().value(ID).toInt());
+    }
+}
+
 #ifdef USE_CALLS
 // Do not use notificationGroupTypeCalls so adding group calls support would be easier
-void NotificationManager::publishCallNotification(int callId, TDLibFile *chatPhotoFile) {
+void NotificationManager::publishCallNotification(int callId) {
     LOG("Publishing call notification" << callId);
     const QSharedPointer<CallsManager::Call> call = callsManager->getCall(callId);
+    if (!call) return;
+
     Notification *notification = callNotifications.value(callId);
     if (!notification) {
         callNotifications.insert(callId, notification = new Notification(this));
@@ -614,27 +659,15 @@ void NotificationManager::publishCallNotification(int callId, TDLibFile *chatPho
     }
 
     // TODO: ideally only handle user data & updates for call notifications
-    fillChatNotificationFields(notification, tdLibWrapper->getChatData(call->userId), chatPhotoFile);
+    fillChatNotificationFields(notification, tdLibWrapper->getChatData(call->userId));
     notification->setBody(call->video ? tr("Incoming video call", "notification") : tr("Incoming call", "notification"));
 
     const QVariantList arguments{callId};
     notification->setRemoteActions({
         // TODO: open a fullscreen call UI when clicking whole notification
-        /*Notification::remoteAction(
-            DEFAULT, "",
-            dbusServiceName, dbusPath, dbusInterface,
-            "openCall", remoteActionArguments
-        ),*/
-        Notification::remoteAction(
-            ACTION_ACCEPT, tr("Accept", "Accept a call"),
-            useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
-            "acceptCall", arguments
-        ),
-        Notification::remoteAction(
-            ACTION_DISCARD, tr("Decline", "Decline a call"),
-            useSignalActions ? "" : dbusServiceName, dbusPath, dbusInterface,
-            "discardCall", arguments
-        )
+        //remoteAction(DEFAULT, QString(), "openCall", arguments, true),
+        remoteAction(ACTION_ACCEPT, tr("Accept", "Accept a call"), "acceptCall", arguments),
+        remoteAction(ACTION_DISCARD, tr("Decline", "Decline a call"), "discardCall", arguments)
     });
 
     notification->publish();
@@ -679,31 +712,14 @@ void NotificationManager::controlCallState(bool enabled) {
     mceInterface->setLedPattern(PATTERN, enabled);
 }
 
-void NotificationManager::setUseSignalActions(bool value) {
-    if (this->useSignalActions != value) {
+void NotificationManager::setUseSignalActions(bool value, bool force) {
+    if (force || this->useSignalActions != value) {
         LOG("Toggling usage of signal actions" << value);
+        this->useSignalActions = value;
 
         for (QSharedPointer<NotificationGroup> group : notificationGroups) {
             LOG("Updating notification group" << group->notificationGroupId);
-            QVariantList newActions;
-            for (const QVariant &actionVariant : group->nemoNotification->remoteActions()) {
-                QVariantMap action = actionVariant.toMap();
-                const QString actionName = action.value(QStringLiteral("name")).toString();
-
-                if (actionName != DEFAULT && actionName != ACTION_REPLY)
-                    action.insert(QStringLiteral("service"), useSignalActions ? "" : dbusServiceName);
-                newActions.append(action);
-            }
-            group->nemoNotification->setRemoteActions(newActions);
-
-            // Disable feedback
-            group->nemoNotification->setHintValue(HINT_VIBRA, false);
-            group->nemoNotification->setHintValue(HINT_SUPPRESS_SOUND, true);
-            group->nemoNotification->setHintValue(HINT_DISPLAY_ON, false);
-            group->nemoNotification->setHintValue(HINT_VISIBILITY, QString());
-            group->nemoNotification->setUrgency(Notification::Low);
-
-            group->nemoNotification->publish();
+            publishNotification(group, false, false, QString(), false);
         }
     }
 }
@@ -729,7 +745,7 @@ void NotificationManager::setForceInChatOutgoingNgf(bool value) {
     if (forceInChatOutgoingNgf != value) {
         LOG("Toggling forced in-chat outgoing NGF" << value);
         forceInChatOutgoingNgf = value;
-        forceInChatOutgoingNgfChanged();
+        emit forceInChatOutgoingNgfChanged();
     }
 }
 

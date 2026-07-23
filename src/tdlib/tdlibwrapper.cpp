@@ -137,6 +137,7 @@ namespace {
     const QString CLEAR_DRAFT("clear_draft");
     const QString CODE("code");
     const QString TYPE_GET_MESSAGE("getMessage");
+    const QString NOTIFICATION_GROUP_ID("notification_group_id");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -3460,4 +3461,22 @@ void TDLibWrapper::processError(const QVariantMap &error) {
 void TDLibWrapper::unpinAllChatMessages(qlonglong chatId) {
     LOG("Unpinning all chat messages" << chatId);
     sendRequest({{_TYPE, "unpinAllChatMessages"}, {CHAT_ID, chatId}});
+}
+
+void TDLibWrapper::removeNotification(int groupId, int id) {
+    LOG("Removing notification" << groupId << id);
+    sendRequest({
+        {_TYPE, "removeNotification"},
+        {NOTIFICATION_GROUP_ID, groupId},
+        {"notification_id", id}
+    });
+}
+
+void TDLibWrapper::removeNotificationGroup(int groupId, int maxNotificationId) {
+    LOG("Removing notification group" << groupId << "max notification ID" << maxNotificationId);
+    sendRequest({
+        {_TYPE, "removeNotificationGroup"},
+        {NOTIFICATION_GROUP_ID, groupId},
+        {"max_notification_id", maxNotificationId}
+    });
 }

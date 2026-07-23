@@ -463,6 +463,8 @@ public:
     Q_INVOKABLE void getAndOpenSupportUser();
     void processError(const QVariantMap &error);
     Q_INVOKABLE void unpinAllChatMessages(qlonglong chatId);
+    Q_INVOKABLE void removeNotification(int groupId, int id);
+    Q_INVOKABLE void removeNotificationGroup(int groupId, int maxNotificationId);
 
 public:
     const Group* getGroup(qlonglong groupId) const;

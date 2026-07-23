@@ -36,7 +36,7 @@ public:
     ~NotificationManager() override;
 
     void setActiveChatId(qlonglong chatId);
-    void setUseSignalActions(bool value);
+    void setUseSignalActions(bool value, bool force = false);
     void setEnableNgfCallsRingtone(bool value);
     void setForceInChatOutgoingNgf(bool value);
 
@@ -53,10 +53,12 @@ private slots:
     void handleChatPhotoDownloadingCompletedChanged();
     void updateAllNotifications();
     void handleDefaultReactionTypeChanged();
-    void updateNotificationForChat(qlonglong chatId, TDLibFile *chatPhotoFile = nullptr);
+    void updateNotificationForChat(qlonglong chatId);
+    void handleNotificationActionInvoked(const QString &actionName);
+    void handleNotificationClosed(uint reason);
 
 #ifdef USE_CALLS
-    void publishCallNotification(int callId, TDLibFile *chatPhotoFile = nullptr);
+    void publishCallNotification(int callId);
     void removeCallNotification(int id);
 #endif
 
@@ -74,7 +76,6 @@ private:
 
     struct NotificationGroup {
         NotificationGroup(NotificationGroupType type, int groupId, qlonglong chatId, int count, Notification *notification);
-        NotificationGroup(Notification *notification);
         ~NotificationGroup();
 
         QVariantMap lastNotification() const;
@@ -89,9 +90,14 @@ private:
     };
 
     void fillBasicNotificationFields(Notification *notification) const;
-    void fillChatNotificationFields(Notification *notification, const ChatData *chat, TDLibFile *chatPhotoFile);
+    void fillChatNotificationFields(Notification *notification, const ChatData *chat, bool updateChatPhoto = true);
+    void iterateNotificationGroupsForChat(qlonglong chatId, std::function<void(QSharedPointer<NotificationGroup>)> callback);
+#ifdef USE_CALLS
+    void iterateCallNotificationsForChat(qlonglong chatId, std::function<void(int, Notification*)> callback);
+#endif
+    QVariant remoteAction(const QString &name, const QString &displayName, const QString &method, const QVariantList &arguments, bool forceDbus = false);
 
-    void publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound = false, const QString &soundFilePath = QString(), TDLibFile *chatPhotoFile = nullptr);
+    void publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound = false, const QString &soundFilePath = QString(), bool updateChatPhoto = true);
     void controlLedNotification(bool enabled) const;
     void controlCallState(bool enabled);
     void updateNotificationGroup(const QVariantMap &type, int groupId, qlonglong chatId, int totalCount,
@@ -121,10 +127,10 @@ protected:
     QString dbusServiceName;
     QString dbusInterface;
     bool useSignalActions;
-    QMap<int, QSharedPointer<NotificationGroup>> notificationGroups;
+    QHash<int, QSharedPointer<NotificationGroup>> notificationGroups;
     QString appIconFile;
     qlonglong activeChatId = 0;
-    QMap<int, qlonglong> pendingChatPhotoChats;
+    QHash<int, qlonglong> pendingChatPhotoChats;
     bool enableNgfCallsRingtone = false;
     bool forceInChatOutgoingNgf = false;
     QString incomingSoundPath, outgoingSoundPath;
