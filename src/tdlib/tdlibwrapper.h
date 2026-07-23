@@ -82,14 +82,6 @@ public:
     };
     Q_ENUM(ChatMemberStatus)
 
-    enum SecretChatState {
-        SecretChatStateUnknown,
-        SecretChatStateClosed,
-        SecretChatStatePending,
-        SecretChatStateReady,
-    };
-    Q_ENUM(SecretChatState)
-
     enum UserPrivacySetting {
         SettingAllowChatInvites,
         SettingAllowFindingByPhoneNumber,
@@ -242,7 +234,7 @@ public:
     ChatData* getChatData(qlonglong chatId);
     ChatData* getExistingChatData(qlonglong chatId);
     ChatData* getChatDataForce(qlonglong chatId);
-    Q_INVOKABLE QVariantMap getSecretChatFromCache(qlonglong secretChatId);
+    Q_INVOKABLE QVariantMap getSecretChat(qlonglong secretChatId);
     Q_INVOKABLE QStringList getChatReactions(qlonglong chatId);
     QVariant getOption(const QString &optionName);
     Q_INVOKABLE void copyFileToDownloads(qlonglong fileId, const QString &filePath, bool openAfterCopy = false);
@@ -347,7 +339,6 @@ public:
     Q_INVOKABLE void joinChatByInviteLink(const QString &inviteLink, bool isChannel = false);
     Q_INVOKABLE void getDeepLinkInfo(const QString &link);
     Q_INVOKABLE void getContacts();
-    Q_INVOKABLE void getSecretChat(qlonglong secretChatId);
     Q_INVOKABLE void closeSecretChat(int secretChatId);
     Q_INVOKABLE void importContacts(const QVariantList &contacts, bool single = false);
     Q_INVOKABLE void addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, bool sharePhoneNumber);
@@ -477,7 +468,6 @@ public:
     const Group* getGroup(qlonglong groupId) const;
     static ChatType chatTypeFromString(const QString &type);
     static ChatMemberStatus chatMemberStatusFromString(const QString &status);
-    static SecretChatState secretChatStateFromString(const QString &state);
 
 signals:
     void myUserIdUpdated();
@@ -540,7 +530,7 @@ signals:
     void sponsoredChatsReceived(const QVariantList &chats);
     void chatReceived(const QVariantMap &chat);
     void secretChatReceived(qlonglong secretChatId, const QVariantMap &secretChat);
-    void secretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat);
+    void secretChatUpdated(qlonglong secretChatId);
     void recentStickersUpdated(bool isAttached, const QList<int> &stickerIds);
     void recentStickersReceived(const QVariantList &stickers);
     void favoriteStickersUpdated(const QList<int> &stickerIds);

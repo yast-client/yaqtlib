@@ -32,7 +32,6 @@ public:
         RoleLastMessageSendingState,
         RoleLastMessageIsOutgoing,
         RoleChatMemberStatus,
-        RoleSecretChatState,
         RoleVerificationStatus,
         RoleIsChannel,
         RoleIsMarkedAsUnread,
@@ -90,7 +89,6 @@ public:
     bool updateLastReadOutboxMessageId(qlonglong messageId);
     QVector<int> updateLastMessage(const QVariantMap &message);
     QVector<int> updateGroup(const TDLibWrapper::Group *group);
-    QVector<int> updateSecretChat(const QVariantMap &secretChatDetails);
 
 public:
     QVariantMap chatData;
@@ -99,6 +97,5 @@ public:
     QVariantMap verificationStatus;
     TDLibWrapper::ChatType chatType;
     TDLibWrapper::ChatMemberStatus memberStatus;
-    TDLibWrapper::SecretChatState secretChatState;
     QHash<TDLibWrapper::MessageSender, ChatAction> chatActions;
 };

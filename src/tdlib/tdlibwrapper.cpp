@@ -1130,11 +1130,6 @@ void TDLibWrapper::getContacts() {
     this->sendRequest(QVariantMap{{_TYPE, "getContacts"}, {_EXTRA, "contactsRequested"}});
 }
 
-void TDLibWrapper::getSecretChat(qlonglong secretChatId) {
-    LOG("Getting detailed information about secret chat" << secretChatId);
-    this->sendRequest(QVariantMap{{_TYPE, "getSecretChat"}, {SECRET_CHAT_ID, secretChatId}});
-}
-
 void TDLibWrapper::closeSecretChat(int secretChatId) {
     LOG("Closing secret chat" << secretChatId);
     this->sendRequest(QVariantMap{{_TYPE, "closeSecretChat"}, {SECRET_CHAT_ID, secretChatId}});
@@ -1732,7 +1727,7 @@ QStringList TDLibWrapper::getChatReactions(qlonglong chatId) {
     }
 }
 
-QVariantMap TDLibWrapper::getSecretChatFromCache(qlonglong secretChatId) {
+QVariantMap TDLibWrapper::getSecretChat(qlonglong secretChatId) {
     return this->secretChats.value(secretChatId);
 }
 
@@ -2172,17 +2167,7 @@ void TDLibWrapper::handleSecretChatReceived(qlonglong secretChatId, const QVaria
 
 void TDLibWrapper::handleSecretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat) {
     this->secretChats.insert(secretChatId, secretChat);
-
-    for (ChatData *chat : this->chats) {
-        if (chat->chatType != TDLibWrapper::ChatTypeSecret) continue;
-        if (chat->chatData.value(TYPE).toMap().value(SECRET_CHAT_ID).toLongLong() != secretChatId) continue;
-
-        const QVector<int> changedRoles = chat->updateSecretChat(secretChat);
-        if (!changedRoles.isEmpty())
-            emit chatRolesUpdated(chat->chatId, changedRoles);
-    }
-
-    emit secretChatUpdated(secretChatId, secretChat);
+    emit secretChatUpdated(secretChatId);
 }
 
 void TDLibWrapper::handleStorageOptimizerChanged() {
@@ -2444,13 +2429,6 @@ TDLibWrapper::ChatMemberStatus TDLibWrapper::chatMemberStatusFromString(const QS
         (status == QStringLiteral("chatMemberStatusRestricted")) ? ChatMemberStatusRestricted :
         (status == QStringLiteral("chatMemberStatusBanned")) ?  ChatMemberStatusBanned :
                                                                 ChatMemberStatusUnknown;
-}
-
-TDLibWrapper::SecretChatState TDLibWrapper::secretChatStateFromString(const QString &state) {
-    return (state == QStringLiteral("secretChatStateClosed")) ? SecretChatStateClosed :
-        (state == QStringLiteral("secretChatStatePending")) ? SecretChatStatePending :
-        (state == QStringLiteral("secretChatStateReady")) ? SecretChatStateReady :
-        SecretChatStateUnknown;
 }
 
 TDLibWrapper::ChatMemberStatus TDLibWrapper::Group::chatMemberStatus() const {

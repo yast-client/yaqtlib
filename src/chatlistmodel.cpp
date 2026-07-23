@@ -142,7 +142,6 @@ QHash<int,QByteArray> ChatListModel::roleNames() const {
         {ChatData::RoleLastMessageSendingState, "last_message_sending_state"},
         {ChatData::RoleLastMessageIsOutgoing, "last_message_is_outgoing"},
         {ChatData::RoleChatMemberStatus, "chat_member_status"},
-        {ChatData::RoleSecretChatState, "secret_chat_state"},
         {ChatData::RoleVerificationStatus, "verification_status"},
         {ChatData::RoleIsChannel, "is_channel"},
         {ChatData::RoleIsMarkedAsUnread, "is_marked_as_unread"},
@@ -187,7 +186,6 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const {
         case ChatData::RoleLastMessageSendingState: return data->data->lastMessageSendingState();
         case ChatData::RoleLastMessageIsOutgoing: return data->data->lastMessageIsOutgoing();
         case ChatData::RoleChatMemberStatus: return data->data->memberStatus;
-        case ChatData::RoleSecretChatState: return data->data->secretChatState;
         case ChatData::RoleVerificationStatus: return data->data->verificationStatus;
         case ChatData::RoleIsChannel: return data->data->isChannel();
         case ChatData::RoleIsMarkedAsUnread: return data->data->isMarkedAsUnread();

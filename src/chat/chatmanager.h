@@ -67,6 +67,7 @@ class ChatManager : public QObject {
     Q_PROPERTY(TDLibWrapper::ChatType chatType READ chatType NOTIFY chatInformationChanged)
     Q_PROPERTY(bool isChannel READ isChannel NOTIFY chatInformationChanged)
     Q_PROPERTY(QVariant userInfo READ userInfo NOTIFY userInfoChanged)
+    Q_PROPERTY(QVariant secretChatInfo READ secretChatInfo NOTIFY secretChatInfoChanged)
     Q_PROPERTY(QVariant groupInfo READ groupInfo NOTIFY groupInfoChanged)
     Q_PROPERTY(bool isBot READ isBot NOTIFY userInfoChanged)
 
@@ -107,6 +108,7 @@ public:
     TDLibWrapper::ChatType chatType() const;
     bool isChannel() const;
     QVariant userInfo() const;
+    QVariant secretChatInfo() const;
     QVariant groupInfo() const;
     bool isBot() const;
 
@@ -135,6 +137,7 @@ signals:
     void chatInformationChanged();
     void viewAsTopicsChanged();
     void userInfoChanged();
+    void secretChatInfoChanged();
     void groupInfoChanged();
 
     void photoChanged();
@@ -148,6 +151,7 @@ private slots:
     void handleChatRolesUpdated(qlonglong chatId, const QVector<int> changedRoles = QVector<int>());
     void handleChatPendingJoinRequestsUpdated(qlonglong chatId);
     void handleUserUpdated(qlonglong userId);
+    void handleSecretChatUpdated(qlonglong secretChatId);
     void handleBasicGroupUpdated(qlonglong groupId);
     void handleSupergroupUpdated(qlonglong groupId);
     void handleSponsoredMessagesReceived(qlonglong chatId, const QVariantList &sponsoredMessages, int messagesBetween);
@@ -155,6 +159,7 @@ private slots:
 
 private:
     qlonglong userId() const;
+    qlonglong secretChatId() const;
     qlonglong groupId() const;
 
     inline ChatData* getChatData() const {

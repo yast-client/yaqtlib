@@ -10,19 +10,10 @@
 namespace {
     const QString _TYPE("@type");
     const QString ID("id");
-    const QString SMALL("small");
-    const QString USER_ID("user_id");
-    const QString CHAT_ID("chat_id");
-    const QString PHOTO("photo");
     const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
     const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-    const QString LAST_MESSAGE("last_message");
     const QString TYPE("type");
-    const QString IS_CHANNEL("is_channel");
-    const QString BASIC_GROUP_ID("basic_group_id");
-    const QString SUPERGROUP_ID("supergroup_id");
     const QString MESSAGE_ID("message_id");
-    const QString TYPE_USER_TYPE_BOT("userTypeBot");
 }
 
 ChatMessagesModel::ChatMessagesModel(TDLibWrapper *tdLibWrapper, qlonglong chatId, QObject *parent)
@@ -71,7 +62,7 @@ qlonglong ChatMessagesModel::lastReadOutboxMessageId() const {
     return qobject_cast<ChatManager*>(parent())->chatInformation().value(LAST_READ_OUTBOX_MESSAGE_ID).toLongLong();
 }
 qlonglong ChatMessagesModel::lastMessageId() const {
-    return qobject_cast<ChatManager*>(parent())->chatInformation().value(LAST_MESSAGE).toMap().value(ID).toLongLong();
+    return qobject_cast<ChatManager*>(parent())->chatInformation().value("last_message").toMap().value(ID).toLongLong();
 }
 
 void ChatMessagesModel::handleNewMessageReceived(qlonglong chatId, const QVariantMap &message) {
@@ -237,6 +228,7 @@ ChatManager::ChatManager(QObject *parent)
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::chatInformationChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::viewAsTopicsChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::userInfoChanged);
+    connect(this, &ChatManager::chatIdChanged, this, &ChatManager::secretChatInfoChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::groupInfoChanged);
 }
 
@@ -254,6 +246,7 @@ void ChatManager::setTDLibWrapper(QObject *obj) {
         if (tdLibWrapper) {
             connect(this->tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &ChatManager::handleChatRolesUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::userUpdated, this, &ChatManager::handleUserUpdated);
+            connect(this->tdLibWrapper, &TDLibWrapper::secretChatUpdated, this, &ChatManager::handleSecretChatUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::basicGroupUpdated, this, &ChatManager::handleBasicGroupUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::supergroupUpdated, this, &ChatManager::handleSupergroupUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatManager::handleSponsoredMessagesReceived);
@@ -308,21 +301,31 @@ TDLibWrapper::ChatType ChatManager::chatType() const {
 }
 
 bool ChatManager::isChannel() const {
-    return chatType() == TDLibWrapper::ChatTypeSupergroup && chatInformation().value(TYPE).toMap().value(IS_CHANNEL).toBool();
+    return chatType() == TDLibWrapper::ChatTypeSupergroup && chatInformation().value(TYPE).toMap().value("is_channel").toBool();
 }
 
 qlonglong ChatManager::userId() const {
-    return chatInformation().value(TYPE).toMap().value(USER_ID).toLongLong();
+    return chatInformation().value(TYPE).toMap().value("user_id").toLongLong();
+}
+
+qlonglong ChatManager::secretChatId() const {
+    return chatInformation().value(TYPE).toMap().value("secret_chat_id").toLongLong();
 }
 
 qlonglong ChatManager::groupId() const {
-    return chatInformation().value(TYPE).toMap().value(chatType() == TDLibWrapper::ChatTypeSupergroup ? SUPERGROUP_ID : BASIC_GROUP_ID).toLongLong();
+    return chatInformation().value(TYPE).toMap().value(chatType() == TDLibWrapper::ChatTypeSupergroup ? "supergroup_id" : "basic_group_id").toLongLong();
 }
 
 QVariant ChatManager::userInfo() const {
     const TDLibWrapper::ChatType type = chatType();
     if (type == TDLibWrapper::ChatTypePrivate || type == TDLibWrapper::ChatTypeSecret)
-        return tdLibWrapper->getUserInformation(this->userId());
+        return tdLibWrapper->getUserInformation(userId());
+    return QVariant();
+}
+
+QVariant ChatManager::secretChatInfo() const {
+    if (chatType() == TDLibWrapper::ChatTypeSecret)
+        return tdLibWrapper->getSecretChat(secretChatId());
     return QVariant();
 }
 
@@ -336,12 +339,17 @@ QVariant ChatManager::groupInfo() const {
 }
 
 bool ChatManager::isBot() const {
-    return userInfo().toMap().value(TYPE).toMap().value(_TYPE).toString() == TYPE_USER_TYPE_BOT;
+    return userInfo().toMap().value(TYPE).toMap().value(_TYPE).toString() == "userTypeBot";
 }
 
 void ChatManager::handleUserUpdated(qlonglong userId) {
     if (this->userId() == userId)
         emit userInfoChanged();
+}
+
+void ChatManager::handleSecretChatUpdated(qlonglong secretChatId) {
+    if (this->secretChatId() == secretChatId)
+        emit secretChatInfoChanged();
 }
 
 void ChatManager::handleBasicGroupUpdated(qlonglong groupId) {

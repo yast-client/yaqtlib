@@ -41,8 +41,7 @@ ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVari
     BaseMessagableData(tdLibWrapper, utilities),
     chatId(data.value(ID).toLongLong()),
     groupId(0),
-    memberStatus(TDLibWrapper::ChatMemberStatusUnknown),
-    secretChatState(TDLibWrapper::SecretChatStateUnknown)
+    memberStatus(TDLibWrapper::ChatMemberStatusUnknown)
 {
     this->updateChatData(data);
 }
@@ -52,8 +51,7 @@ ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, qlonglong c
     chatData(),
     chatId(chatId),
     groupId(0),
-    memberStatus(TDLibWrapper::ChatMemberStatusUnknown),
-    secretChatState(TDLibWrapper::SecretChatStateUnknown)
+    memberStatus(TDLibWrapper::ChatMemberStatusUnknown)
 {}
 
 void ChatData::updateChatData(const QVariantMap &data) {
@@ -67,13 +65,7 @@ void ChatData::updateChatData(const QVariantMap &data) {
     case TDLibWrapper::ChatTypeSupergroup:
         groupId = type.value(SUPERGROUP_ID).toLongLong();
         break;
-    case TDLibWrapper::ChatTypeUnknown:
-    case TDLibWrapper::ChatTypePrivate:
-        break;
-    case TDLibWrapper::ChatTypeSecret:
-        QVariantMap secretChatDetails = tdLibWrapper->getSecretChatFromCache(data.value(TYPE).toMap().value(SECRET_CHAT_ID).toLongLong());
-        if (!secretChatDetails.isEmpty())
-            this->updateSecretChat(secretChatDetails);
+    default:
         break;
     }
 
@@ -224,17 +216,6 @@ QVector<int> ChatData::updateGroup(const TDLibWrapper::Group *group) {
             this->verificationStatus = verificationStatus;
             changedRoles.append(ChatData::RoleVerificationStatus);
         }
-    }
-    return changedRoles;
-}
-
-QVector<int> ChatData::updateSecretChat(const QVariantMap &secretChatDetails) {
-    QVector<int> changedRoles;
-
-    TDLibWrapper::SecretChatState newSecretChatState = TDLibWrapper::secretChatStateFromString(secretChatDetails.value("state").toMap().value(_TYPE).toString());
-    if (newSecretChatState != secretChatState) {
-        secretChatState = newSecretChatState;
-        changedRoles.append(ChatData::RoleSecretChatState);
     }
     return changedRoles;
 }
