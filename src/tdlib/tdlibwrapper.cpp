@@ -1612,22 +1612,6 @@ bool TDLibWrapper::hasUserInformation(const QString &userId) {
     return this->usersById.contains(userId.toLongLong());
 }
 
-bool TDLibWrapper::hasUserNameInformation(const QString &userName) {
-    return this->usersByName.contains(userName);
-}
-
-QVariantMap TDLibWrapper::getUserInformationByName(const QString &userName) {
-    return this->usersById.value(this->usersByName.value(userName.toLower()));
-}
-
-bool TDLibWrapper::hasSuperGroupNameInformation(const QString &name) {
-    return this->superGroupsByName.contains(name);
-}
-
-QVariantMap TDLibWrapper::getSupergroupInformationByName(const QString &name) {
-    return this->superGroupsByName.value(name.toLower()).toMap();
-}
-
 TDLibWrapper::UserPrivacySettingRule TDLibWrapper::getUserPrivacySettingRule(TDLibWrapper::UserPrivacySetting userPrivacySetting) {
     return this->userPrivacySettingRules.value(userPrivacySetting, UserPrivacySettingRule::RuleAllowAll);
 }
@@ -1779,7 +1763,6 @@ void TDLibWrapper::reset() {
     userInformation.clear();
     userPrivacySettingRules.clear();
     usersById.clear();
-    usersByName.clear();
     qDeleteAll(chats);
     chats.clear();
     secretChats.clear();
@@ -1789,7 +1772,6 @@ void TDLibWrapper::reset() {
     basicGroups.clear();
     qDeleteAll(superGroups);
     superGroups.clear();
-    superGroupsByName.clear();
     activeEmojiReactions.clear();
     diceEmojis.clear();
 }
@@ -1918,14 +1900,7 @@ void TDLibWrapper::handleUserStatusUpdated(qlonglong userId, const QVariantMap &
 }
 
 void TDLibWrapper::updateUserInformation(qlonglong userId, const QVariantMap &userInformation) {
-    const QString username = userInformation.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString().toLower();
-    if (hasUserInformation(QString::number(userId))) {
-        const QString prevUsername = getUserInformation(userId).value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString().toLower();
-        if (prevUsername != username)
-            this->usersByName.remove(prevUsername);
-    }
     this->usersById.insert(userId, userInformation);
-    this->usersByName.insert(username, userId);
     emit userUpdated(userId, userInformation);
 }
 
@@ -2146,7 +2121,6 @@ void TDLibWrapper::handleBasicGroupUpdated(qlonglong groupId, const QVariantMap 
 }
 
 void TDLibWrapper::handleSupergroupUpdated(qlonglong groupId, const QVariantMap &groupInformation) {
-    superGroupsByName.insert(groupInformation.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString().toLower(), groupInformation);
     emit supergroupUpdated(updateGroup(groupId, groupInformation, &superGroups)->groupId);
 }
 
@@ -2390,10 +2364,8 @@ void TDLibWrapper::setLogVerbosityLevel() {
 
 const TDLibWrapper::Group *TDLibWrapper::updateGroup(qlonglong groupId, const QVariantMap &groupInfo, QHash<qlonglong,Group*> *groups) {
     Group* group = groups->value(groupId);
-    if (!group) {
-        group = new Group(groupId);
-        groups->insert(groupId, group);
-    }
+    if (!group)
+        groups->insert(groupId, group = new Group(groupId));
     group->groupInfo = groupInfo;
 
     for (ChatData *chat : this->chats) {

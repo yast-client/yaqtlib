@@ -222,10 +222,6 @@ public:
     Q_INVOKABLE QVariantMap getUserInformation();
     Q_INVOKABLE QVariantMap getUserInformation(qlonglong userId);
     Q_INVOKABLE bool hasUserInformation(const QString &userId);
-    Q_INVOKABLE bool hasUserNameInformation(const QString &userName);
-    Q_INVOKABLE QVariantMap getUserInformationByName(const QString &userName);
-    Q_INVOKABLE bool hasSuperGroupNameInformation(const QString &name);
-    Q_INVOKABLE QVariantMap getSupergroupInformationByName(const QString &name);
     Q_INVOKABLE UserPrivacySettingRule getUserPrivacySettingRule(UserPrivacySetting userPrivacySetting);
     Q_INVOKABLE QVariantMap getBasicGroup(qlonglong groupId) const;
     Q_INVOKABLE QVariantMap getSuperGroup(qlonglong groupId) const;
@@ -721,14 +717,12 @@ private:
     QVariantMap userInformation;
     QMap<UserPrivacySetting, UserPrivacySettingRule> userPrivacySettingRules;
     QMap<qlonglong, QVariantMap> usersById;
-    QHash<QString, qlonglong> usersByName;
     QHash<qlonglong, ChatData*> chats;
     QMap<qlonglong, QVariantMap> secretChats;
     QVariantMap unreadMessageInformation;
     QVariantMap unreadChatInformation;
     QHash<qlonglong,Group*> basicGroups;
     QHash<qlonglong,Group*> superGroups;
-    QVariantMap superGroupsByName;
     QStringList activeEmojiReactions;
     QStringList diceEmojis;
     QMap<NotificationSettingsScope, QVariantMap> scopesNotificationSettings;
