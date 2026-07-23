@@ -27,7 +27,8 @@
 #endif
 
 namespace MainHelper {
-    static const char *uri = "io.yaqtlib";
+    constexpr inline const char* const uri = "io.yaqtlib";
+    inline const QString defaultIface = "io.yaqtlib.default";
 
     struct AppContext {
         Settings *settings;
