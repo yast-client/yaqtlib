@@ -29,6 +29,8 @@
 
 Q_IMPORT_PLUGIN(TgsIOPlugin)
 
+const QString MainHelper::defaultIface("io.yaqtlib.default");
+
 MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view, TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities) :
     settings(settings),
     tdLibWrapper(tdLibWrapper),

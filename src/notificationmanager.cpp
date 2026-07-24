@@ -357,9 +357,8 @@ void NotificationManager::iterateCallNotificationsForChat(qlonglong chatId, std:
 
 void NotificationManager::updateNotificationForChat(qlonglong chatId) {
     // Silently update notifications
-    LOG("Updating notifications for chat" << chatId);
-    iterateNotificationGroupsForChat(chatId, [this](QSharedPointer<NotificationGroup> group) {
-        LOG("Updating notification for group ID" << group->notificationGroupId);
+    iterateNotificationGroupsForChat(chatId, [this, chatId](QSharedPointer<NotificationGroup> group) {
+        LOG("Updating notification for chat ID" << chatId << "group ID" << group->notificationGroupId);
         publishNotification(group, false);
     });
 

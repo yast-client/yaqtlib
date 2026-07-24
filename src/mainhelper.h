@@ -27,8 +27,8 @@
 #endif
 
 namespace MainHelper {
-    constexpr inline const char* const uri = "io.yaqtlib";
-    inline const QString defaultIface = "io.yaqtlib.default";
+    constexpr const char* uri = "io.yaqtlib";
+    extern const QString defaultIface;
 
     struct AppContext {
         Settings *settings;
@@ -57,7 +57,7 @@ namespace MainHelper {
                                                      const QString &dbusPath = QString(), const QString &dbusServiceName = QString(),
                                                      bool useSignalActions = false,
                                                      const QUrl &incomingSoundPath = QUrl(), const QUrl &outgoingSoundPath = QUrl(),
-                                                     const QString &dbusInterface = "io.yaqtlib.default");
+                                                     const QString &dbusInterface = MainHelper::defaultIface);
 
     inline void registerDebugLogJS(AppContext *context) {
         // Declare in header so definitions would not be ignored
