@@ -306,7 +306,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::serviceNotificationReceived, this, &TDLibWrapper::serviceNotificationReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::contactsImported, this, &TDLibWrapper::contactsImported);
     connect(this->tdLibReceiver, &TDLibReceiver::messageEditedUpdated, this, &TDLibWrapper::messageEditedUpdated);
-    connect(this->tdLibReceiver, &TDLibReceiver::inlineQueryResults, this, &TDLibWrapper::inlineQueryResults);
+    connect(this->tdLibReceiver, &TDLibReceiver::inlineQueryResults, this, &TDLibWrapper::inlineQueryResultsReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::callbackQueryAnswer, this, &TDLibWrapper::callbackQueryAnswer);
     connect(this->tdLibReceiver, &TDLibReceiver::userPrivacySettingRules, this, &TDLibWrapper::handleUserPrivacySettingRules);
     connect(this->tdLibReceiver, &TDLibReceiver::userPrivacySettingRulesUpdated, this, &TDLibWrapper::handleUpdatedUserPrivacySettingRules);

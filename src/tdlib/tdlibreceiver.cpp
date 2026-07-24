@@ -620,10 +620,12 @@ void TDLibReceiver::processUpdateChatDraftMessage(const QVariantMap &receivedInf
     emit chatDraftMessageUpdated(receivedInformation.value(CHAT_ID).toLongLong(), cleanupMap(receivedInformation.value(DRAFT_MESSAGE).toMap()), receivedInformation.value(POSITIONS).toList());
 }
 
-void TDLibReceiver::processInlineQueryResults(const QVariantMap &receivedInformation)
-{
-    LOG("Inline Query results");
-    emit inlineQueryResults(receivedInformation.value("inline_query_id").toString(), receivedInformation.value("next_offset").toString(), receivedInformation.value("results").toList(), receivedInformation.value("switch_pm_text").toString(), receivedInformation.value("switch_pm_parameter").toString(), receivedInformation.value(_EXTRA).toString());
+void TDLibReceiver::processInlineQueryResults(const QVariantMap &receivedInformation) {
+    const QString id = receivedInformation.value("inline_query_id").toString();
+    const QString nextOffset = receivedInformation.value("next_offset").toString();
+    const QVariantList results = receivedInformation.value("results").toList();
+    LOG("Received inline query results" << id << nextOffset << results.size());
+    emit inlineQueryResults(id, nextOffset, results, receivedInformation.value("button").toMap(), receivedInformation.value(_EXTRA).toString());
 }
 
 void TDLibReceiver::processCallbackQueryAnswer(const QVariantMap &receivedInformation)

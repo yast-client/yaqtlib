@@ -87,7 +87,7 @@ signals:
     void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
     void chatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread);
     void chatDraftMessageUpdated(qlonglong chatId, const QVariantMap &draftMessage, const QVariantList &positions);
-    void inlineQueryResults(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QString &switchPmText, const QString &switchPmParameter, const QString &extra);
+    void inlineQueryResults(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QVariantMap &button, const QString &extra);
     void callbackQueryAnswer(const QString &text, bool alert, const QString &url);
     void userPrivacySettingRules(const QVariantMap &rules);
     void userPrivacySettingRulesUpdated(const QVariantMap &updatedRules);

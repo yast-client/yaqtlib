@@ -556,7 +556,7 @@ signals:
     void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
     void messageNotFound(qlonglong chatId, qlonglong messageId);
     void chatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread);
-    void inlineQueryResults(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QString &switchPmText, const QString &switchPmParameter, const QString &extra);
+    void inlineQueryResultsReceived(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QVariantMap &button, const QString &extra);
     void callbackQueryAnswer(const QString &text, bool alert, const QString &url);
     void userPrivacySettingUpdated(UserPrivacySetting setting, UserPrivacySettingRule rule);
     void messageInteractionInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &updatedInfo);
