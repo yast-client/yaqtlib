@@ -58,14 +58,14 @@ bool JumpableMessagesModel::loading() const {
 
 void JumpableMessagesModel::handlePrepareMessagesReceived(int totalCount, UpdateType fromUpdate) {
     if (totalCount == 0) {
-        // UpdateMultiSlice never comes here (is replaced with UpdateNextSlice or UpdatePreviousSlice in handleMessagesReceived())
         if (fromUpdate == UpdateNextSlice)
             endReached = true;
         else if (fromUpdate == UpdatePreviousSlice)
             startReached = true;
         else if (fromUpdate == UpdateInitial) // No messages in chat
             startReached = endReached = true;
-    }
+    } /*else if (messages.count() == totalCount) // not fully sure if this will be stable enough
+        startReached = endReached = true;*/
 
     LOG("Updated endReached" << endReached << "startReached" << startReached);
 

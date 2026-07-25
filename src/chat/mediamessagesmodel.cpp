@@ -251,6 +251,15 @@ void MediaMessagesModel::removeMessage(qlonglong messageId) {
     }
 }
 
+void MediaMessagesModel::handlePrepareMessagesReceived(int totalCount, UpdateType fromUpdate) {
+    if (maintainCount() && this->totalCount != totalCount) {
+        LOG("Messages received, total count updated");
+        this->totalCount = totalCount;
+        emit totalCountChanged();
+    }
+    JumpableMessagesModel::handlePrepareMessagesReceived(totalCount, fromUpdate);
+}
+
 int MediaMessagesModel::calculateScrollPosition() const {
     const int pos = JumpableMessagesModel::calculateScrollPosition();
     return pos >= 0 ? pos : (messages.size() - 1);

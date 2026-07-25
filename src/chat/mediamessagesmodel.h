@@ -58,6 +58,7 @@ protected:
 
     virtual void insertMessageInOrder(qlonglong messageId, const QVariantMap &message, bool inverted) override;
     virtual void removeMessage(qlonglong messageId) override;
+    virtual void handlePrepareMessagesReceived(int totalCount, UpdateType fromUpdate) override;
 
 
     inline virtual void loadMessages(int extra = 0, qlonglong fromMessageId = 0, int offset = 0) override { loadMessagesWithLimit(extra, fromMessageId, offset); }
