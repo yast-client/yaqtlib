@@ -90,7 +90,7 @@ void MediaMessagesModel::loadMessagesWithLimit(int extra, qlonglong fromMessageI
     this->tdLibWrapper->searchChatMessages(this->chatId, this->query, extra, fromMessageId, this->searchMessagesFilter, limit, offset);
 }
 
-void MediaMessagesModel::init(qlonglong chatId, qlonglong fromMessageId) {
+void MediaMessagesModel::init(qlonglong chatId, qlonglong fromMessageId, bool checkCount, bool force) {
     if (!tdLibWrapper) {
         LOG("Can't initialize, tdLibWrapper is not set" << chatId << fromMessageId);
         return;
@@ -98,7 +98,7 @@ void MediaMessagesModel::init(qlonglong chatId, qlonglong fromMessageId) {
     LOG("Initializing" << searchMessagesFilter << chatId << fromMessageId);
 
     // TODO: (maybe) add this to JumpableMessagesModel too
-    if (this->chatId == chatId) {
+    if (!force && this->chatId == chatId) {
         LOG("Model already initialized for this chat ID, checking if other required stuff is already loaded");
 
         if (fromMessageId == 0) {
@@ -121,7 +121,7 @@ void MediaMessagesModel::init(qlonglong chatId, qlonglong fromMessageId) {
     this->chatId = chatId;
     this->highlightedMessageId = fromMessageId;
 
-    if (fromMessageId != 0)
+    if (!checkCount || searchMessagesFilter == TDLibWrapper::SearchMessagesFilterEmpty || fromMessageId != 0)
         loadMessagesWithLimit(UpdateInitial, fromMessageId, -16, 32);
     else
         tdLibWrapper->getChatMessageCount(chatId, this->searchMessagesFilter);
