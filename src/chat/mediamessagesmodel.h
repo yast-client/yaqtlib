@@ -47,6 +47,7 @@ protected slots:
     virtual void handleMessagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds) override;
 
 private:
+    void tryReload();
     void updateTotalCount(int count);
 
 protected:

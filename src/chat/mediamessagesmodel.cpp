@@ -37,11 +37,20 @@ void MediaMessagesModel::setupTDLibWrapper() {
     connect(this->tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &MediaMessagesModel::handleNewMessageReceived);
 }
 
+void MediaMessagesModel::tryReload() {
+    if (!loading() && !highlightedMessageId) {
+        LOG("Reloading");
+        clear();
+        loadMessagesWithLimit(UpdateInitial, 0, -16, 32);
+    }
+}
+
 void MediaMessagesModel::setSearchMessagesFilter(TDLibWrapper::SearchMessagesFilter filter) {
     if (this->searchMessagesFilter != filter) {
         this->searchMessagesFilter = filter;
         LOG("Filter set" << filter);
         emit searchMessagesFilterChanged();
+        tryReload();
     }
 }
 
@@ -50,7 +59,7 @@ void MediaMessagesModel::setQuery(const QString &value) {
         this->query = value;
         LOG("Search query set" << value);
         emit queryChanged();
-        // TODO: re-initialize the model
+        tryReload();
     }
 }
 
