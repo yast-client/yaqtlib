@@ -689,7 +689,6 @@ private slots:
     void handleOkReceived(const QVariant &extra);
     void handleTextReceived(const QString &text, const QString &extra);
     void handleAvailableReactionsReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &reactions, const QVariantMap &unavailabilityReason);
-    void handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions, int unreadReactionCount);
 
 private:
     void initializePropertyMaps();

@@ -1307,5 +1307,6 @@ void TDLibReceiver::processUpdateMessageUnreadReactions(const QVariantMap &recei
     QVariantList unreadReactions = receivedInformation.value("unread_reactions").toList();
     int unreadReactionCount = receivedInformation.value(UNREAD_REACTION_COUNT).toInt();
     LOG("Received updateMessageUnreadReactions" << chatId << messageId << unreadReactions.size() << unreadReactionCount);
-    emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions, unreadReactionCount);
+    emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
+    emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions);
 }

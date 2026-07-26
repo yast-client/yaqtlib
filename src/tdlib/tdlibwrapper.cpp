@@ -372,6 +372,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinResultReceived, this, &TDLibWrapper::chatJoinResultReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinRequestResultReceived, this, &TDLibWrapper::chatJoinRequestResultReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::httpUrlReceived, this, &TDLibWrapper::httpUrlReceived);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
 
     this->tdLibReceiver->start();
 }
@@ -2097,9 +2098,12 @@ void TDLibWrapper::handleChatUnreadMentionCountUpdated(qlonglong chatId, int unr
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadMentionCount});
 }
 
-void TDLibWrapper::handleChatUnreadReactionCountUpdated(qlonglong chatId, int unreadReactionCount) {
-    this->getChatDataForce(chatId)->chatData.insert(UNREAD_REACTION_COUNT, unreadReactionCount);
-    emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadReactionCount});
+void TDLibWrapper::handleChatUnreadReactionCountUpdated(qlonglong chatId, int value) {
+    ChatData *chat = this->getChatDataForce(chatId);
+    if (chat->unreadReactionCount() != value) {
+        chat->chatData.insert(UNREAD_REACTION_COUNT, value);
+        emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadReactionCount});
+    }
 }
 
 void TDLibWrapper::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {
@@ -3480,9 +3484,4 @@ void TDLibWrapper::removeNotificationGroup(int groupId, int maxNotificationId) {
 
 QVariantMap TDLibWrapper::getMarkdownText(const QVariantMap &formattedText) {
     return executeRequest({{_TYPE, "getMarkdownText"}, {TEXT, formattedText}});
-}
-
-void TDLibWrapper::handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions, int unreadReactionCount) {
-    handleChatUnreadReactionCountUpdated(chatId, unreadReactionCount);
-    emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions);
 }
