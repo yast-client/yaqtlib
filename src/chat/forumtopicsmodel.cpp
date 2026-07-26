@@ -150,8 +150,8 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
 
         case ForumTopic::RoleIsPinned: return topic->isPinned();
         case ForumTopic::RoleUnreadCount: return topic->unreadCount();
-        case ForumTopic::RoleUnreadMentionCount: return topic->unreadCount();
-        case ForumTopic::RoleUnreadReactionCount: return topic->unreadCount();
+        case ForumTopic::RoleUnreadMentionCount: return topic->unreadMentionCount();
+        case ForumTopic::RoleUnreadReactionCount: return topic->unreadReactionCount();
         case ForumTopic::RoleDraftMessageDate: return topic->draftMessageDate();
         case ForumTopic::RoleDraftMessageText: return topic->draftMessageText();
 
