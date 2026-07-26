@@ -1644,10 +1644,10 @@ TDLibWrapper::UserPrivacySettingRule TDLibWrapper::getUserPrivacySettingRule(TDL
 QVariantMap TDLibWrapper::getBasicGroup(qlonglong groupId) const {
     const Group* group = basicGroups.value(groupId);
     if (group) {
-        LOG("Returning basic group information for ID" << groupId);
+        VERBOSE("Returning basic group information for ID" << groupId);
         return group->groupInfo;
     } else {
-        LOG("No super group information for ID" << groupId);
+        VERBOSE("No super group information for ID" << groupId);
         return QVariantMap();
     }
 }
@@ -1655,40 +1655,40 @@ QVariantMap TDLibWrapper::getBasicGroup(qlonglong groupId) const {
 QVariantMap TDLibWrapper::getSuperGroup(qlonglong groupId) const {
     const Group* group = superGroups.value(groupId);
     if (group) {
-        LOG("Returning super group information for ID" << groupId);
+        VERBOSE("Returning super group information for ID" << groupId);
         return group->groupInfo;
     } else {
-        LOG("No super group information for ID" << groupId);
+        VERBOSE("No super group information for ID" << groupId);
         return QVariantMap();
     }
 }
 
 QVariantMap TDLibWrapper::getChat(qlonglong chatId) {
-    LOG("Returning chat information for ID" << chatId);
+    VERBOSE("Returning chat information for ID" << chatId);
     if (this->chats.contains(chatId))
         return this->chats.value(chatId)->chatData;
     return QVariantMap();
 }
 
 bool TDLibWrapper::hasChatData(qlonglong chatId) {
-    LOG("Checking if have chat data for ID" << chatId);
+    VERBOSE("Checking if have chat data for ID" << chatId);
     return this->chats.contains(chatId);
 }
 
 ChatData* TDLibWrapper::getChatData(qlonglong chatId) {
-    LOG("Returning chat data for ID" << chatId);
+    VERBOSE("Returning chat data for ID" << chatId);
     if (this->chats.contains(chatId))
         return this->chats.value(chatId);
     return nullptr;
 }
 
 ChatData* TDLibWrapper::getExistingChatData(qlonglong chatId) {
-    LOG("Returning existing chat data for ID" << chatId);
+    VERBOSE("Returning existing chat data for ID" << chatId);
     return this->chats.value(chatId);
 }
 
 ChatData* TDLibWrapper::getChatDataForce(qlonglong chatId) {
-    LOG("Forcefully returning chat data for ID" << chatId);
+    VERBOSE("Forcefully returning chat data for ID" << chatId);
     if (!this->chats.contains(chatId))
         this->chats.insert(chatId, new ChatData(this, this->utilities, chatId));
 
