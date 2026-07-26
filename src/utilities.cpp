@@ -953,7 +953,7 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
 
 void Utilities::handleLink(const QString &link) {
     if (link.startsWith("user://"))
-        tdLibWrapper->searchPublicChat(link.mid(8), true);
+        tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
     else if (link.indexOf("userId://") == 0)
         tdLibWrapper->createPrivateChat(link.mid(9), EXTRA_OPEN_DIRECTLY);
     else

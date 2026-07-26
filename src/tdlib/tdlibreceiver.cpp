@@ -435,7 +435,7 @@ void TDLibReceiver::processSponsoredChats(const QVariantMap &receivedInformation
 
 void TDLibReceiver::processChat(const QVariantMap &receivedInformation) {
     LOG("Chat received" << receivedInformation.value(ID).toLongLong());
-    emit chat(receivedInformation);
+    emit chat(receivedInformation, receivedInformation.value(_EXTRA));
 }
 
 void TDLibReceiver::processUpdateRecentStickers(const QVariantMap &receivedInformation) {

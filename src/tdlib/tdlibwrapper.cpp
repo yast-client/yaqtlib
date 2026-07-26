@@ -18,6 +18,7 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QDesktopServices>
+#include <QJSValue>
 
 #define DEBUG_MODULE TDLibWrapper
 #include "debuglog.h"
@@ -166,28 +167,35 @@ namespace {
     );
 
     const QRegularExpression RE_EXTRA_CHAT_MESSAGE_COUNT("^(searchMessagesFilter[a-zA-Z]+)(!?):(-?[0-9]*)$");
-}
 
-QVariantMap findChatPosition(const QVariantList &positions, bool archive = false) {
-    for (const QVariant &positionVariant : positions) {
-        const QVariantMap position = positionVariant.toMap();
-        if (position.value(_TYPE).toString() == TYPE_CHAT_POSITION &&
-                position.value(LIST).toMap().value(_TYPE).toString() == (archive ? TYPE_CHAT_LIST_ARCHIVE : TYPE_CHAT_LIST_MAIN))
-            return position;
-    }
-    return QVariantMap();
-}
 
-QVariantMap findChatPositionForFolder(const QVariantList &positions, int folderId) {
-    for (const QVariant &positionVariant : positions) {
-        const QVariantMap position = positionVariant.toMap();
-        if (position.value(_TYPE).toString() == TYPE_CHAT_POSITION) {
-            const QVariantMap chatList = position.value(LIST).toMap();
-            if (chatList.value(_TYPE).toString() == TYPE_CHAT_LIST_FOLDER && chatList.value(CHAT_FOLDER_ID).toInt() == folderId)
+    QVariantMap findChatPosition(const QVariantList &positions, bool archive = false) {
+        for (const QVariant &positionVariant : positions) {
+            const QVariantMap position = positionVariant.toMap();
+            if (position.value(_TYPE).toString() == TYPE_CHAT_POSITION &&
+                    position.value(LIST).toMap().value(_TYPE).toString() == (archive ? TYPE_CHAT_LIST_ARCHIVE : TYPE_CHAT_LIST_MAIN))
                 return position;
         }
+        return QVariantMap();
     }
-    return QVariantMap();
+
+    QVariantMap findChatPositionForFolder(const QVariantList &positions, int folderId) {
+        for (const QVariant &positionVariant : positions) {
+            const QVariantMap position = positionVariant.toMap();
+            if (position.value(_TYPE).toString() == TYPE_CHAT_POSITION) {
+                const QVariantMap chatList = position.value(LIST).toMap();
+                if (chatList.value(_TYPE).toString() == TYPE_CHAT_LIST_FOLDER && chatList.value(CHAT_FOLDER_ID).toInt() == folderId)
+                    return position;
+            }
+        }
+        return QVariantMap();
+    }
+
+    QVariant ensureNonJsVariant(const QVariant &variant) {
+        if (variant.userType() == qMetaTypeId<QJSValue>())
+            return variant.value<QJSValue>().toVariant();
+        return variant;
+    }
 }
 
 TDLibWrapper::TDLibWrapper(Settings *settings, QObject *parent)
@@ -942,39 +950,48 @@ void TDLibWrapper::getUserFullInfo(qlonglong userId) {
     });
 }
 
-void TDLibWrapper::createPrivateChat(const QString &userId, const QString &extra) {
-    LOG("Creating Private Chat");
-    this->sendRequest(QVariantMap{
-        {_TYPE, "createPrivateChat"},
-        {USER_ID, userId},
-        {_EXTRA, extra} //"openDirectly"/"openAndSendStartToBot:[optional parameter]" gets matched in qml
+void TDLibWrapper::getChatTd(qlonglong chatId, const QVariant &extra) {
+    LOG("Getting chat from TDLib" << chatId);
+    sendRequest({
+        {_TYPE, "getChat"},
+        {CHAT_ID, chatId},
+        {_EXTRA, ensureNonJsVariant(extra)}
     });
 }
 
-void TDLibWrapper::createNewSecretChat(const QString &userId, const QString &extra) {
+void TDLibWrapper::createPrivateChat(const QString &userId, const QVariant &extra) {
+    LOG("Creating a private chat" << userId);
+    this->sendRequest(QVariantMap{
+        {_TYPE, "createPrivateChat"},
+        {USER_ID, userId},
+        {_EXTRA, ensureNonJsVariant(extra)}
+    });
+}
+
+void TDLibWrapper::createNewSecretChat(const QString &userId, const QVariant &extra) {
     LOG("Creating new secret chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createNewSecretChat"},
         {USER_ID, userId},
-        {_EXTRA, extra} //"openDirectly" gets matched in qml
+        {_EXTRA, ensureNonJsVariant(extra)}
     });
 }
 
-void TDLibWrapper::createSupergroupChat(const QString &supergroupId, const QString &extra) {
+void TDLibWrapper::createSupergroupChat(const QString &supergroupId, const QVariant &extra) {
     LOG("Creating Supergroup Chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createSupergroupChat"},
         {SUPERGROUP_ID, supergroupId},
-        {_EXTRA, extra} //"openDirectly" gets matched in qml
+        {_EXTRA, ensureNonJsVariant(extra)}
     });
 }
 
-void TDLibWrapper::createBasicGroupChat(const QString &basicGroupId, const QString &extra) {
+void TDLibWrapper::createBasicGroupChat(const QString &basicGroupId, const QVariant &extra) {
     LOG("Creating Basic Group Chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createBasicGroupChat"},
         {BASIC_GROUP_ID, basicGroupId},
-        {_EXTRA, extra} //"openDirectly"/"openAndSend:*" gets matched in qml
+        {_EXTRA, ensureNonJsVariant(extra)}
     });
 }
 
@@ -1086,17 +1103,20 @@ void TDLibWrapper::getPollVoters(qlonglong chatId, qlonglong messageId, int opti
     });
 }
 
-void TDLibWrapper::searchPublicChat(const QString &userName, bool doOpenOnFound) {
+void TDLibWrapper::searchPublicChat(const QString &userName, const QVariantMap &extra2) {
     LOG("Search public chat" << userName);
+    QVariantMap extra(extra2);
+    extra.insert(TYPE, "searchPublicChat:"+userName);
 
     this->sendRequest(QVariantMap{
         {_TYPE, "searchPublicChat"},
         {USERNAME, userName},
-        {_EXTRA, QVariantMap{
-            {TYPE, "searchPublicChat:"+userName},
-            {EXTRA_OPEN_DIRECTLY, doOpenOnFound},
-        }}
+        {_EXTRA, extra}
     });
+}
+
+void TDLibWrapper::searchPublicChatOpenDirectly(const QString &userName) {
+    searchPublicChat(userName, {{EXTRA_OPEN_DIRECTLY, true}});
 }
 
 void TDLibWrapper::searchUserByPhoneNumber(const QString &phoneNumber, bool doOpenOnFound) {
@@ -2872,7 +2892,7 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
 
     if (type == "internalLinkTypePublicChat")
         // TODO: handle draft_text and open_profile
-        this->searchPublicChat(linkType.value("chat_username").toString(), true);
+        this->searchPublicChatOpenDirectly(linkType.value("chat_username").toString());
     else if (type == "internalLinkTypeUserPhoneNumber")
         // TODO: handle draft_text and open_profile
         this->searchUserByPhoneNumber(linkType.value(PHONE_NUMBER).toString(), true);
@@ -3451,4 +3471,8 @@ void TDLibWrapper::removeNotificationGroup(int groupId, int maxNotificationId) {
         {NOTIFICATION_GROUP_ID, groupId},
         {"max_notification_id", maxNotificationId}
     });
+}
+
+QVariantMap TDLibWrapper::getMarkdownText(const QVariantMap &formattedText) {
+    return executeRequest({{_TYPE, "getMarkdownText"}, {TEXT, formattedText}});
 }

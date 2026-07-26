@@ -315,10 +315,11 @@ public:
     Q_INVOKABLE void getSupergroupMembers(qlonglong groupId, int limit, int offset);
     Q_INVOKABLE void getGroupFullInfo(qlonglong groupId, bool isSupergroup);
     Q_INVOKABLE void getUserFullInfo(qlonglong userId);
-    Q_INVOKABLE void createPrivateChat(const QString &userId, const QString &extra);
-    Q_INVOKABLE void createNewSecretChat(const QString &userId, const QString &extra);
-    Q_INVOKABLE void createSupergroupChat(const QString &supergroupId, const QString &extra);
-    Q_INVOKABLE void createBasicGroupChat(const QString &basicGroupId, const QString &extra);
+    Q_INVOKABLE void getChatTd(qlonglong chatId, const QVariant &extra);
+    Q_INVOKABLE void createPrivateChat(const QString &userId, const QVariant &extra);
+    Q_INVOKABLE void createNewSecretChat(const QString &userId, const QVariant &extra);
+    Q_INVOKABLE void createSupergroupChat(const QString &supergroupId, const QVariant &extra);
+    Q_INVOKABLE void createBasicGroupChat(const QString &basicGroupId, const QVariant &extra);
     Q_INVOKABLE void getGroupsInCommon(qlonglong userId, int limit, int offset = 0);
     Q_INVOKABLE void getUserProfilePhotos(qlonglong userId, int limit, int offset);
     Q_INVOKABLE void setChatPermissions(qlonglong chatId, const QVariantMap &chatPermissions);
@@ -330,7 +331,8 @@ public:
     Q_INVOKABLE void setPollAnswer(const QString &chatId, qlonglong messageId, QVariantList optionIds);
     Q_INVOKABLE void stopPoll(const QString &chatId, qlonglong messageId);
     Q_INVOKABLE void getPollVoters(qlonglong chatId, qlonglong messageId, int optionId, const QString &extra, int offset, int limit = 50);
-    Q_INVOKABLE void searchPublicChat(const QString &userName, bool doOpenOnFound = false);
+    Q_INVOKABLE void searchPublicChat(const QString &userName, const QVariantMap &extra = {});
+    Q_INVOKABLE void searchPublicChatOpenDirectly(const QString &userName);
     Q_INVOKABLE void searchUserByPhoneNumber(const QString &phoneNumber, bool doOpenOnFound = false);
     Q_INVOKABLE void joinChatByInviteLink(const QString &inviteLink, bool isChannel = false);
     Q_INVOKABLE void getDeepLinkInfo(const QString &link);
@@ -461,6 +463,7 @@ public:
     Q_INVOKABLE void unpinAllChatMessages(qlonglong chatId);
     Q_INVOKABLE void removeNotification(int groupId, int id);
     Q_INVOKABLE void removeNotificationGroup(int groupId, int maxNotificationId);
+    Q_INVOKABLE QVariantMap getMarkdownText(const QVariantMap &formattedText);
 
 public:
     const Group* getGroup(qlonglong groupId) const;
@@ -526,7 +529,7 @@ signals:
     void messagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds);
     void chatsReceived(const QString &extra, const QVariantList &chatIds, const int totalCount);
     void sponsoredChatsReceived(const QVariantList &chats);
-    void chatReceived(const QVariantMap &chat);
+    void chatReceived(const QVariantMap &chat, const QVariant &extra);
     void secretChatReceived(qlonglong secretChatId, const QVariantMap &secretChat);
     void secretChatUpdated(qlonglong secretChatId);
     void recentStickersUpdated(bool isAttached, const QList<int> &stickerIds);

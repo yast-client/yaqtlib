@@ -59,7 +59,7 @@ signals:
     void messagesDeleted(qlonglong chatId, const QList<qlonglong> &messageIds);
     void chats(const QString &extra, const QVariantList &chatIds, const int totalCount);
     void sponsoredChatsReceived(const QVariantList &chats);
-    void chat(const QVariantMap &chats);
+    void chat(const QVariantMap &chat, const QVariant &extra);
     void recentStickersUpdated(bool isAttached, const QList<int> &stickerIds);
     void favoriteStickersUpdated(const QList<int> &stickerIds);
     void stickers(const QVariantList &stickers, const QString &extra);
