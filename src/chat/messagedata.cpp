@@ -22,6 +22,7 @@ namespace {
     const QString CONTAINS_UNREAD_MENTION("contains_unread_mention");
     const QString FACT_CHECK("fact_check");
     const QString IS_PINNED("is_pinned");
+    const QString UNREAD_REACTIONS("unread_reactions");
 
     // "interaction_info": {
     //     "@type": "messageInteractionInfo",
@@ -275,6 +276,11 @@ QVector<int> MessageData::setFactCheck(const QVariantMap &factCheck) {
 
 QVector<int> MessageData::setIsPinned(bool isPinned) {
     messageData.insert(IS_PINNED, isPinned);
+    return {RoleDisplay};
+}
+
+QVector<int> MessageData::setUnreadReactions(const QVariantList &unreadReactions) {
+    messageData.insert(UNREAD_REACTIONS, unreadReactions);
     return {RoleDisplay};
 }
 

@@ -1300,3 +1300,12 @@ void TDLibReceiver::processHttpUrl(const QVariantMap &receivedInformation) {
     LOG("Received httpUrl" << url << extra);
     emit httpUrlReceived(url, extra);
 }
+
+void TDLibReceiver::processUpdateMessageUnreadReactions(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    QVariantList unreadReactions = receivedInformation.value("unread_reactions").toList();
+    int unreadReactionCount = receivedInformation.value(UNREAD_REACTION_COUNT).toInt();
+    LOG("Received updateMessageUnreadReactions" << chatId << messageId << unreadReactions.size() << unreadReactionCount);
+    emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions, unreadReactionCount);
+}

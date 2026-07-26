@@ -147,6 +147,7 @@ signals:
     void chatJoinResultReceived(const QString &type, const QVariantMap &info, bool isChannel, bool byInviteLink);
     void chatJoinRequestResultReceived(const QString &queryId, qlonglong chatId, const QString &resultType);
     void httpUrlReceived(const QString &url, const QString &extra);
+    void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions, int unreadReactionCount);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -268,7 +269,8 @@ private:
         {"updateCall", &TDLibReceiver::processUpdateCall},
         {"updateNewCallSignalingData", &TDLibReceiver::processUpdateNewCallSignalingData},
         {"updateChatJoinResult", &TDLibReceiver::processUpdateChatJoinResult},
-        {"httpUrl", &TDLibReceiver::processHttpUrl}
+        {"httpUrl", &TDLibReceiver::processHttpUrl},
+        {"updateMessageUnreadReactions", &TDLibReceiver::processUpdateMessageUnreadReactions}
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
@@ -404,6 +406,7 @@ private:
     void processChatJoinResult(const QVariantMap &receivedInformation);
     void processUpdateChatJoinResult(const QVariantMap &receivedInformation);
     void processHttpUrl(const QVariantMap &receivedInformation);
+    void processUpdateMessageUnreadReactions(const QVariantMap &receivedInformation);
 
 public:
     void processError(const QVariantMap &receivedInformation);

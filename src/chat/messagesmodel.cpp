@@ -36,6 +36,7 @@ void MessagesModel::setupTDLibWrapper() {
     connect(this->tdLibWrapper, &TDLibWrapper::messageMentionRead, this, &MessagesModel::handleMessageMentionRead);
     connect(this->tdLibWrapper, &TDLibWrapper::messageContentOpened, this, &MessagesModel::handleMessageContentOpened);
     connect(this->tdLibWrapper, &TDLibWrapper::messageFactCheckUpdated, this, &MessagesModel::handleMessageFactCheckUpdated);
+    connect(this->tdLibWrapper, &TDLibWrapper::messageUnreadReactionsUpdated, this, &MessagesModel::handleMessageUnreadReactionsUpdated);
 }
 
 MessagesModel::~MessagesModel() {
@@ -270,6 +271,13 @@ void MessagesModel::handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong mes
     handleMessageFieldUpdated(chatId, messageId, [messageId, isPinned](int index, MessageData *message) {
         LOG("Message is pinned updated" << messageId << isPinned << "at index" << index);
         return message->setIsPinned(isPinned);
+    });
+}
+
+void MessagesModel::handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions) {
+    handleMessageFieldUpdated(chatId, messageId, [messageId, unreadReactions](int index, MessageData *message) {
+        LOG("Message unread reactions updated" << messageId << unreadReactions.size() << index);
+        return message->setUnreadReactions(unreadReactions);
     });
 }
 

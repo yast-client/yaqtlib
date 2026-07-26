@@ -50,6 +50,7 @@ private slots:
     void handleMessageMentionRead(qlonglong chatId, qlonglong messageId);
     void handleMessageContentOpened(qlonglong chatId, qlonglong messageId);
     void handleMessageFactCheckUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &factCheck);
+    void handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
 
 protected slots:
     virtual MessageData *handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent);

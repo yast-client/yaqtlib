@@ -3481,3 +3481,8 @@ void TDLibWrapper::removeNotificationGroup(int groupId, int maxNotificationId) {
 QVariantMap TDLibWrapper::getMarkdownText(const QVariantMap &formattedText) {
     return executeRequest({{_TYPE, "getMarkdownText"}, {TEXT, formattedText}});
 }
+
+void TDLibWrapper::handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions, int unreadReactionCount) {
+    handleChatUnreadReactionCountUpdated(chatId, unreadReactionCount);
+    emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions);
+}
