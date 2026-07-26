@@ -296,10 +296,9 @@ void TDLibReceiver::processUpdateSuperGroup(const QVariantMap &receivedInformati
     emit supergroupUpdated(superGroupId, supergroup);
 }
 
-void TDLibReceiver::processChatOnlineMemberCountUpdated(const QVariantMap &receivedInformation)
-{
-    const QString chatId = receivedInformation.value(CHAT_ID).toString();
-    LOG("Online member count updated for chat " << chatId);
+void TDLibReceiver::processChatOnlineMemberCountUpdated(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    LOG("Chat online member count updated" << chatId);
     emit chatOnlineMemberCountUpdated(chatId, receivedInformation.value("online_member_count").toInt());
 }
 

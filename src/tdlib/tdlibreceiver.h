@@ -42,7 +42,7 @@ signals:
     void chatAvailableReactionsUpdated(qlonglong chatId, const QVariantMap &availableReactions);
     void basicGroupUpdated(qlonglong groupId, const QVariantMap &groupInformation);
     void supergroupUpdated(qlonglong groupId, const QVariantMap &groupInformation);
-    void chatOnlineMemberCountUpdated(const QString &chatId, int onlineMemberCount);
+    void chatOnlineMemberCountUpdated(qlonglong chatId, int onlineMemberCount);
     void messagesReceived(qlonglong chatId, int extra, const QVariantList &messages, int totalCount);
     void foundChatMessagesReceived(qlonglong chatId, int extra, int extra2, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
     void messageLinkInfoReceived(qlonglong chatId, qlonglong messageId);

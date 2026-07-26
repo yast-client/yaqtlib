@@ -524,7 +524,7 @@ void TDLibWrapper::closeChat(qlonglong chatId) {
     this->sendRequest(QVariantMap{{_TYPE, "closeChat"}, {CHAT_ID, chatId}});
 }
 
-void TDLibWrapper::joinChat(const QString &chatId, bool isChannel) {
+void TDLibWrapper::joinChat(qlonglong chatId, bool isChannel) {
     LOG("Joining chat" << chatId << "is a channel" << isChannel);
     this->sendRequest({
         {_TYPE, "joinChat"},
@@ -533,7 +533,7 @@ void TDLibWrapper::joinChat(const QString &chatId, bool isChannel) {
     });
 }
 
-void TDLibWrapper::leaveChat(const QString &chatId) {
+void TDLibWrapper::leaveChat(qlonglong chatId) {
     LOG("Leaving chat " << chatId);
     this->sendRequest(QVariantMap{{_TYPE, "leaveChat"}, {CHAT_ID, chatId}});
 }
@@ -571,19 +571,20 @@ void TDLibWrapper::viewMessage(qlonglong chatId, qlonglong messageId, bool force
     this->sendRequest(request);
 }
 
-void TDLibWrapper::pinMessage(const QString &chatId, const QString &messageId, bool disableNotification) {
-    LOG("Pin message to chat" << chatId << messageId << disableNotification);
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::pinChatMessage(qlonglong chatId, const QString &messageId, bool disableNotification, bool onlyForSelf) {
+    LOG("Pin message to chat" << chatId << messageId << "disable notification" << disableNotification << "only for self" << onlyForSelf);
+    this->sendRequest({
         {_TYPE, "pinChatMessage"},
         {CHAT_ID, chatId},
         {MESSAGE_ID, messageId},
-        {"disable_notification", disableNotification}
+        {"disable_notification", disableNotification},
+        {"only_for_self", onlyForSelf}
     });
 }
 
-void TDLibWrapper::unpinMessage(const QString &chatId, const QString &messageId) {
+void TDLibWrapper::unpinChatMessage(qlonglong chatId, const QString &messageId) {
     LOG("Unpin message from chat" << chatId);
-    this->sendRequest(QVariantMap{
+    this->sendRequest({
         {_TYPE, "unpinChatMessage"},
         {CHAT_ID, chatId},
         {MESSAGE_ID, messageId},
@@ -689,16 +690,20 @@ void TDLibWrapper::sendDiceMessage(qlonglong chatId, const QString &emoji, qlong
     sendMessage(chatId, replyToMessageId, topicId, QVariantMap{{_TYPE, "inputMessageDice"}, {EMOJI, emoji}, {CLEAR_DRAFT, clearDraft}});
 }
 
-void TDLibWrapper::forwardMessages(const QString &chatId, const QString &fromChatId, const QVariantList &messageIds, bool sendCopy, bool removeCaption) {
+void TDLibWrapper::forwardMessages(qlonglong chatId, const QString &fromChatId, const QVariantList &messageIds, const QVariantMap &topicId, bool sendCopy, bool removeCaption) {
     LOG("Forwarding messages" << chatId << fromChatId << messageIds);
-    this->sendRequest(QVariantMap{
+    QVariantMap request{
         {_TYPE, "forwardMessages"},
         {CHAT_ID, chatId},
         {"from_chat_id", fromChatId},
         {"message_ids", messageIds},
         {"send_copy", sendCopy},
         {"remove_caption", removeCaption}
-    });
+    };
+    if (!topicId.isEmpty())
+        request.insert(TOPIC_ID, topicId);
+
+    sendRequest(request);
 }
 
 void TDLibWrapper::getMessage(qlonglong chatId, qlonglong messageId) {
@@ -736,9 +741,9 @@ void TDLibWrapper::getExternalLinkInfo(const QString &url, const QString &extra)
     });
 }
 
-void TDLibWrapper::getCallbackQueryAnswer(const QString &chatId, const QString &messageId, const QVariantMap &payload) {
+void TDLibWrapper::getCallbackQueryAnswer(qlonglong chatId, qlonglong messageId, const QVariantMap &payload) {
     LOG("Getting Callback Query Answer" << chatId << messageId);
-    this->sendRequest(QVariantMap{
+    this->sendRequest({
         {_TYPE, "getCallbackQueryAnswer"},
         {CHAT_ID, chatId},
         {MESSAGE_ID, messageId},
@@ -815,7 +820,7 @@ void TDLibWrapper::setChatNotificationSettings(qlonglong chatId, const QVariantM
     });
 }
 
-void TDLibWrapper::editMessageText(const QString &chatId, const QString &messageId, const QString &message) {
+void TDLibWrapper::editMessageText(qlonglong chatId, const QString &messageId, const QString &message) {
     LOG("Editing message text" << chatId << messageId);
     this->sendRequest(QVariantMap{
         {_TYPE, "editMessageText"},
@@ -828,7 +833,7 @@ void TDLibWrapper::editMessageText(const QString &chatId, const QString &message
     });
 }
 
-void TDLibWrapper::editMessageCaption(const QString &chatId, const QString &messageId, const QString &caption) {
+void TDLibWrapper::editMessageCaption(qlonglong chatId, const QString &messageId, const QString &caption) {
     LOG("Editing message caption" << chatId << messageId);
     this->sendRequest(QVariantMap{
         {_TYPE, "editMessageCaption"},
@@ -838,7 +843,7 @@ void TDLibWrapper::editMessageCaption(const QString &chatId, const QString &mess
     });
 }
 
-void TDLibWrapper::deleteMessages(const QString &chatId, const QVariantList messageIds, bool revoke) {
+void TDLibWrapper::deleteMessages(qlonglong chatId, const QVariantList messageIds, bool revoke) {
     LOG("Deleting some messages" << chatId << messageIds);
     this->sendRequest(QVariantMap{
         {_TYPE, "deleteMessages"},
@@ -848,7 +853,7 @@ void TDLibWrapper::deleteMessages(const QString &chatId, const QVariantList mess
     });
 }
 
-void TDLibWrapper::getMapThumbnailFile(const QString &chatId, double latitude, double longitude, int width, int height, const QString &extra) {
+void TDLibWrapper::getMapThumbnailFile(qlonglong chatId, double latitude, double longitude, int width, int height, const QString &extra) {
     LOG("Getting Map Thumbnail File" << chatId);
     this->sendRequest(QVariantMap{
         {_TYPE, "getMapThumbnailFile"},
@@ -1027,27 +1032,27 @@ void TDLibWrapper::setChatPermissions(qlonglong chatId, const QVariantMap &chatP
     });
 }
 
-void TDLibWrapper::setChatSlowModeDelay(const QString &chatId, int delay) {
-    LOG("Setting Chat Slow Mode Delay");
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::setChatSlowModeDelay(qlonglong chatId, int delay) {
+    LOG("Setting chat slow mode delay" << chatId << delay);
+    this->sendRequest({
         {_TYPE, "setChatSlowModeDelay"},
         {CHAT_ID, chatId},
         {"slow_mode_delay", delay}
     });
 }
 
-void TDLibWrapper::setChatDescription(const QString &chatId, const QString &description) {
-    LOG("Setting Chat Description");
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::setChatDescription(qlonglong chatId, const QString &description) {
+    LOG("Setting chat description" << chatId);
+    this->sendRequest({
         {_TYPE, "setChatDescription"},
         {CHAT_ID, chatId},
         {"description", description}
     });
 }
 
-void TDLibWrapper::setChatTitle(const QString &chatId, const QString &title) {
-    LOG("Setting Chat Title");
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::setChatTitle(qlonglong chatId, const QString &title) {
+    LOG("Setting chat title" << chatId);
+    this->sendRequest({
         {_TYPE, "setChatTitle"},
         {CHAT_ID, chatId},
         {"title", title}
@@ -1062,18 +1067,18 @@ void TDLibWrapper::setBio(const QString &bio) {
     });
 }
 
-void TDLibWrapper::toggleSupergroupIsAllHistoryAvailable(const QString &groupId, bool isAllHistoryAvailable) {
-    LOG("Toggling SupergroupIsAllHistoryAvailable");
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::toggleSupergroupIsAllHistoryAvailable(qlonglong groupId, bool value) {
+    LOG("Toggling SupergroupIsAllHistoryAvailable" << groupId << value);
+    this->sendRequest({
         {_TYPE, "toggleSupergroupIsAllHistoryAvailable"},
         {SUPERGROUP_ID, groupId},
-        {"is_all_history_available", isAllHistoryAvailable}
+        {"is_all_history_available", value}
     });
 }
 
-void TDLibWrapper::setPollAnswer(const QString &chatId, qlonglong messageId, QVariantList optionIds) {
-    LOG("Setting Poll Answer");
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::setPollAnswer(qlonglong chatId, qlonglong messageId, QVariantList optionIds) {
+    LOG("Setting poll answer" << chatId << messageId);
+    this->sendRequest({
         {_TYPE, "setPollAnswer"},
         {CHAT_ID, chatId},
         {MESSAGE_ID, messageId},
@@ -1081,8 +1086,8 @@ void TDLibWrapper::setPollAnswer(const QString &chatId, qlonglong messageId, QVa
     });
 }
 
-void TDLibWrapper::stopPoll(const QString &chatId, qlonglong messageId) {
-    LOG("Stopping poll");
+void TDLibWrapper::stopPoll(qlonglong chatId, qlonglong messageId) {
+    LOG("Stopping poll" << chatId << messageId);
     this->sendRequest(QVariantMap{
         {_TYPE, "stopPoll"},
         {CHAT_ID, chatId},
