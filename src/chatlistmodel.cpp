@@ -130,6 +130,7 @@ QHash<int,QByteArray> ChatListModel::roleNames() const {
         {ChatData::RoleUnreadCount, "unread_count"},
         {ChatData::RoleUnreadMentionCount, "unread_mention_count"},
         {ChatData::RoleUnreadReactionCount, "unread_reaction_count"},
+        {ChatData::RoleUnreadPollVoteCount, "unread_poll_vote_count"},
         {ChatData::RoleAvailableReactions, "available_reactions"},
         {ChatData::RoleLastReadOutboxMessageId, "last_read_outbox_message_id"},
         {ChatData::RoleLastReadInboxMessageId, "last_read_inbox_message_id"},
@@ -175,6 +176,7 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const {
         case ChatData::RoleUnreadMentionCount: return data->data->unreadMentionCount();
         case ChatData::RoleAvailableReactions: return data->data->availableReactions();
         case ChatData::RoleUnreadReactionCount: return data->data->unreadReactionCount();
+        case ChatData::RoleUnreadPollVoteCount: return data->data->unreadPollVoteCount();
         case ChatData::RoleLastReadInboxMessageId: return data->data->lastReadInboxMessageId();
         case ChatData::RoleLastReadOutboxMessageId: return data->data->lastReadOutboxMessageId();
         case ChatData::RoleLastMessageId: return data->data->lastMessageId();

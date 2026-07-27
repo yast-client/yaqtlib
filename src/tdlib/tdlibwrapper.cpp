@@ -89,6 +89,7 @@ namespace {
     const QString NOTIFICATION_SETTINGS("notification_settings");
     const QString UNREAD_MENTION_COUNT("unread_mention_count");
     const QString UNREAD_REACTION_COUNT("unread_reaction_count");
+    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
     const QString AVAILABLE_REACTIONS("available_reactions");
     const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
     const QString SECRET_CHAT_ID("secret_chat_id");
@@ -266,9 +267,9 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::chatNotificationSettingsUpdated, this, &TDLibWrapper::handleChatNotificationSettingsUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::chatIsMarkedAsUnreadUpdated, this, &TDLibWrapper::handleChatIsMarkedAsUnreadUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::chatUnreadMentionCountUpdated, this, &TDLibWrapper::handleChatUnreadMentionCountUpdated);
-    connect(this->tdLibReceiver, &TDLibReceiver::messageMentionRead, this, &TDLibWrapper::messageMentionRead);
     connect(this->tdLibReceiver, &TDLibReceiver::chatUnreadReactionCountUpdated, this, &TDLibWrapper::handleChatUnreadReactionCountUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::chatAvailableReactionsUpdated, this, &TDLibWrapper::handleChatAvailableReactionsUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::chatUnreadPollVoteCountUpdated, this, &TDLibWrapper::handleChatUnreadPollVoteCountUpdated);
 
     connect(this->tdLibReceiver, &TDLibReceiver::unreadMessageCountUpdated, this, &TDLibWrapper::handleUnreadMessageCountUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::unreadChatCountUpdated, this, &TDLibWrapper::handleUnreadChatCountUpdated);
@@ -372,7 +373,9 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinResultReceived, this, &TDLibWrapper::chatJoinResultReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::chatJoinRequestResultReceived, this, &TDLibWrapper::chatJoinRequestResultReceived);
     connect(this->tdLibReceiver, &TDLibReceiver::httpUrlReceived, this, &TDLibWrapper::httpUrlReceived);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageMentionRead, this, &TDLibWrapper::messageMentionRead);
     connect(this->tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageContainsUnreadPollVotesUpdated, this, &TDLibWrapper::messageContainsUnreadPollVotesUpdated);
 
     this->tdLibReceiver->start();
 }
@@ -2088,20 +2091,31 @@ void TDLibWrapper::handleChatNotificationSettingsUpdated(qlonglong chatId, const
 
 void TDLibWrapper::handleChatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread) {
     this->getChatDataForce(chatId)->chatData.insert(IS_MARKED_AS_UNREAD, chatIsMarkedAsUnread);
-    emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleIsMarkedAsUnread});
+    emit chatRolesUpdated(chatId, {ChatData::RoleIsMarkedAsUnread});
     emit chatIsMarkedAsUnreadUpdated(chatId, chatIsMarkedAsUnread);
 }
 
-void TDLibWrapper::handleChatUnreadMentionCountUpdated(qlonglong chatId, int unreadMentionCount) {
-    this->getChatDataForce(chatId)->chatData.insert(UNREAD_MENTION_COUNT, unreadMentionCount);
-    emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadMentionCount});
+void TDLibWrapper::handleChatUnreadMentionCountUpdated(qlonglong chatId, int value) {
+    ChatData *chat = this->getChatDataForce(chatId);
+    if (chat->unreadMentionCount() != value) {
+        this->getChatDataForce(chatId)->chatData.insert(UNREAD_MENTION_COUNT, value);
+        emit chatRolesUpdated(chatId, {ChatData::RoleUnreadMentionCount});
+    }
 }
 
 void TDLibWrapper::handleChatUnreadReactionCountUpdated(qlonglong chatId, int value) {
     ChatData *chat = this->getChatDataForce(chatId);
     if (chat->unreadReactionCount() != value) {
         chat->chatData.insert(UNREAD_REACTION_COUNT, value);
-        emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleUnreadReactionCount});
+        emit chatRolesUpdated(chatId, {ChatData::RoleUnreadReactionCount});
+    }
+}
+
+void TDLibWrapper::handleChatUnreadPollVoteCountUpdated(qlonglong chatId, int value) {
+    ChatData *chat = this->getChatDataForce(chatId);
+    if (chat->unreadPollVoteCount() != value) {
+        chat->chatData.insert(UNREAD_POLL_VOTE_COUNT, value);
+        emit chatRolesUpdated(chatId, {ChatData::RoleUnreadPollVoteCount});
     }
 }
 

@@ -619,6 +619,7 @@ signals:
     void chatJoinRequestResultReceived(const QString &queryId, qlonglong chatId, const QString &resultType);
     void httpUrlReceived(const QString &url, const QString &extra);
     void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
+    void messageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);
@@ -658,8 +659,9 @@ private slots:
     void handleChatPhotoUpdated(qlonglong chatId, const QVariantMap &photo);
     void handleChatNotificationSettingsUpdated(qlonglong chatId, const QVariantMap &settings);
     void handleChatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread);
-    void handleChatUnreadMentionCountUpdated(qlonglong chatId, int unreadMentionCount);
-    void handleChatUnreadReactionCountUpdated(qlonglong chatId, int unreadReactionCount);
+    void handleChatUnreadMentionCountUpdated(qlonglong chatId, int value);
+    void handleChatUnreadReactionCountUpdated(qlonglong chatId, int value);
+    void handleChatUnreadPollVoteCountUpdated(qlonglong chatId, int value);
     void handleChatAvailableReactionsUpdated(qlonglong chatId, const QVariantMap &availableReactions);
     void handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation);
     void handleUnreadChatCountUpdated(const QVariantMap &chatCountInformation);

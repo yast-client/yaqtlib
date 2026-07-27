@@ -15,6 +15,7 @@ namespace {
     const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
     const QString UNREAD_MENTION_COUNT("unread_mention_count");
     const QString UNREAD_REACTION_COUNT("unread_reaction_count");
+    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
     const QString NOTIFICATION_SETTINGS("notification_settings");
     const QString DRAFT_MESSAGE("draft_message");
     const QString MESSAGE_THREAD_ID("message_thread_id");
@@ -34,7 +35,7 @@ namespace {
 ForumTopic::ForumTopic(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &forumTopic) :
     BaseMessagableData(tdLibWrapper, utilities),
     data(forumTopic),
-    id(data.value(INFO).toMap().value(FORUM_TOPIC_ID).toLongLong())
+    id(info().value(FORUM_TOPIC_ID).toLongLong())
 {}
 
 bool ForumTopic::lessThan(const ForumTopic *topic1, const ForumTopic *topic2) {
@@ -79,6 +80,10 @@ int ForumTopic::unreadReactionCount() const {
     return data.value(UNREAD_REACTION_COUNT).toInt();
 }
 
+int ForumTopic::unreadPollVoteCount() const {
+    return data.value(UNREAD_POLL_VOTE_COUNT).toInt();
+}
+
 qlonglong ForumTopic::lastReadInboxMessageId() const {
     return data.value(LAST_READ_INBOX_MESSAGE_ID).toLongLong();
 }
@@ -100,7 +105,7 @@ const QVariantMap ForumTopic::notificationSettings() const {
 }
 
 const QVector<int> ForumTopic::updateIsPinned(bool value) {
-    if (data.value(IS_PINNED).toBool() != value) {
+    if (isPinned() != value) {
         data.insert(IS_PINNED, value);
         return {RoleIsPinned};
     }
@@ -178,7 +183,7 @@ const QVector<int> ForumTopic::updateLastMessageContent(const QVariantMap &conte
 }
 
 const QVector<int> ForumTopic::updateUnreadCount(int value) {
-    if (data.value(UNREAD_COUNT).toInt() != value) {
+    if (unreadCount() != value) {
         data.insert(UNREAD_COUNT, value);
         return {RoleUnreadCount};
     }
@@ -186,7 +191,7 @@ const QVector<int> ForumTopic::updateUnreadCount(int value) {
 }
 
 const QVector<int> ForumTopic::updateUnreadMentionCount(int value) {
-    if (data.value(UNREAD_MENTION_COUNT).toInt() != value) {
+    if (unreadMentionCount() != value) {
         data.insert(UNREAD_MENTION_COUNT, value);
         return {RoleUnreadMentionCount};
     }
@@ -194,9 +199,17 @@ const QVector<int> ForumTopic::updateUnreadMentionCount(int value) {
 }
 
 const QVector<int> ForumTopic::updateUnreadReactionCount(int value) {
-    if (data.value(UNREAD_REACTION_COUNT).toInt() != value) {
+    if (unreadReactionCount() != value) {
         data.insert(UNREAD_REACTION_COUNT, value);
         return {RoleUnreadReactionCount};
+    }
+    return {};
+}
+
+const QVector<int> ForumTopic::updateUnreadPollVoteCount(int value) {
+    if (unreadPollVoteCount() != value) {
+        data.insert(UNREAD_POLL_VOTE_COUNT, value);
+        return {RoleUnreadPollVoteCount};
     }
     return {};
 }
@@ -221,6 +234,7 @@ const QVector<int> ForumTopic::updateFromForumTopicUpdate(const QVariantMap &upd
             << updateLastReadOutboxMessageId(update.value(LAST_READ_OUTBOX_MESSAGE_ID).toLongLong())
             << updateUnreadMentionCount(update.value(UNREAD_MENTION_COUNT).toInt())
             << updateUnreadReactionCount(update.value(UNREAD_REACTION_COUNT).toInt())
+            << updateUnreadPollVoteCount(update.value(UNREAD_POLL_VOTE_COUNT).toInt())
             << updateNotificationSettings(update.value(NOTIFICATION_SETTINGS).toMap())
             << updateDraftMessage(update.value(DRAFT_MESSAGE).toMap());
 }

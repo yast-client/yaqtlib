@@ -37,6 +37,7 @@ void MessagesModel::setupTDLibWrapper() {
     connect(this->tdLibWrapper, &TDLibWrapper::messageContentOpened, this, &MessagesModel::handleMessageContentOpened);
     connect(this->tdLibWrapper, &TDLibWrapper::messageFactCheckUpdated, this, &MessagesModel::handleMessageFactCheckUpdated);
     connect(this->tdLibWrapper, &TDLibWrapper::messageUnreadReactionsUpdated, this, &MessagesModel::handleMessageUnreadReactionsUpdated);
+    connect(this->tdLibWrapper, &TDLibWrapper::messageContainsUnreadPollVotesUpdated, this, &MessagesModel::handleMessageContainsUnreadPollVotesUpdated);
 }
 
 MessagesModel::~MessagesModel() {
@@ -276,8 +277,15 @@ void MessagesModel::handleMessageIsPinnedUpdated(qlonglong chatId, qlonglong mes
 
 void MessagesModel::handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions) {
     handleMessageFieldUpdated(chatId, messageId, [messageId, unreadReactions](int index, MessageData *message) {
-        LOG("Message unread reactions updated" << messageId << unreadReactions.size() << index);
+        LOG("Message unread reactions updated" << messageId << unreadReactions.size() << "at index" << index);
         return message->setUnreadReactions(unreadReactions);
+    });
+}
+
+void MessagesModel::handleMessageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value) {
+    handleMessageFieldUpdated(chatId, messageId, [messageId, value](int index, MessageData *message) {
+        LOG("Message contains unread poll votes updated" << messageId << value << "at index" << index);
+        return message->setContainsUnreadPollVotes(value);
     });
 }
 

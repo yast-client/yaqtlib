@@ -23,6 +23,7 @@ namespace {
     const QString UNREAD_COUNT("unread_count");
     const QString UNREAD_MENTION_COUNT("unread_mention_count");
     const QString UNREAD_REACTION_COUNT("unread_reaction_count");
+    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
     const QString AVAILABLE_REACTIONS("available_reactions");
     const QString NOTIFICATION_SETTINGS("notification_settings");
     const QString PERMISSIONS("permissions");
@@ -84,29 +85,28 @@ inline const QVariantMap ChatData::draftMessage() const {
     return chatData.value(DRAFT_MESSAGE).toMap();
 }
 
-QString ChatData::title() const
-{
+QString ChatData::title() const {
     return chatData.value(TITLE).toString();
 }
 
-int ChatData::unreadCount() const
-{
+int ChatData::unreadCount() const {
     return chatData.value(UNREAD_COUNT).toInt();
 }
 
-int ChatData::unreadMentionCount() const
-{
+int ChatData::unreadMentionCount() const {
     return chatData.value(UNREAD_MENTION_COUNT).toInt();
 }
 
-QVariant ChatData::availableReactions() const
-{
+QVariant ChatData::availableReactions() const {
     return chatData.value(AVAILABLE_REACTIONS);
 }
 
-int ChatData::unreadReactionCount() const
-{
+int ChatData::unreadReactionCount() const {
     return chatData.value(UNREAD_REACTION_COUNT).toInt();
+}
+
+int ChatData::unreadPollVoteCount() const {
+    return chatData.value(UNREAD_POLL_VOTE_COUNT).toInt();
 }
 
 QVariantMap ChatData::photo() const {
@@ -135,13 +135,11 @@ QVariantMap ChatData::permissions() const {
 
 
 
-bool ChatData::isChannel() const
-{
+bool ChatData::isChannel() const {
     return chatData.value(TYPE).toMap().value(IS_CHANNEL).toBool();
 }
 
-bool ChatData::isMarkedAsUnread() const
-{
+bool ChatData::isMarkedAsUnread() const {
     return chatData.value(IS_MARKED_AS_UNREAD).toBool();
 }
 
@@ -149,8 +147,7 @@ bool ChatData::isPrivateOrSecretChat() const {
     return chatType == TDLibWrapper::ChatTypePrivate || chatType == TDLibWrapper::ChatTypeSecret;
 }
 
-bool ChatData::updateUnreadCount(int count)
-{
+bool ChatData::updateUnreadCount(int count) {
     const int prevUnreadCount(unreadCount());
     chatData.insert(UNREAD_COUNT, count);
     return prevUnreadCount != unreadCount();

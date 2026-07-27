@@ -36,6 +36,7 @@ struct ForumTopic : public BaseMessagableData {
         RoleLastReadInboxMessageId,
         RoleUnreadMentionCount,
         RoleUnreadReactionCount,
+        RoleUnreadPollVoteCount,
         RoleNotificationSettings,
         RoleDraftMessageText,
         RoleDraftMessageDate,
@@ -54,6 +55,7 @@ struct ForumTopic : public BaseMessagableData {
     int unreadCount() const;
     int unreadMentionCount() const;
     int unreadReactionCount() const;
+    int unreadPollVoteCount() const;
     virtual qlonglong lastReadInboxMessageId() const override;
     virtual qlonglong lastReadOutboxMessageId() const override;
     const QVariantMap notificationSettings() const;
@@ -69,6 +71,7 @@ struct ForumTopic : public BaseMessagableData {
     const QVector<int> updateUnreadCount(int value);
     const QVector<int> updateUnreadMentionCount(int value);
     const QVector<int> updateUnreadReactionCount(int value);
+    const QVector<int> updateUnreadPollVoteCount(int value);
     const QVector<int> updateNotificationSettings(const QVariantMap &value);
     const QVector<int> updateDraftMessage(const QVariantMap &value);
 

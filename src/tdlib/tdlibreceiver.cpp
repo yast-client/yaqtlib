@@ -35,6 +35,7 @@ namespace {
     const QString UNREAD_COUNT("unread_count");
     const QString UNREAD_MENTION_COUNT("unread_mention_count");
     const QString UNREAD_REACTION_COUNT("unread_reaction_count");
+    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
     const QString AVAILABLE_REACTIONS("available_reactions");
     const QString TEXT("text");
     const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
@@ -682,6 +683,7 @@ void TDLibReceiver::processUpdateMessageMentionRead(const QVariantMap &receivedI
     const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
     const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
     const int unreadMentionCount = receivedInformation.value(UNREAD_MENTION_COUNT).toInt();
+
     LOG("Message mention read" << chatId << messageId << "unread mention count" << unreadMentionCount);
     emit messageMentionRead(chatId, messageId);
     emit chatUnreadMentionCountUpdated(chatId, unreadMentionCount);
@@ -1306,7 +1308,26 @@ void TDLibReceiver::processUpdateMessageUnreadReactions(const QVariantMap &recei
     qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
     QVariantList unreadReactions = receivedInformation.value("unread_reactions").toList();
     int unreadReactionCount = receivedInformation.value(UNREAD_REACTION_COUNT).toInt();
+
     LOG("Received updateMessageUnreadReactions" << chatId << messageId << unreadReactions.size() << unreadReactionCount);
-    emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
     emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions);
+    emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
+}
+
+void TDLibReceiver::processUpdateChatUnreadPollVoteCount(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    int count = receivedInformation.value(UNREAD_POLL_VOTE_COUNT).toInt();
+    LOG("Received updateChatUnreadPollVoteCount" << chatId << count);
+    emit chatUnreadPollVoteCountUpdated(chatId, count);
+}
+
+void TDLibReceiver::processUpdateMessageContainsUnreadPollVotes(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    bool value = receivedInformation.value("contains_unread_poll_votes").toBool();
+    int unreadPollVoteCount = receivedInformation.value(UNREAD_POLL_VOTE_COUNT).toInt();
+
+    LOG("Received updateMessageContainsUnreadPollVotes" << chatId << messageId << value << unreadPollVoteCount);
+    emit messageContainsUnreadPollVotesUpdated(chatId, messageId, value);
+    emit chatUnreadPollVoteCountUpdated(chatId, unreadPollVoteCount);
 }

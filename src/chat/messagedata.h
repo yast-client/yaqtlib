@@ -72,6 +72,7 @@ struct MessageData {
     QVector<int> setFactCheck(const QVariantMap &factCheck);
     QVector<int> setIsPinned(bool isPinned);
     QVector<int> setUnreadReactions(const QVariantList &unreadReactions);
+    QVector<int> setContainsUnreadPollVotes(bool value);
 
     int lastMessageSenderUserId() const;
     qlonglong lastMessageSenderChatId() const;

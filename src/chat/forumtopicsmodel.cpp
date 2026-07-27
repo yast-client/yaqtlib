@@ -92,6 +92,7 @@ QHash<int,QByteArray> ForumTopicsModel::roleNames() const {
         {ForumTopic::RoleUnreadCount, "unread_count"},
         {ForumTopic::RoleUnreadMentionCount, "unread_mention_count"},
         {ForumTopic::RoleUnreadReactionCount, "unread_reaction_count"},
+        {ForumTopic::RoleUnreadPollVoteCount, "unread_poll_vote_count"},
         {ForumTopic::RoleNotificationSettings, "notification_settings"},
         {ForumTopic::RoleDraftMessageDate, "draft_message_date"},
         {ForumTopic::RoleDraftMessageText, "draft_message_text"}
@@ -152,6 +153,7 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
         case ForumTopic::RoleUnreadCount: return topic->unreadCount();
         case ForumTopic::RoleUnreadMentionCount: return topic->unreadMentionCount();
         case ForumTopic::RoleUnreadReactionCount: return topic->unreadReactionCount();
+        case ForumTopic::RoleUnreadPollVoteCount: return topic->unreadPollVoteCount();
         case ForumTopic::RoleDraftMessageDate: return topic->draftMessageDate();
         case ForumTopic::RoleDraftMessageText: return topic->draftMessageText();
 

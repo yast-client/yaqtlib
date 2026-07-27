@@ -20,6 +20,7 @@ public:
         RoleUnreadCount,
         RoleUnreadMentionCount,
         RoleUnreadReactionCount,
+        RoleUnreadPollVoteCount,
         RoleAvailableReactions,
         RoleLastReadOutboxMessageId,
         RoleLastReadInboxMessageId,
@@ -69,6 +70,7 @@ public:
     int unreadCount() const;
     int unreadMentionCount() const;
     int unreadReactionCount() const;
+    int unreadPollVoteCount() const;
     QVariant availableReactions() const;
     QVariantMap photo() const;
     QVariantMap photoSmall() const;
