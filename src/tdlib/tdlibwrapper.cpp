@@ -588,8 +588,7 @@ void TDLibWrapper::unpinChatMessage(qlonglong chatId, const QString &messageId) 
     this->sendRequest({
         {_TYPE, "unpinChatMessage"},
         {CHAT_ID, chatId},
-        {MESSAGE_ID, messageId},
-        {_EXTRA, "unpinChatMessage:" + chatId}
+        {MESSAGE_ID, messageId}
     });
 }
 
