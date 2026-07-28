@@ -1240,19 +1240,37 @@ void TDLibWrapper::getSearchSponsoredChats(const QString &query) {
     });
 }
 
-void TDLibWrapper::readAllChatMentions(qlonglong chatId) {
-    LOG("Read all chat mentions" << chatId);
-    this->sendRequest(QVariantMap{{_TYPE, "readAllChatMentions"}, {CHAT_ID, chatId}});
+void TDLibWrapper::readAllChatMentions(qlonglong chatId, int forumTopicId) {
+    LOG("Reading all chat mentions" << chatId << "forum topic ID" << forumTopicId);
+    QVariantMap request{
+        {_TYPE, forumTopicId ? "readAllForumTopicMentions" : "readAllChatMentions"},
+        {CHAT_ID, chatId}
+    };
+    if (forumTopicId)
+        request.insert(FORUM_TOPIC_ID, forumTopicId);
+    this->sendRequest(request);
 }
 
-void TDLibWrapper::readAllChatReactions(qlonglong chatId) {
-    LOG("Read all chat reactions" << chatId);
-    this->sendRequest(QVariantMap{{_TYPE, "readAllChatReactions"}, {CHAT_ID, chatId}});
+void TDLibWrapper::readAllChatReactions(qlonglong chatId, int forumTopicId) {
+    LOG("Reading all chat reactions" << chatId << "forum topic ID" << forumTopicId);
+    QVariantMap request{
+        {_TYPE, forumTopicId ? "readAllForumTopicReactions" : "readAllChatReactions"},
+        {CHAT_ID, chatId}
+    };
+    if (forumTopicId)
+        request.insert(FORUM_TOPIC_ID, forumTopicId);
+    this->sendRequest(request);
 }
 
-void TDLibWrapper::readAllChatPollVotes(qlonglong chatId) {
-    LOG("Read all chat poll votes" << chatId);
-    this->sendRequest(QVariantMap{{_TYPE, "readAllChatPollVotes"}, {CHAT_ID, chatId}});
+void TDLibWrapper::readAllChatPollVotes(qlonglong chatId, int forumTopicId) {
+    LOG("Reading all chat poll votes" << chatId << "forum topic ID" << forumTopicId);
+    QVariantMap request{
+        {_TYPE, forumTopicId ? "readAllForumTopicPollVotes" : "readAllChatPollVotes"},
+        {CHAT_ID, chatId}
+    };
+    if (forumTopicId)
+        request.insert(FORUM_TOPIC_ID, forumTopicId);
+    this->sendRequest(request);
 }
 
 void TDLibWrapper::toggleChatIsMarkedAsUnread(qlonglong chatId, bool isMarkedAsUnread) {

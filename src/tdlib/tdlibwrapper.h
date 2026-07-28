@@ -346,9 +346,9 @@ public:
     Q_INVOKABLE void searchChats(const QString &query);
     Q_INVOKABLE void searchPublicChats(const QString &query);
     Q_INVOKABLE void getSearchSponsoredChats(const QString &query);
-    Q_INVOKABLE void readAllChatMentions(qlonglong chatId);
-    Q_INVOKABLE void readAllChatReactions(qlonglong chatId);
-    Q_INVOKABLE void readAllChatPollVotes(qlonglong chatId);
+    Q_INVOKABLE void readAllChatMentions(qlonglong chatId, int forumTopicId = 0);
+    Q_INVOKABLE void readAllChatReactions(qlonglong chatId, int forumTopicId = 0);
+    Q_INVOKABLE void readAllChatPollVotes(qlonglong chatId, int forumTopicId = 0);
     Q_INVOKABLE void toggleChatIsMarkedAsUnread(qlonglong chatId, bool isMarkedAsUnread);
     Q_INVOKABLE void toggleChatIsPinned(qlonglong chatId, bool isPinned, bool archive = false);
     Q_INVOKABLE void toggleChatIsPinnedForFolder(qlonglong chatId, bool isPinned, int folderId);
