@@ -6,6 +6,8 @@
 #include "tdlib/tdlibwrapper.h"
 #include "basemessagabledata.h"
 
+#include <QColor>
+
 struct ForumTopic : public BaseMessagableData {
     enum Role {
         RoleDisplay = Qt::DisplayRole,
@@ -50,6 +52,9 @@ struct ForumTopic : public BaseMessagableData {
     inline QVariant info(const QString &key) const {
         return info().value(key);
     }
+
+    QColor iconColor() const;
+    qlonglong iconCustomEmojiId() const;
 
     bool isPinned() const;
     int unreadCount() const;

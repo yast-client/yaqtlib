@@ -7,6 +7,9 @@
 
 namespace {
     const QString INFO("info");
+    const QString COLOR("color");
+    const QString CUSTOM_EMOJI_ID("custom_emoji_id");
+
     const QString LAST_MESSAGE("last_message");
     const QString ORDER("order");
     const QString IS_PINNED("is_pinned");
@@ -62,6 +65,14 @@ bool ForumTopic::lessThan(const ForumTopic *topic1, const ForumTopic *topic2) {
 
 QVariantMap ForumTopic::info() const {
     return data.value(INFO).toMap();
+}
+
+QColor ForumTopic::iconColor() const {
+    return QColor(static_cast<QRgb>(info(ICON).toMap().value(COLOR).toInt() | 0xFF000000));
+}
+
+qlonglong ForumTopic::iconCustomEmojiId() const {
+    return info(ICON).toMap().value(CUSTOM_EMOJI_ID).toLongLong();
 }
 
 bool ForumTopic::isPinned() const {

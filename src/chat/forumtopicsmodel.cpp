@@ -22,8 +22,6 @@ namespace {
     const QString FORUM_TOPIC_ID("forum_topic_id");
     const QString ID("id");
     const QString ICON("icon");
-    const QString COLOR("color");
-    const QString CUSTOM_EMOJI_ID("custom_emoji_id");
     const QString CREATOR_ID("creator_id");
     const QString CHAT_ID("chat_id");
     const QString TOPIC_ID("topic_id");
@@ -115,9 +113,9 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
         case ForumTopic::RoleName:
             return topic->info(NAME).toString();
         case ForumTopic::RoleIconColor:
-            return topic->info(ICON).toMap().value(COLOR).toInt();
+            return topic->iconColor();
         case ForumTopic::RoleIconCustomEmojiId:
-            return topic->info(ICON).toMap().value(CUSTOM_EMOJI_ID).toLongLong();
+            return QString::number(topic->iconCustomEmojiId());
         case ForumTopic::RoleCreationDate:
             return topic->info("creation_date").toInt();
         case ForumTopic::RoleCreatorIsChat:
@@ -323,11 +321,12 @@ void ForumTopicsModel::handleNewMessageReceived(qlonglong chatId, const QVariant
 void ForumTopicsModel::handleForumTopicRolesChanged(int forumTopicIndex, const QVector<int> changedRoles, qlonglong prevLastMessageId) {
     if (changedRoles.isEmpty())
         return;
-    LOG("Forum topic updated" << forumTopicIndex);
+    const int id = topics.at(forumTopicIndex)->id;
+    LOG("Forum topic updated" << forumTopicIndex << id);
 
     if (prevLastMessageId && changedRoles.contains(ForumTopic::RoleLastMessageId)) {
         topicLastMessageIdIndexMap.remove(prevLastMessageId);
-        topicLastMessageIdIndexMap.insert(topics.at(forumTopicIndex)->id, forumTopicIndex);
+        topicLastMessageIdIndexMap.insert(id, forumTopicIndex);
     }
 
     // RoleId never changes
@@ -339,6 +338,11 @@ void ForumTopicsModel::handleForumTopicRolesChanged(int forumTopicIndex, const Q
 
     const QModelIndex modelIndex = index(forumTopicIndex);
     emit dataChanged(modelIndex, modelIndex, changedRoles);
+
+    /*if (changedRoles.contains(ForumTopic::RoleLastReadInboxMessageId)) {
+        LOG("Last read inbox message ID updated for" << forumTopicIndex << id << ", trying to update unread count");// todo..
+        tdLibWrapper->getForumTopic(chatId, id);
+    }*/
 }
 
 void ForumTopicsModel::handleForumTopicReceived(qlonglong chatId, int forumTopicId, const QVariantMap &topic) {
