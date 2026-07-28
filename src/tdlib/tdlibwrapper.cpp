@@ -2999,7 +2999,7 @@ void TDLibWrapper::toggleChatViewAsTopics(qlonglong chatId, bool viewAsTopics) {
 
 void TDLibWrapper::handleChatViewAsTopicsUpdated(qlonglong chatId, bool viewAsTopics) {
     this->getChatDataForce(chatId)->chatData.insert(VIEW_AS_TOPICS, viewAsTopics);
-    emit chatViewAsTopicsUpdated(chatId);
+    emit chatRolesUpdated(chatId, {ChatData::RoleViewAsTopics});
 }
 
 void TDLibWrapper::getMessageThreadHistory(qlonglong chatId, qlonglong messageId, int extra, qlonglong fromMessageId, int offset, int limit) {

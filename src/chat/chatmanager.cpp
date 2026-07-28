@@ -250,7 +250,6 @@ void ChatManager::setTDLibWrapper(QObject *obj) {
             connect(this->tdLibWrapper, &TDLibWrapper::basicGroupUpdated, this, &ChatManager::handleBasicGroupUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::supergroupUpdated, this, &ChatManager::handleSupergroupUpdated);
             connect(this->tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatManager::handleSponsoredMessagesReceived);
-            connect(this->tdLibWrapper, &TDLibWrapper::chatViewAsTopicsUpdated, this, &ChatManager::handleChatViewAsTopicsUpdated);
 
             if (chatId) {
                 LOG("tdLibWrapper set when chatId already is set, finishing initialization");
@@ -397,6 +396,14 @@ void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> ch
             LOG("Chat unread count updated" << chatId);
             emit chatMessagesModel->unreadCountUpdated();
         }
+        if (changedRoles.contains(ChatData::RoleViewAsTopics)) {
+            LOG("View as topics value updated" << chatId << viewAsTopics());
+            emit viewAsTopicsChanged();
+
+            // Reinitialize models
+            if (chatMessagesModel || topicsModel)
+                this->initializeMainModels();
+        }
         LOG("Chat roles updated" << chatId << changedRoles);
         emit chatInformationChanged();
     }
@@ -498,16 +505,6 @@ void ChatManager::initializeMainModels(qlonglong fromMessageId) {
 
 
 bool ChatManager::viewAsTopics() {
-    return chatInformation().value("view_as_topics").toBool();
-}
-
-void ChatManager::handleChatViewAsTopicsUpdated(qlonglong chatId) {
-    if (this->chatId == chatId) {
-        LOG("View as topics value updated" << viewAsTopics());
-        emit viewAsTopicsChanged();
-
-        // Reinitialize models
-        if (chatMessagesModel || topicsModel)
-            this->initializeMainModels();
-    }
+    ChatData *chat = getChatData();
+    return chat ? chat->viewAsTopics() : false;
 }

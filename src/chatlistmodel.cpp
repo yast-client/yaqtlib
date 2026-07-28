@@ -153,7 +153,8 @@ QHash<int,QByteArray> ChatListModel::roleNames() const {
         {ChatData::RolePermissions, "permissions"},
         {ChatData::RoleChatMainActionType, "chat_main_action_type"},
         {ChatData::RoleChatActionsText, "chat_actions_text"},
-        {ChatData::RoleChatActionsProgress, "chat_actions_progress"}
+        {ChatData::RoleChatActionsProgress, "chat_actions_progress"},
+        {ChatData::RoleViewAsTopics, "view_as_topics"}
     };
 }
 
@@ -199,6 +200,7 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const {
         case ChatData::RoleChatMainActionType: return QVariant::fromValue(data->data->getMainChatActionType());
         case ChatData::RoleChatActionsText: return data->data->getChatActionsText();
         case ChatData::RoleChatActionsProgress: return data->data->getChatActionsProgress();
+        case ChatData::RoleViewAsTopics: return data->data->viewAsTopics();
         }
     }
     return QVariant();

@@ -43,7 +43,8 @@ public:
         RolePermissions,
         RoleChatMainActionType,
         RoleChatActionsText,
-        RoleChatActionsProgress
+        RoleChatActionsProgress,
+        RoleViewAsTopics
     };
 
     ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data);
@@ -81,6 +82,7 @@ public:
     TDLibWrapper::ChatActionType getMainChatActionType() const;
     QString getChatActionsText() const;
     qreal getChatActionsProgress() const;
+    bool viewAsTopics() const;
 
     bool isChannel() const;
     bool isMarkedAsUnread() const;

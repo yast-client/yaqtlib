@@ -155,7 +155,6 @@ private slots:
     void handleBasicGroupUpdated(qlonglong groupId);
     void handleSupergroupUpdated(qlonglong groupId);
     void handleSponsoredMessagesReceived(qlonglong chatId, const QVariantList &sponsoredMessages, int messagesBetween);
-    void handleChatViewAsTopicsUpdated(qlonglong chatId);
 
 private:
     qlonglong userId() const;

@@ -587,7 +587,6 @@ signals:
     void deepLinkInfoReceived(const QVariantMap &text, bool needUpdateApplication);
     void userReceived(const QVariantMap &user);
     void chatInviteLinkInfoReceived(const QString &link, const QVariantMap &info);
-    void chatViewAsTopicsUpdated(qlonglong chatId);
     void threadMessagesReceived(qlonglong chatId, qlonglong messageId, int extra, const QVariantList &messages, int totalCount);
     void forumTopicMessagesReceived(qlonglong chatId, int forumTopicId, int extra, const QVariantList &messages, int totalCount);
     void forumTopicUpdated(qlonglong chatId, int forumTopicId, const QVariantMap &update);

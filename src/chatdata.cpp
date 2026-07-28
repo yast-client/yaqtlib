@@ -36,6 +36,7 @@ namespace {
     const QString _TYPE("@type");
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
+    const QString VIEW_AS_TOPCS("view_as_topics");
 }
 
 ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data) :
@@ -264,4 +265,8 @@ QString ChatData::getChatActionsText() const {
 
 qreal ChatData::getChatActionsProgress() const {
     return utilities->getChatActionsProgress(isPrivateOrSecretChat(), chatActions.values());
+}
+
+bool ChatData::viewAsTopics() const {
+    return chatData.value(VIEW_AS_TOPCS).toBool();
 }
