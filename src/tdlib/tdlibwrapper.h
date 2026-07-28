@@ -380,8 +380,8 @@ public:
     Q_INVOKABLE void setNetworkType(NetworkType networkType);
     Q_INVOKABLE void setInactiveSessionTtl(int days);
     Q_INVOKABLE void getMessageProperties(qlonglong chatId, qlonglong messageId);
-    Q_INVOKABLE void getCustomEmojiStickers(QStringList ids);
-    Q_INVOKABLE void getCustomEmojiStickers(QString id);
+    Q_INVOKABLE void getCustomEmojiStickers(QStringList ids, const QVariant &extra);
+    Q_INVOKABLE void getCustomEmojiStickers(QString id, const QVariant &extra);
     Q_INVOKABLE void getStorageStatisticsFast();
     Q_INVOKABLE void optimizeStorage(bool entire = false);
     Q_INVOKABLE void translateText(const QVariantMap &text, const QString &languageCode, const QString &extra);
@@ -536,7 +536,7 @@ signals:
     void recentStickersReceived(const QVariantList &stickers);
     void favoriteStickersUpdated(const QList<int> &stickerIds);
     void favoriteStickersReceived(const QVariantList &stickers);
-    void stickersReceived(const QVariantList &stickers);
+    void stickersReceived(const QVariantList &stickers, const QVariant &extra);
     void installedStickerSetsUpdated(const QString &stickerType, const QVariantList &stickerSetIds);
     void installedStickerSetsReceived(StickerType stickerType, const QVariantList &stickerSets);
     void stickerSetsReceived(const QVariantList &stickerSets);
@@ -682,7 +682,7 @@ private slots:
     void handleInternalLinkTypeReceived(const QVariantMap &linkType, const QString &extra);
     void handleUserReceived(const QVariantMap &user, bool doOpenOnFound);
     void handleChatViewAsTopicsUpdated(qlonglong chatId, bool viewAsTopics);
-    void handleStickersReceived(const QVariantList &stickers, const QString &extra);
+    void handleStickersReceived(const QVariantList &stickers, const QVariant &extra);
     void handleChatPermissionsUpdated(qlonglong chatId, const QVariantMap &permissions);
     void handleScopeNotificationSettingsUpdated(const QString &scopeType, const QVariantMap &settings);
     void handleDefaultReactionTypeUpdated(const QVariantMap &reactionType);

@@ -2498,18 +2498,22 @@ void TDLibWrapper::getMessageProperties(qlonglong chatId, qlonglong messageId) {
     this->sendRequest(requestObject);
 }
 
-void TDLibWrapper::getCustomEmojiStickers(QStringList ids) {
+void TDLibWrapper::getCustomEmojiStickers(QStringList ids, const QVariant &extra) {
     LOG("Receiving stickers for custom emojis" << ids);
-    this->sendRequest(QVariantMap{{_TYPE, "getCustomEmojiStickers"}, {"custom_emoji_ids", ids}});
+    this->sendRequest({
+        {_TYPE, "getCustomEmojiStickers"},
+        {"custom_emoji_ids", ids},
+        {_EXTRA, ensureNonJsVariant(extra)}
+    });
 }
 
-void TDLibWrapper::getCustomEmojiStickers(QString id) {
-    LOG("Receiving sticker for custom emoji" << id);
-    getCustomEmojiStickers(QStringList{id});
+void TDLibWrapper::getCustomEmojiStickers(QString id, const QVariant &extra) {
+    // NOTE: QStringList{} is explicitly needed here because otherwise the function calls itself
+    getCustomEmojiStickers(QStringList{id}, extra);
 }
 
 void TDLibWrapper::getStorageStatisticsFast() {
-    this->sendRequest(QVariantMap{{_TYPE, "getStorageStatisticsFast"}});
+    this->sendRequest({{_TYPE, "getStorageStatisticsFast"}});
 }
 
 void TDLibWrapper::optimizeStorage(bool entire) {
@@ -3067,16 +3071,17 @@ void TDLibWrapper::getForumTopic(qlonglong chatId, int forumTopicId) {
                       });
 }
 
-void TDLibWrapper::handleStickersReceived(const QVariantList &stickers, const QString &extra) {
-    if (extra == "recent") {
+void TDLibWrapper::handleStickersReceived(const QVariantList &stickers, const QVariant &extra) {
+    const QString extraString = extra.toString();
+    if (extraString == "recent") {
         LOG("Recent stickers received" << stickers.length());
         emit recentStickersReceived(stickers);
-    } else if (extra == "favorite") {
+    } else if (extraString == "favorite") {
         LOG("Favorite stickers received" << stickers.length());
         emit favoriteStickersReceived(stickers);
     } else {
         LOG("Unknown stickers received" << extra << stickers.length());
-        emit stickersReceived(stickers);
+        emit stickersReceived(stickers, extra);
     }
 }
 

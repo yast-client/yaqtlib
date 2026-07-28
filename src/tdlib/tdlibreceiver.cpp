@@ -457,7 +457,7 @@ void TDLibReceiver::processUpdateFavoriteStickers(const QVariantMap &receivedInf
 
 void TDLibReceiver::processStickers(const QVariantMap &receivedInformation) {
     LOG("Received stickers");
-    emit stickers(cleanupList(receivedInformation.value(STICKERS).toList()), receivedInformation.value(_EXTRA).toString());
+    emit stickers(cleanupList(receivedInformation.value(STICKERS).toList()), receivedInformation.value(_EXTRA));
 }
 
 void TDLibReceiver::processUpdateInstalledStickerSets(const QVariantMap &receivedInformation) {

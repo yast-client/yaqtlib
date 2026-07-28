@@ -62,7 +62,7 @@ signals:
     void chat(const QVariantMap &chat, const QVariant &extra);
     void recentStickersUpdated(bool isAttached, const QList<int> &stickerIds);
     void favoriteStickersUpdated(const QList<int> &stickerIds);
-    void stickers(const QVariantList &stickers, const QString &extra);
+    void stickers(const QVariantList &stickers, const QVariant &extra);
     void installedStickerSetsUpdated(const QString &stickerType, const QVariantList &stickerSetIds);
     void stickerSets(const QVariantList &stickerSets, int totalCount, const QString &extra);
     void stickerSet(const QString &stickerSetId, const QVariantMap &stickerSet);
