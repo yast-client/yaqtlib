@@ -111,7 +111,7 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
         case ForumTopic::RoleId:
             return topic->id;
         case ForumTopic::RoleName:
-            return topic->info(NAME).toString();
+            return topic->name();
         case ForumTopic::RoleIconColor:
             return topic->iconColor();
         case ForumTopic::RoleIconCustomEmojiId:
@@ -125,7 +125,7 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
         case ForumTopic::RoleCreatorChatId:
             return topic->info(CREATOR_ID).toMap().value("chat_id");
         case ForumTopic::RoleIsGeneral:
-            return topic->info("is_general").toBool();
+            return topic->isGeneral();
         case ForumTopic::RoleIsOutgoing:
             return topic->info("is_outgoing").toBool();
         case ForumTopic::RoleIsClosed:

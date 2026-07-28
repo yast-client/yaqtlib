@@ -67,6 +67,14 @@ QVariantMap ForumTopic::info() const {
     return data.value(INFO).toMap();
 }
 
+QString ForumTopic::name() const {
+    return info(NAME).toString();
+}
+
+bool ForumTopic::isGeneral() const {
+    return info("is_general").toBool();
+}
+
 QColor ForumTopic::iconColor() const {
     return QColor(static_cast<QRgb>(info(ICON).toMap().value(COLOR).toInt() | 0xFF000000));
 }

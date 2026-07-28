@@ -53,6 +53,8 @@ struct ForumTopic : public BaseMessagableData {
         return info().value(key);
     }
 
+    QString name() const;
+    bool isGeneral() const;
     QColor iconColor() const;
     qlonglong iconCustomEmojiId() const;
 

@@ -10,9 +10,13 @@ class ForumTopicMessagesModel : public ReadableMessagesModel {
     Q_OBJECT
     Q_PROPERTY(QObject* tdlib MEMBER tdLibWrapper WRITE setTDLibWrapper NOTIFY tdlibChanged)
     Q_PROPERTY(qlonglong chatId MEMBER chatId WRITE setChatId NOTIFY chatIdChanged)
+
     Q_PROPERTY(QVariantMap forumTopicData READ forumTopicData WRITE setForumTopicData NOTIFY forumTopicDataChanged)
     Q_PROPERTY(int forumTopicId READ forumTopicId NOTIFY forumTopicIdChanged)
-    Q_PROPERTY(QString forumTopicName READ forumTopicName NOTIFY forumTopicNameChanged)
+    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+    Q_PROPERTY(bool isGeneral READ isGeneral NOTIFY isGeneralChanged)
+    Q_PROPERTY(QColor iconColor READ iconColor NOTIFY iconColorChanged)
+    Q_PROPERTY(QString iconCustomEmojiId READ iconCustomEmojiId NOTIFY iconCustomEmojiIdChanged)
 
     Q_PROPERTY(QString searchQuery MEMBER searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged)
 
@@ -26,7 +30,10 @@ public:
     void setForumTopicData(const QVariantMap &data);
 
     int forumTopicId() const;
-    QString forumTopicName() const;
+    QString name() const;
+    bool isGeneral() const;
+    QColor iconColor() const;
+    QString iconCustomEmojiId() const;
 
     Q_INVOKABLE virtual bool clear() override;
     Q_INVOKABLE void setSearchQuery(const QString &newSearchQuery);
@@ -38,9 +45,13 @@ void searchQueryChanged();
     void tdlibChanged();
     void forumTopicsModelChanged();
     void chatIdChanged();
+
     void forumTopicDataChanged();
     void forumTopicIdChanged();
-    void forumTopicNameChanged();
+    void nameChanged();
+    void isGeneralChanged();
+    void iconColorChanged();
+    void iconCustomEmojiIdChanged();
 
 protected:
     virtual void setupTDLibWrapper() override;

@@ -42,7 +42,13 @@ void ForumTopicMessagesModel::setupTDLibWrapper() {
 
 void ForumTopicMessagesModel::handleRolesUpdated(const QVector<int> &roles) {
     if (roles.contains(ForumTopic::RoleName))
-        emit forumTopicNameChanged();
+        emit nameChanged();
+    if (roles.contains(ForumTopic::RoleIsGeneral))
+        emit isGeneralChanged();
+    if (roles.contains(ForumTopic::RoleIconColor))
+        emit iconColorChanged();
+    if (roles.contains(ForumTopic::RoleIconCustomEmojiId))
+        emit iconCustomEmojiIdChanged();
 
     if (roles.contains(ForumTopic::RoleLastReadInboxMessageId))
         emit lastReadInboxMessageIdChanged();
@@ -103,7 +109,10 @@ void ForumTopicMessagesModel::initialize() {
         this->forumTopic = new ForumTopic(tdLibWrapper, tdLibWrapper->getUtilities(), pendingForumTopicData);
         emit forumTopicIdChanged();
         emit forumTopicDataChanged();
-        emit forumTopicNameChanged();
+        emit nameChanged();
+        emit isGeneralChanged();
+        emit iconColor();
+        emit iconCustomEmojiIdChanged();
         this->loadMessages(UpdateInitial, lastReadInboxMessageId());
     }
 }
@@ -113,8 +122,20 @@ int ForumTopicMessagesModel::forumTopicId() const {
     return forumTopic ? forumTopic->id : 0;
 }
 
-QString ForumTopicMessagesModel::forumTopicName() const {
-    return forumTopic ? forumTopic->info().value(NAME).toString() : QString();
+QString ForumTopicMessagesModel::name() const {
+    return forumTopic ? forumTopic->name() : QString();
+}
+
+bool ForumTopicMessagesModel::isGeneral() const {
+    return forumTopic ? forumTopic->isGeneral() : false;
+}
+
+QColor ForumTopicMessagesModel::iconColor() const {
+    return forumTopic ? forumTopic->iconColor() : QColor();
+}
+
+QString ForumTopicMessagesModel::iconCustomEmojiId() const {
+    return QString::number(forumTopic ? forumTopic->iconCustomEmojiId() : 0);
 }
 
 bool ForumTopicMessagesModel::clear() {
