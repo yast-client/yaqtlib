@@ -223,13 +223,13 @@ ChatManager::ChatManager(QObject *parent)
       topicsModel(nullptr)
 {
     LOG("Created");
-    connect(this, &ChatManager::chatIdChanged, this, &ChatManager::infoInitializedChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::photoChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::chatInformationChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::viewAsTopicsChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::userInfoChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::secretChatInfoChanged);
     connect(this, &ChatManager::chatIdChanged, this, &ChatManager::groupInfoChanged);
+    connect(this, &ChatManager::chatIdChanged, this, &ChatManager::infoInitializedChanged);
 }
 
 ChatManager::~ChatManager() {
@@ -364,9 +364,7 @@ void ChatManager::handleSupergroupUpdated(qlonglong groupId) {
 void ChatManager::handleNewChatDiscovered(qlonglong chatId) {
     if (this->chatId == chatId) {
         LOG("Chat information for the current chat discovered");
-        emit infoInitializedChanged();
-        emit chatInformationChanged();
-        emit photoChanged();
+        emit chatIdChanged(); // Emit all chat information signals
     }
 }
 
