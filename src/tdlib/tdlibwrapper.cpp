@@ -2543,8 +2543,14 @@ void TDLibWrapper::close() {
     sendRequest(QVariantMap{{_TYPE, "close"}});
 }
 
-void TDLibWrapper::toggleSupergroupIsForum(bool isForum) {
-    sendRequest(QVariantMap{{_TYPE, "toggleSupergroupIsForum"}, {"is_forum", isForum}});
+void TDLibWrapper::toggleSupergroupIsForum(qlonglong supergroupId, bool isForum, bool hasForumTabs) {
+    LOG("Toggling supergroup is forum" << isForum << "tabs" << hasForumTabs);
+    sendRequest({
+        {_TYPE, "toggleSupergroupIsForum"},
+        {SUPERGROUP_ID, supergroupId},
+        {"is_forum", isForum},
+        {"has_forum_tabs", hasForumTabs}
+    });
 }
 
 void TDLibWrapper::handleDiceEmojisUpdated(const QStringList &emojis) {

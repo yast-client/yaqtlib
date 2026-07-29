@@ -390,7 +390,7 @@ public:
     Q_INVOKABLE void sendChatAction(qlonglong chatId, const QVariantMap &topicId = QVariantMap(), const QVariantMap &action = QVariantMap());
     Q_INVOKABLE void sendChatAction(qlonglong chatId, ChatActionType type, const QVariantMap &topicId = QVariantMap());
     Q_INVOKABLE void searchEmojis(const QString &text);
-    Q_INVOKABLE void toggleSupergroupIsForum(bool isForum);
+    Q_INVOKABLE void toggleSupergroupIsForum(qlonglong supergroupId, bool isForum, bool hasForumTabs = false);
     Q_INVOKABLE void getTopChats(TopChatCategory category, int limit=50);
     Q_INVOKABLE void removeTopChat(TopChatCategory category, qlonglong chatId);
     Q_INVOKABLE void searchRecentlyFoundChats(const QString &query = QString());
