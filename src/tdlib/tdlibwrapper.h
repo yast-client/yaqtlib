@@ -30,6 +30,7 @@ class TDLibWrapper : public QObject {
     Q_PROPERTY(QQmlPropertyMap* options MEMBER options CONSTANT)
     Q_PROPERTY(qlonglong myUserId READ myUserId NOTIFY myUserIdUpdated)
     Q_PROPERTY(QVariantMap defaultReactionType MEMBER defaultReactionType NOTIFY defaultReactionTypeChanged)
+    Q_PROPERTY(QStringList activeEmojiReactions MEMBER activeEmojiReactions NOTIFY activeEmojiReactionsChanged)
 
 public:
     explicit TDLibWrapper(Settings *settings, QObject *parent = nullptr);
@@ -231,7 +232,6 @@ public:
     ChatData* getExistingChatData(qlonglong chatId);
     ChatData* getChatDataForce(qlonglong chatId);
     Q_INVOKABLE QVariantMap getSecretChat(qlonglong secretChatId);
-    Q_INVOKABLE QStringList getChatReactions(qlonglong chatId);
     QVariant getOption(const QString &optionName);
     Q_INVOKABLE void copyFileToDownloads(qlonglong fileId, const QString &filePath, bool openAfterCopy = false);
     Q_INVOKABLE bool isDiceEmoji(const QString &text);
@@ -506,7 +506,6 @@ signals:
     void responseForRequestIdReceived(qlonglong requestId, const QVariantMap &response);
     void someChatListUpdated();
     void chatLastMessageUpdated(qlonglong chatId, const QVariantMap &lastMessage);
-    void chatAvailableReactionsUpdated(qlonglong chatId, const QVariantMap &availableReactions);
     void userUpdated(qlonglong userId, const QVariantMap &userInformation);
     void myUserUpdated();
     void basicGroupUpdated(qlonglong groupId);
@@ -567,7 +566,7 @@ signals:
     void sessionsReceived(int inactive_session_ttl_days, const QVariantList &sessions);
     void availableReactionsReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &reactions, ReactionUnavailabilityReason unavailabilityReason);
     void messageMentionRead(qlonglong chatId, qlonglong messageId);
-    void reactionsUpdated();
+    void activeEmojiReactionsChanged();
     void messagePropertiesReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &messageProperties);
     void storageStatisticsFastReceived(const QVariantMap &statistics);
     void storageStatisticsReceived(const QVariantMap &statistics);
@@ -724,8 +723,6 @@ private:
     QMap<qlonglong, QVariantMap> usersById;
     QHash<qlonglong, ChatData*> chats;
     QMap<qlonglong, QVariantMap> secretChats;
-    QVariantMap unreadMessageInformation;
-    QVariantMap unreadChatInformation;
     QHash<qlonglong,Group*> basicGroups;
     QHash<qlonglong,Group*> superGroups;
     QStringList activeEmojiReactions;

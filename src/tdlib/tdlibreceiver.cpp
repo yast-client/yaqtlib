@@ -697,10 +697,7 @@ void TDLibReceiver::processUpdateChatUnreadReactionCount(const QVariantMap &rece
     emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
 }
 
-void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &receivedInformation)
-{
-    // updateActiveEmojiReactions was introduced between 1.8.5 and 1.8.6
-    // See https://github.com/tdlib/td/commit/d29d367
+void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &receivedInformation) {
     emit activeEmojiReactionsUpdated(receivedInformation.value(EMOJIS).toStringList());
 }
 

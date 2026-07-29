@@ -51,9 +51,7 @@ namespace {
     const QString TYPE_CHAT_LIST_ARCHIVE("chatListArchive");
     const QString TYPE_CHAT_LIST_FOLDER("chatListFolder");
     const QString CHAT_FOLDER_ID("chat_folder_id");
-    const QString CHAT_AVAILABLE_REACTIONS("available_reactions");
-    const QString CHAT_AVAILABLE_REACTIONS_ALL("chatAvailableReactionsAll");
-    const QString CHAT_AVAILABLE_REACTIONS_SOME("chatAvailableReactionsSome");
+    const QString AVAILABLE_REACTIONS("available_reactions");
     const QString REACTIONS("reactions");
     const QString REACTION_TYPE("reaction_type");
     const QString REACTION_TYPE_EMOJI("reactionTypeEmoji");
@@ -90,7 +88,6 @@ namespace {
     const QString UNREAD_MENTION_COUNT("unread_mention_count");
     const QString UNREAD_REACTION_COUNT("unread_reaction_count");
     const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
-    const QString AVAILABLE_REACTIONS("available_reactions");
     const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString TYPE_READ_CHAT_LIST("readChatList");
@@ -205,7 +202,6 @@ TDLibWrapper::TDLibWrapper(Settings *settings, QObject *parent)
     , networkConfigurationManager(new QNetworkConfigurationManager(this))
     , settings(settings)
     , utilities(new Utilities(this))
-    , authorizationState(AuthorizationState::Closed)
 {
     LOG("Initializing");
 
@@ -1716,48 +1712,6 @@ ChatData* TDLibWrapper::getChatDataForce(qlonglong chatId) {
     return this->chats.value(chatId);
 }
 
-QStringList TDLibWrapper::getChatReactions(qlonglong chatId) {
-    LOG("Obtaining chat reactions for chat" << chatId);
-    const QVariant available_reactions(getChat(chatId).value(CHAT_AVAILABLE_REACTIONS));
-    const QVariantMap map(available_reactions.toMap());
-    const QString reactions_type(map.value(_TYPE).toString());
-    if (reactions_type == CHAT_AVAILABLE_REACTIONS_ALL) {
-        LOG("Chat uses all available reactions, currently available number" << activeEmojiReactions.size());
-        return activeEmojiReactions;
-    } else if (reactions_type == CHAT_AVAILABLE_REACTIONS_SOME) {
-        LOG("Chat uses reduced set of reactions");
-        const QVariantList reactions(map.value(REACTIONS).toList());
-        const int n = reactions.count();
-        QStringList emojis;
-
-        // "available_reactions": {
-        //     "@type": "chatAvailableReactionsSome",
-        //     "reactions": [
-        //         {
-        //             "@type": "reactionTypeEmoji",
-        //             "emoji": "..."
-        //         },
-        emojis.reserve(n);
-        for (int i = 0; i < n; i++) {
-            const QVariantMap reaction(reactions.at(i).toMap());
-            if (reaction.value(_TYPE).toString() == REACTION_TYPE_EMOJI) {
-                const QString emoji(reaction.value(EMOJI).toString());
-                if (!emoji.isEmpty()) {
-                    emojis.append(emoji);
-                }
-            }
-        }
-        LOG("Found emojis for this chat" << emojis.size());
-        return emojis;
-    } else if (reactions_type.isEmpty()) {
-        LOG("No chat reaction type specified, using all reactions");
-        return available_reactions.toStringList();
-    } else {
-        LOG("Unknown chat reaction type" << reactions_type);
-        return QStringList();
-    }
-}
-
 QVariantMap TDLibWrapper::getSecretChat(qlonglong secretChatId) {
     return this->secretChats.value(secretChatId);
 }
@@ -1812,8 +1766,6 @@ void TDLibWrapper::reset() {
     qDeleteAll(chats);
     chats.clear();
     secretChats.clear();
-    unreadMessageInformation.clear();
-    unreadChatInformation.clear();
     qDeleteAll(basicGroups);
     basicGroups.clear();
     qDeleteAll(superGroups);
@@ -2171,9 +2123,8 @@ void TDLibWrapper::handleUnreadChatCountUpdated(const QVariantMap &chatCountInfo
 
 void TDLibWrapper::handleChatAvailableReactionsUpdated(qlonglong chatId, const QVariantMap &availableReactions) {
     LOG("Updating available reactions for chat" << chatId << availableReactions);
-    this->getChatDataForce(chatId)->chatData.insert(CHAT_AVAILABLE_REACTIONS, availableReactions);
+    this->getChatDataForce(chatId)->chatData.insert(AVAILABLE_REACTIONS, availableReactions);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleAvailableReactions});
-    emit chatAvailableReactionsUpdated(chatId, availableReactions);
 }
 
 void TDLibWrapper::handleBasicGroupUpdated(qlonglong groupId, const QVariantMap &groupInformation) {
@@ -2364,7 +2315,7 @@ void TDLibWrapper::handleActiveEmojiReactionsUpdated(const QStringList& emojis) 
     if (activeEmojiReactions != emojis) {
         activeEmojiReactions = emojis;
         LOG(emojis.count() << "reaction(s) available");
-        emit reactionsUpdated();
+        emit activeEmojiReactionsChanged();
     }
 }
 
