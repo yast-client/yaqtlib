@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include "tdlib/tdlibwrapper.h"
+#include "tdlib/tdlibdata.h"
 #include "basemessagabledata.h"
 
 class ChatData : public BaseMessagableData {
@@ -92,7 +93,7 @@ public:
     bool updateLastReadInboxMessageId(qlonglong messageId);
     bool updateLastReadOutboxMessageId(qlonglong messageId);
     QVector<int> updateLastMessage(const QVariantMap &message);
-    QVector<int> updateGroup(const TDLibWrapper::Group *group);
+    QVector<int> updateGroup(const TDLibData::Group *group);
 
 public:
     QVariantMap chatData;
@@ -101,5 +102,5 @@ public:
     QVariantMap verificationStatus;
     TDLibWrapper::ChatType chatType;
     TDLibWrapper::ChatMemberStatus memberStatus;
-    QHash<TDLibWrapper::MessageSender, ChatAction> chatActions;
+    QHash<TDLibData::MessageSender, ChatAction> chatActions;
 };

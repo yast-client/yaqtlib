@@ -51,7 +51,7 @@ void DBusAdaptor::markMessageAsRead(const QString &chatIdString, const QString &
     LOG("Requested to mark message as read" << chatIdString << messageId);
 
     qlonglong chatId = chatIdString.toLongLong();
-    qlonglong lastMessageId = tdLibWrapper->getChat(chatId).value(LAST_MESSAGE).toMap().value(ID).toLongLong();
+    qlonglong lastMessageId = tdLibWrapper->data()->getChat(chatId).value(LAST_MESSAGE).toMap().value(ID).toLongLong();
     if (lastMessageId) {
         LOG("Marking message as read" << chatId << messageId << lastMessageId);
         tdLibWrapper->viewMessage(chatId, lastMessageId, true, TDLibWrapper::MessageSourceNotification);
@@ -62,7 +62,7 @@ void DBusAdaptor::replyToMessage(const QString &chatIdString, const QString &mes
     LOG("Replying to message" << chatIdString << messageId);
     qlonglong chatId = chatIdString.toLongLong();
 
-    qlonglong lastMessageId = tdLibWrapper->getChat(chatId).value(LAST_MESSAGE).toMap().value(ID).toLongLong();
+    qlonglong lastMessageId = tdLibWrapper->data()->getChat(chatId).value(LAST_MESSAGE).toMap().value(ID).toLongLong();
     if (lastMessageId)
         tdLibWrapper->viewMessage(chatId, lastMessageId, true, TDLibWrapper::MessageSourceNotification);
 
@@ -72,13 +72,13 @@ void DBusAdaptor::replyToMessage(const QString &chatIdString, const QString &mes
 void DBusAdaptor::reactToMessage(const QString &chatId, const QString &messageId, const QVariantMap &topicId) {
     Q_UNUSED(topicId)
     LOG("Reacting to message" << chatId << messageId);
-    tdLibWrapper->addMessageReaction(chatId.toLongLong(), messageId.toLongLong(), tdLibWrapper->getDefaultReactionType());
+    tdLibWrapper->addMessageReaction(chatId.toLongLong(), messageId.toLongLong(), tdLibWrapper->data()->getDefaultReactionType());
 }
 
 void DBusAdaptor::closeSecretChat(const QString &chatId) {
     LOG("Closing secret chat" << chatId);
 
-    ChatData *chat = tdLibWrapper->getChatData(chatId.toLongLong());
+    ChatData *chat = tdLibWrapper->data()->getChatData(chatId.toLongLong());
     if (chat && chat->chatType == TDLibWrapper::ChatTypeSecret) {
         int secretChatId = chat->chatData.value("type").toMap().value("secret_chat_id").toInt();
         tdLibWrapper->closeSecretChat(secretChatId);

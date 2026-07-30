@@ -10,12 +10,14 @@ FolderChatListModel::FolderChatListModel(TDLibWrapper *tdLibWrapper, Settings *s
     chatFoldersModel(chatFoldersModel),
     folderId(folderId)
 {
-    connect(tdLibWrapper, &TDLibWrapper::folderChatListUnreadChatCountUpdated, this, &FolderChatListModel::handleFolderUnreadChatCountUpdated);
-    connect(tdLibWrapper, &TDLibWrapper::folderChatListUnreadMessageCountUpdated, this, &FolderChatListModel::handleFolderUnreadMessageCountUpdated);
+    TDLibData *tdData = tdLibWrapper->data();
 
-    connect(tdLibWrapper, &TDLibWrapper::chatAddedToFolderList, this, &FolderChatListModel::handleChatAddedToFolderList);
-    connect(tdLibWrapper, &TDLibWrapper::chatRemovedFromFolderList, this, &FolderChatListModel::handleChatRemovedFromFolderList);
-    connect(tdLibWrapper, &TDLibWrapper::folderChatListChatPositionUpdated, this, &FolderChatListModel::handleFolderChatPositionUpdated);
+    connect(tdData, &TDLibData::folderChatListUnreadChatCountUpdated, this, &FolderChatListModel::handleFolderUnreadChatCountUpdated);
+    connect(tdData, &TDLibData::folderChatListUnreadMessageCountUpdated, this, &FolderChatListModel::handleFolderUnreadMessageCountUpdated);
+
+    connect(tdData, &TDLibData::chatAddedToFolderList, this, &FolderChatListModel::handleChatAddedToFolderList);
+    connect(tdData, &TDLibData::chatRemovedFromFolderList, this, &FolderChatListModel::handleChatRemovedFromFolderList);
+    connect(tdData, &TDLibData::folderChatListChatPositionUpdated, this, &FolderChatListModel::handleFolderChatPositionUpdated);
 
     connect(tdLibWrapper, &TDLibWrapper::folderChatListChatsLoaded, this, &FolderChatListModel::handleFolderChatsLoaded);
 }

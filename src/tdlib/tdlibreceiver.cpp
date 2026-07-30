@@ -201,13 +201,15 @@ void TDLibReceiver::processUpdateUserStatus(const QVariantMap &receivedInformati
 
 void TDLibReceiver::processUpdateFile(const QVariantMap &receivedInformation) {
     const QVariantMap fileInformation = receivedInformation.value("file").toMap();
-    LOG("File was updated: " << fileInformation.value(ID).toInt());
-    emit fileUpdated(fileInformation);
+    int id = fileInformation.value(ID).toInt();
+    LOG("File was updated" << id);
+    emit fileUpdated(id, fileInformation);
 }
 
 void TDLibReceiver::processFile(const QVariantMap &receivedInformation) {
-    LOG("File was updated: " << receivedInformation.value(ID).toInt());
-    emit fileUpdated(receivedInformation);
+    int id = receivedInformation.value(ID).toInt();
+    LOG("File was received" << id);
+    emit fileUpdated(id, receivedInformation);
 }
 
 void TDLibReceiver::processUpdateNewChat(const QVariantMap &receivedInformation) {
@@ -579,12 +581,6 @@ void TDLibReceiver::ok(const QVariantMap &receivedInformation) {
 void TDLibReceiver::processUpdateServiceNotification(const QVariantMap &receivedInformation) {
     LOG("Received updateServiceNotification");
     emit serviceNotificationReceived(receivedInformation.value(TYPE).toString(), receivedInformation.value(CONTENT).toMap());
-}
-
-void TDLibReceiver::processSecretChat(const QVariantMap &receivedInformation)
-{
-    LOG("Received a secret chat");
-    emit secretChat(receivedInformation.value(ID).toLongLong(), receivedInformation);
 }
 
 void TDLibReceiver::processUpdateSecretChat(const QVariantMap &receivedInformation)

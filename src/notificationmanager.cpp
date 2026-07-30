@@ -118,9 +118,11 @@ NotificationManager::NotificationManager(TDLibWrapper *tdLibWrapper, Settings *s
     connect(tdLibWrapper, &TDLibWrapper::activeNotificationsUpdated, this, &NotificationManager::handleUpdateActiveNotifications);
     connect(tdLibWrapper, &TDLibWrapper::notificationGroupUpdated, this, &NotificationManager::handleUpdateNotificationGroup);
     connect(tdLibWrapper, &TDLibWrapper::notificationUpdated, this, &NotificationManager::handleUpdateNotification);
-    connect(tdLibWrapper, SIGNAL(newChatDiscovered(qlonglong, const QVariantMap &)), this, SLOT(updateNotificationForChat(qlonglong)));
-    connect(tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &NotificationManager::handleChatRolesUpdated);
-    connect(tdLibWrapper, &TDLibWrapper::defaultReactionTypeChanged, this, &NotificationManager::handleDefaultReactionTypeChanged);
+
+    TDLibData *tdData = tdLibWrapper->data();
+    connect(tdData, SIGNAL(newChatDiscovered(qlonglong, const QVariantMap &)), this, SLOT(updateNotificationForChat(qlonglong)));
+    connect(tdData, &TDLibData::chatRolesUpdated, this, &NotificationManager::handleChatRolesUpdated);
+    connect(tdData, &TDLibData::defaultReactionTypeChanged, this, &NotificationManager::handleDefaultReactionTypeChanged);
 
     connect(settings, &Settings::notificationSuppressContentChanged, this, &NotificationManager::updateAllNotifications);
     connect(settings, &Settings::notificationShowDefaultReactionChanged, this, &NotificationManager::updateAllNotifications);
@@ -347,7 +349,7 @@ void NotificationManager::iterateNotificationGroupsForChat(qlonglong chatId, std
 #ifdef USE_CALLS
 void NotificationManager::iterateCallNotificationsForChat(qlonglong chatId, std::function<void(int, Notification*)> callback) {
     for (int callId : callNotifications.keys())
-        if (tdLibWrapper->getChatData(chatId)->isPrivateOrSecretChat()) {
+        if (tdLibWrapper->data()->getChatData(chatId)->isPrivateOrSecretChat()) {
             const QSharedPointer<CallsManager::Call> call = callsManager->getCall(callId);
             if (call && call->userId == chatId)
                 callback(callId, callNotifications.value(callId));
@@ -439,7 +441,7 @@ QVariant NotificationManager::remoteAction(const QString &name, const QString &d
 void NotificationManager::publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound, const QString &soundFilePath, bool updateChatPhoto) {
     const QVariantMap lastNotification = notificationGroup->lastNotification();
     const QVariantMap notificationType = lastNotification.value(TYPE).toMap();
-    const ChatData *chat = tdLibWrapper->getChatData(notificationGroup->chatId);
+    const ChatData *chat = tdLibWrapper->data()->getChatData(notificationGroup->chatId);
 
     Notification *nemoNotification = notificationGroup->nemoNotification;
     fillChatNotificationFields(nemoNotification, chat, updateChatPhoto);
@@ -497,7 +499,7 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
         }
 
         if (settings->notificationShowDefaultReaction()) {
-            const QVariantMap reactionType = tdLibWrapper->getDefaultReactionType();
+            const QVariantMap reactionType = tdLibWrapper->data()->getDefaultReactionType();
             // TODO: hide action if already reacted or add indication that the reaction is already set to allow unreacting
             if (reactionType.value(_TYPE).toString() == "reactionTypeEmoji")
                 remoteActions.append(remoteAction(ACTION_REACT, reactionType.value("emoji").toString(),
@@ -557,7 +559,7 @@ void NotificationManager::handleChatPhotoDownloadingCompletedChanged() {
         qlonglong chatId = pendingChatPhotoChats.take(file->getId());
         LOG("Chat photo downloaded for chat" << chatId << file->getId());
 
-        const ChatData *chat = tdLibWrapper->getChatData(chatId);
+        const ChatData *chat = tdLibWrapper->data()->getChatData(chatId);
         if (chat && chat->photoSmall().value(ID).toLongLong() == file->getId()) {
             iterateNotificationGroupsForChat(chatId, [file](QSharedPointer<NotificationGroup> group) {
                 LOG("Updating chat photo for group ID" << group->notificationGroupId);
@@ -658,7 +660,7 @@ void NotificationManager::publishCallNotification(int callId) {
     }
 
     // TODO: ideally only handle user data & updates for call notifications
-    fillChatNotificationFields(notification, tdLibWrapper->getChatData(call->userId));
+    fillChatNotificationFields(notification, tdLibWrapper->data()->getChatData(call->userId));
     notification->setBody(call->video ? tr("Incoming video call", "notification") : tr("Incoming call", "notification"));
 
     const QVariantList arguments{callId};
@@ -764,7 +766,7 @@ inline void NotificationManager::playInChatSound(bool incoming, const QVariantMa
 void NotificationManager::handleNewMessageReceived(qlonglong chatId, const QVariantMap &message) {
     if (useInChatNgf() && !incomingSoundPath.isEmpty()
             && !message.value("is_outgoing").toBool() && !message.contains("sending_state")
-            && activeChatId == chatId && !tdLibWrapper->chatIsMuted(chatId)) {
+            && activeChatId == chatId && !tdLibWrapper->data()->chatIsMuted(chatId)) {
         LOG("Playing incoming message NGF");
         playInChatSound(true, message);
     }

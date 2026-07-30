@@ -80,7 +80,7 @@ void UserProfilePicturesModel::handleUserFullInfo(qlonglong userId, const QVaria
         endInsertRows();
     }
 
-    if (userFullInfo.contains(PUBLIC_PHOTO) && (!userFullInfo.contains(PHOTO) || userId == tdLibWrapper->myUserId())) {
+    if (userFullInfo.contains(PUBLIC_PHOTO) && (!userFullInfo.contains(PHOTO) || userId == tdLibWrapper->data()->myUserId())) {
         LOG("Adding public photo");
         additionalPhotosCount++;
         // if contains a personal photo, 1; 0 otherwise
@@ -111,7 +111,7 @@ void UserProfilePicturesModel::handleChatPhotosReceived(qlonglong chatId, const 
 }
 
 void UserProfilePicturesModel::handleOkReceived(const QVariant &extraVariant) {
-    if (userId == tdLibWrapper->myUserId() && extraVariant.userType() == QMetaType::QString) {
+    if (userId == tdLibWrapper->data()->myUserId() && extraVariant.userType() == QMetaType::QString) {
         const QString extra = extraVariant.toString();
         if (extra.startsWith("deleteProfilePhoto:")) {
             qlonglong id = extra.mid(19).toLongLong();

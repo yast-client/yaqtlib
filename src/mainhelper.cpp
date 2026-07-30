@@ -75,6 +75,10 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     context->setContextProperty("tdLibWrapper", tdLibWrapper);
     qmlRegisterUncreatableType<TDLibWrapper>(uri, 1, 0, "TDLibAPI", QString());
 
+    TDLibData *tdData = tdLibWrapper->data();
+    context->setContextProperty("tdData", tdData);
+    qmlRegisterUncreatableType<TDLibData>(uri, 1, 0, "TDLibData", QString());
+
     qmlRegisterUncreatableType<TDLibResponse>(uri, 1, 0, "TDLibResponse", QString());
 
     Utilities *utilities = tdLibWrapper->getUtilities();

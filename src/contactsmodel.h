@@ -9,6 +9,7 @@
 #include <QSortFilterProxyModel>
 
 #include "tdlib/tdlibwrapper.h"
+#include "tdlib/tdlibdata.h"
 
 class ContactsListModel : public QAbstractListModel {
     Q_OBJECT

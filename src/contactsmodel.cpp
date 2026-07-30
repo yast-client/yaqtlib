@@ -36,10 +36,10 @@ namespace {
 ContactsListModel::ContactsListModel(TDLibWrapper *tdLibWrapper, QObject *parent)
     : QAbstractListModel(parent) {
     this->tdLibWrapper = tdLibWrapper;
-    connect(this->tdLibWrapper, &TDLibWrapper::usersReceived, this, &ContactsListModel::handleUsersReceived);
-    connect(this->tdLibWrapper, &TDLibWrapper::userUpdated, this, &ContactsListModel::handleUserUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::contactsImported, this, &ContactsListModel::handleContactsImported);
-    connect(this->tdLibWrapper, &TDLibWrapper::okReceived, this, &ContactsListModel::handleOkReceived);
+    connect(tdLibWrapper, &TDLibWrapper::usersReceived, this, &ContactsListModel::handleUsersReceived);
+    connect(tdLibWrapper->data(), &TDLibData::userUpdated, this, &ContactsListModel::handleUserUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::contactsImported, this, &ContactsListModel::handleContactsImported);
+    connect(tdLibWrapper, &TDLibWrapper::okReceived, this, &ContactsListModel::handleOkReceived);
 }
 
 QHash<int, QByteArray> ContactsListModel::roleNames() const {
@@ -52,7 +52,7 @@ int ContactsListModel::rowCount(const QModelIndex &) const {
 
 QVariant ContactsListModel::data(const QModelIndex &index, int role) const {
     if (index.isValid()) {
-        QVariantMap requestedContact = this->tdLibWrapper->getUserInformation(this->contactIds.value(index.row()).toLongLong());
+        QVariantMap requestedContact = tdLibWrapper->data()->getUserInformation(this->contactIds.value(index.row()).toLongLong());
         switch (static_cast<ContactRole>(role)) {
             case ContactRole::RoleDisplay: return requestedContact;
             case ContactRole::RoleTitle: return QString(requestedContact.value(FIRST_NAME).toString() + " " + requestedContact.value(LAST_NAME).toString()).trimmed();
@@ -75,8 +75,8 @@ QVariant ContactsListModel::data(const QModelIndex &index, int role) const {
 }
 
 void ContactsListModel::addUser(const QString &userId) {
-    /*if (!this->tdLibWrapper->hasUserInformation(userId)) { // FIXME: why was this here?
-        this->tdLibWrapper->getUserFullInfo(userId);
+    /*if (!tdLibWrapper->data()->hasUserInformation(userId)) { // FIXME: why was this here?
+        tdLibWrapper->getUserFullInfo(userId);
     }*/
     beginInsertRows(QModelIndex(), contactIds.size(), contactIds.size());
     this->contactIds.append(userId);
@@ -164,8 +164,8 @@ bool ContactsListModel::compareUsersByName(const QVariantMap &user1, const QVari
 }
 
 bool ContactsListModel::compare(const QModelIndex &index1, const QModelIndex &index2) const {
-    const QVariantMap user1 = tdLibWrapper->getUserInformation(contactIds.value(index1.row()).toLongLong());
-    const QVariantMap user2 = tdLibWrapper->getUserInformation(contactIds.value(index2.row()).toLongLong());
+    const QVariantMap user1 = tdLibWrapper->data()->getUserInformation(contactIds.value(index1.row()).toLongLong());
+    const QVariantMap user2 = tdLibWrapper->data()->getUserInformation(contactIds.value(index2.row()).toLongLong());
 
     // todo: compare by status (and add an option to compare by name, like right now)
     return compareUsersByName(user1, user2);

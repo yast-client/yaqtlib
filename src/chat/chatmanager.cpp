@@ -244,12 +244,15 @@ void ChatManager::setTDLibWrapper(QObject *obj) {
         emit tdlibChanged();
 
         if (tdLibWrapper) {
-            connect(this->tdLibWrapper, &TDLibWrapper::chatRolesUpdated, this, &ChatManager::handleChatRolesUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::userUpdated, this, &ChatManager::handleUserUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::secretChatUpdated, this, &ChatManager::handleSecretChatUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::basicGroupUpdated, this, &ChatManager::handleBasicGroupUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::supergroupUpdated, this, &ChatManager::handleSupergroupUpdated);
-            connect(this->tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatManager::handleSponsoredMessagesReceived);
+            TDLibData *tdData = tdLibWrapper->data();
+            connect(tdData, &TDLibData::newChatDiscovered, this, &ChatManager::handleNewChatDiscovered);
+            connect(tdData, &TDLibData::chatRolesUpdated, this, &ChatManager::handleChatRolesUpdated);
+            connect(tdData, &TDLibData::chatPendingJoinRequestsUpdated, this, &ChatManager::handleChatPendingJoinRequestsUpdated);
+            connect(tdData, &TDLibData::userUpdated, this, &ChatManager::handleUserUpdated);
+            connect(tdData, &TDLibData::secretChatUpdated, this, &ChatManager::handleSecretChatUpdated);
+            connect(tdData, &TDLibData::basicGroupUpdated, this, &ChatManager::handleBasicGroupUpdated);
+            connect(tdData, &TDLibData::supergroupUpdated, this, &ChatManager::handleSupergroupUpdated);
+            connect(tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatManager::handleSponsoredMessagesReceived);
 
             if (chatId) {
                 LOG("tdLibWrapper set when chatId already is set, finishing initialization");
@@ -318,22 +321,22 @@ qlonglong ChatManager::groupId() const {
 QVariant ChatManager::userInfo() const {
     const TDLibWrapper::ChatType type = chatType();
     if (type == TDLibWrapper::ChatTypePrivate || type == TDLibWrapper::ChatTypeSecret)
-        return tdLibWrapper->getUserInformation(userId());
+        return tdLibWrapper->data()->getUserInformation(userId());
     return QVariant();
 }
 
 QVariant ChatManager::secretChatInfo() const {
     if (chatType() == TDLibWrapper::ChatTypeSecret)
-        return tdLibWrapper->getSecretChat(secretChatId());
+        return tdLibWrapper->data()->getSecretChat(secretChatId());
     return QVariant();
 }
 
 QVariant ChatManager::groupInfo() const {
     const TDLibWrapper::ChatType type = chatType();
     if (type == TDLibWrapper::ChatTypeBasicGroup)
-        return tdLibWrapper->getBasicGroup(groupId());
+        return tdLibWrapper->data()->getBasicGroup(groupId());
     if (type == TDLibWrapper::ChatTypeSupergroup)
-        return tdLibWrapper->getSuperGroup(groupId());
+        return tdLibWrapper->data()->getSuperGroup(groupId());
     return QVariant();
 }
 

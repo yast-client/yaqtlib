@@ -72,7 +72,7 @@ void ChatData::updateChatData(const QVariantMap &data) {
     }
 
     if (groupId != 0) {
-        const TDLibWrapper::Group *group = tdLibWrapper->getGroup(this->groupId);
+        const TDLibData::Group *group = tdLibWrapper->data()->getGroup(this->groupId, chatType == TDLibWrapper::ChatTypeSupergroup);
         if (group)
             this->updateGroup(group);
     }
@@ -199,7 +199,7 @@ QVector<int> ChatData::updateLastMessage(const QVariantMap &message) {
     return changedRoles;
 }
 
-QVector<int> ChatData::updateGroup(const TDLibWrapper::Group *group) {
+QVector<int> ChatData::updateGroup(const TDLibData::Group *group) {
     QVector<int> changedRoles;
 
     if (group && this->groupId == group->groupId) {

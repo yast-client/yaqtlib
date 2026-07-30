@@ -179,6 +179,7 @@ target_sources(yaqtlib PRIVATE
     src/userprofilepicturesmodel.cpp
     src/chat/chatphotosmodel.cpp
     src/ngfinterface.cpp
+    src/tdlib/tdlibdata.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -221,4 +222,5 @@ target_sources(yaqtlib PRIVATE
     src/userprofilepicturesmodel.h
     src/chat/chatphotosmodel.h
     src/ngfinterface.h
+    src/tdlib/tdlibdata.h
 )

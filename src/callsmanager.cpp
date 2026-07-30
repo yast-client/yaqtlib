@@ -2,6 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "callsmanager.h"
+#include "tdlib/tdlibdata.h"
 #include "callaudio.h"
 
 #include <tgcalls/InstanceImpl.h>
@@ -202,8 +203,8 @@ void CallsManager::handleCallReady() {
     const QVariantMap protocol = state.value(PROTOCOL).toMap();
 
     tgcalls::Config config{
-        .initializationTimeout = tdLibWrapper->getOption("call_packet_timeout_ms").toDouble() / 1000,
-        .receiveTimeout = tdLibWrapper->getOption("call_connect_timeout_ms").toDouble() / 1000,
+        .initializationTimeout = tdLibWrapper->data()->getOption("call_packet_timeout_ms").toDouble() / 1000,
+        .receiveTimeout = tdLibWrapper->data()->getOption("call_connect_timeout_ms").toDouble() / 1000,
         .enableP2P = protocol.value(UDP_P2P).toBool() && protocol.value("allow_p2p").toBool(),
         .maxApiLayer = protocol.value(MAX_LAYER).toInt(),
         .customParameters = state.value("custom_parameters").toString().toStdString()

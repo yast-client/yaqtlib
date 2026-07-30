@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "knownusersmodel.h"
+#include "tdlib/tdlibdata.h"
 
 #define DEBUG_MODULE KnwonUsersModel
 #include "debuglog.h"
@@ -12,7 +13,7 @@ KnownUsersModel::KnownUsersModel(TDLibWrapper *tdLibWrapper, QObject *parent)
 {
     this->tdLibWrapper = tdLibWrapper;
 
-    connect(this->tdLibWrapper, &TDLibWrapper::userUpdated, this, &KnownUsersModel::handleUserUpdated);
+    connect(tdLibWrapper->data(), &TDLibData::userUpdated, this, &KnownUsersModel::handleUserUpdated);
 }
 
 QHash<int, QByteArray> KnownUsersModel::roleNames() const

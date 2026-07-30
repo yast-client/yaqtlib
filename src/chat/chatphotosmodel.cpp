@@ -47,7 +47,7 @@ void ChatPhotosModel::setupTDLibWrapper() {
 
 void ChatPhotosModel::initialize() {
     if (tdLibWrapper && chatId) {
-        ChatData *data = tdLibWrapper->getChatData(chatId);
+        ChatData *data = tdLibWrapper->data()->getChatData(chatId);
         if (!data) {
             LOG("Chat not found" << chatId);
             return;
@@ -79,7 +79,7 @@ void ChatPhotosModel::handleSupergroupFullInfo(qlonglong groupId, const QVariant
 
 void ChatPhotosModel::processGroupFullInfo(TDLibWrapper::ChatType type, qlonglong groupId, const QVariantMap &fullInfo) {
     if (!mainChatPhotoLoaded && tdLibWrapper && chatId) {
-        ChatData *data = tdLibWrapper->getChatData(chatId);
+        ChatData *data = tdLibWrapper->data()->getChatData(chatId);
         if (data && data->chatType == type && data->groupId == groupId) {
             mainChatPhotoLoaded = true;
             processChatPhoto(fullInfo.value(PHOTO).toMap());

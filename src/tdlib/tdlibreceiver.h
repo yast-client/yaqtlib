@@ -29,7 +29,7 @@ signals:
     void connectionStateChanged(const QString &connectionState);
     void userUpdated(const QVariantMap &userInformation);
     void userStatusUpdated(qlonglong userId, const QVariantMap &userStatusInformation);
-    void fileUpdated(const QVariantMap &fileInformation);
+    void fileUpdated(int fileId, const QVariantMap &fileInformation);
     void newChatDiscovered(const QVariantMap &chatInformation);
     void chatAddedToList(const QVariantMap &chatList, qlonglong chatId);
     void chatRemovedFromList(const QVariantMap &chatList, qlonglong chatId);
@@ -82,7 +82,6 @@ signals:
     void messageSendersReceived(const QString &extra, const QVariantList &messageSenders, int totalCount);
     void errorReceived(const int code, const QString &message, const QVariant &extra);
     void serviceNotificationReceived(const QString &type, const QVariantMap &content);
-    void secretChat(qlonglong secretChatId, const QVariantMap &secretChat);
     void secretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat);
     void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
     void chatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread);
@@ -213,7 +212,6 @@ private:
         {"error", &TDLibReceiver::processError},
         {"ok", &TDLibReceiver::ok},
         {"updateServiceNotification", &TDLibReceiver::processUpdateServiceNotification},
-        {"secretChat", &TDLibReceiver::processSecretChat},
         {"updateSecretChat", &TDLibReceiver::processUpdateSecretChat},
         {"importedContacts", &TDLibReceiver::processImportedContacts},
         {"updateMessageEdited", &TDLibReceiver::processUpdateMessageEdited},
@@ -348,7 +346,6 @@ private:
     void processUsers(const QVariantMap &receivedInformation);
     void processMessageSenders(const QVariantMap &receivedInformation);
     void processUpdateServiceNotification(const QVariantMap &receivedInformation);
-    void processSecretChat(const QVariantMap &receivedInformation);
     void processUpdateSecretChat(const QVariantMap &receivedInformation);
     void processUpdateMessageEdited(const QVariantMap &receivedInformation);
     void processImportedContacts(const QVariantMap &receivedInformation);

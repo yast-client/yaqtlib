@@ -95,7 +95,7 @@ ChatFoldersModel::ChatFoldersModel(TDLibWrapper *tdLibWrapper, Settings *setting
     mainChatListModel(new ChatListModel(tdLibWrapper, settings, utilities)),
     archiveChatListModel(new ChatListModel(tdLibWrapper, settings, utilities, true))
 {
-    connect(tdLibWrapper, &TDLibWrapper::chatAddedToFolderList, this, &ChatFoldersModel::handleChatAddedToFolderList);
+    connect(tdLibWrapper->data(), &TDLibData::chatAddedToFolderList, this, &ChatFoldersModel::handleChatAddedToFolderList);
     connect(tdLibWrapper, &TDLibWrapper::chatFoldersUpdated, this, &ChatFoldersModel::handleChatFoldersUpdated);
     connect(tdLibWrapper, &TDLibWrapper::ready, this, &ChatFoldersModel::handleReady);
     connect(tdLibWrapper, &TDLibWrapper::clearContent, this, &ChatFoldersModel::reset);

@@ -66,7 +66,7 @@ bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelInde
 {
     QAbstractItemModel* model = sourceModel();
     if (model && tdLibWrapper && !requirePermissions.isEmpty()) {
-        const TDLibWrapper::Group* group = Q_NULLPTR;
+        const TDLibData::Group* group = nullptr;
         const QModelIndex index(model->index(sourceRow, 0, sourceParent));
         TDLibWrapper::ChatType chatType = (TDLibWrapper::ChatType)
             model->data(index, ChatData::RoleChatType).toInt();
@@ -74,13 +74,13 @@ bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelInde
         switch (chatType) {
         case TDLibWrapper::ChatTypeUnknown:
             return false;
-        case TDLibWrapper::TDLibWrapper::ChatTypePrivate:
-        case TDLibWrapper::TDLibWrapper::ChatTypeSecret:
+        case TDLibWrapper::ChatTypePrivate:
+        case TDLibWrapper::ChatTypeSecret:
             return true;
-        case TDLibWrapper::TDLibWrapper::ChatTypeBasicGroup:
-        case TDLibWrapper::TDLibWrapper::ChatTypeSupergroup:
-            group = tdLibWrapper->getGroup(model->data(index,
-                ChatData::RoleGroupId).toLongLong());
+        case TDLibWrapper::ChatTypeBasicGroup:
+        case TDLibWrapper::ChatTypeSupergroup:
+            group = tdLibWrapper->data()->getGroup(model->data(index,
+                ChatData::RoleGroupId).toLongLong(), chatType == TDLibWrapper::ChatTypeSupergroup);
             break;
         }
 

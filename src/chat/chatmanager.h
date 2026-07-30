@@ -97,11 +97,11 @@ public:
     bool viewAsTopics();
     inline qlonglong getChatId() const { return chatId; }
     inline bool infoInitialized() const {
-        return chatId && tdLibWrapper && tdLibWrapper->hasChatData(chatId);
+        return chatId && tdLibWrapper && tdLibWrapper->data()->hasChatData(chatId);
     }
     inline QVariantMap chatInformation() const {
         if (tdLibWrapper)
-            return tdLibWrapper->getChat(chatId);
+            return tdLibWrapper->data()->getChat(chatId);
         return QVariantMap();
     }
 
@@ -118,13 +118,13 @@ public:
     void setPermissions(const QVariantMap &permissions);
 
     inline TDLibWrapper::ChatActionType chatMainActionType() {
-        return infoInitialized() ? tdLibWrapper->getChatDataForce(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
+        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
     }
     inline QString chatActionsText() {
-        return infoInitialized() ? tdLibWrapper->getChatDataForce(chatId)->getChatActionsText() : QString();
+        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getChatActionsText() : QString();
     }
     inline qreal chatActionsProgress() {
-        return infoInitialized() ? tdLibWrapper->getChatDataForce(chatId)->getChatActionsProgress() : -1;
+        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getChatActionsProgress() : -1;
     }
 
 signals:
@@ -162,7 +162,7 @@ private:
     qlonglong groupId() const;
 
     inline ChatData* getChatData() const {
-        return chatId && tdLibWrapper ? tdLibWrapper->getChatData(chatId) : nullptr;
+        return chatId && tdLibWrapper ? tdLibWrapper->data()->getChatData(chatId) : nullptr;
     }
 
     void finishInitialization();

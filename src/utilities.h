@@ -31,11 +31,11 @@ public:
     Q_INVOKABLE static QString getUserName(const QVariantMap &userInformation);
     Q_INVOKABLE QString getChatTitle(const ChatData *chat) const;
     Q_INVOKABLE inline QString getChatTitleById(qlonglong chatId) const {
-        return getChatTitle(tdLibWrapper->getChatData(chatId));
+        return getChatTitle(tdLibWrapper->data()->getChatData(chatId));
     }
-    QString formatMessageSender(const TDLibWrapper::MessageSender &sender) const;
+    QString formatMessageSender(const TDLibData::MessageSender &sender) const;
     Q_INVOKABLE QString formatMessageSender(const QVariantMap &messageSender) const {
-        return formatMessageSender(TDLibWrapper::MessageSender(messageSender));
+        return formatMessageSender(TDLibData::MessageSender(messageSender));
     }
     static QString formatDuration(int seconds);
 
@@ -83,7 +83,7 @@ public:
 
     Q_INVOKABLE static QString formatNames(const QStringList &names, int othersCount);
     static ChatData::ChatAction getMainChatAction(bool isUser, const QList<ChatData::ChatAction> &chatActions);
-    QString formatChatActions(bool isUser, const QHash<TDLibWrapper::MessageSender, ChatData::ChatAction> &chatActions) const;
+    QString formatChatActions(bool isUser, const QHash<TDLibData::MessageSender, ChatData::ChatAction> &chatActions) const;
     static qreal getChatActionsProgress(bool isUser, const QList<ChatData::ChatAction> &chatActions);
 
 private:
