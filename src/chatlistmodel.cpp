@@ -90,8 +90,6 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Uti
     connect(tdData, &TDLibData::chatRolesUpdated, this, &ChatListModel::handleChatRolesChanged);
     //connect(tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &ChatListModel::handleMessageSendSucceeded); // disabled for now, let's see if it will fix (or break) anything
 
-    connect(tdLibWrapper, &TDLibWrapper::chatListsCalculateUnreadState, this, &ChatListModel::calculateUnreadState);
-
     connect(settings, &Settings::unreadCountIncludeMutedChanged, this, &ChatListModel::unreadChatCountChanged);
     connect(settings, &Settings::unreadCountIncludeMutedChanged, this, &ChatListModel::unreadMessageCountChanged);
 
@@ -291,19 +289,24 @@ void ChatListModel::enableRefreshTimer() {
 void ChatListModel::calculateUnreadState() {
     if (this->settings->onlineOnlyMode()) {
         LOG("Online-only mode: Calculating unread state on my own...");
-        int unreadMessages = 0;
-        int unreadChats = 0;
-        QListIterator<ListChatData*> chatIterator(this->chatList);
-        while (chatIterator.hasNext()) {
-            ChatData *currentChat = chatIterator.next()->data;
-            int unreadCount = currentChat->unreadCount();
+        int unreadChats = 0, unreadMessages = 0;
+        for (ListChatData *chat : chatList) {
+            int unreadCount = chat->data->unreadCount();
             if (unreadCount > 0) {
                 unreadChats++;
                 unreadMessages += unreadCount;
             }
         }
+
         LOG("Online-only mode: New unread state:" << unreadMessages << unreadChats);
-        emit unreadStateChanged(unreadMessages, unreadChats);
+        if (this->unreadMessageCount != unreadMessages) {
+            this->unreadMessageCount = unreadMessages;
+            emit unreadMessageCountChanged();
+        }
+        if (this->unreadChatCount != unreadChats) {
+            this->unreadChatCount = unreadChats;
+            emit unreadChatCountChanged();
+        }
     }
 }
 

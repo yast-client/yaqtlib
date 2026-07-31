@@ -538,9 +538,6 @@ signals:
     // For non-default extra value
     void internalLinkTypeReceived(const QVariantMap &type, const QString &extra);
 
-    // Signals not directly used by TDLibWrapper
-    void chatListsCalculateUnreadState(); // TODO: replace this with a chatFoldersModel function
-
 private slots:
     // settings
     void handleStorageOptimizerChanged();

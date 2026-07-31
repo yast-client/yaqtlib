@@ -213,6 +213,7 @@ QVariant ChatFoldersModel::data(const QModelIndex &index, int role) const {
 void ChatFoldersModel::handleChatAddedToFolderList(int folderId, ChatData *chatData, qlonglong order, bool isPinned) {
     if (!this->chatModels.contains(folderId)) {
         FolderChatListModel* chatModel = new FolderChatListModel(tdLibWrapper, settings, utilities, this, folderId);
+        connect(chatModel, &FolderChatListModel::unreadChatCountChanged, this, &ChatFoldersModel::handleFolderChatListUnreadChatCountChanged);
         this->chatModels.insert(folderId, chatModel);
         chatModel->handleChatAddedToList(chatData, order, isPinned);
     }
@@ -376,8 +377,11 @@ void ChatFoldersModel::handleMainChatListUnreadChatCountUpdated() {
     }
 }
 
-void ChatFoldersModel::handleFolderChatListUnreadChatCountUpdated(int folderId) {
-    // This comes from the FolderChatListModel itself
+void ChatFoldersModel::handleFolderChatListUnreadChatCountChanged() {
+    FolderChatListModel *model = qobject_cast<FolderChatListModel*>(sender());
+    if (!model) return;
+    int folderId = model->getFolderId();
+
     if (this->chatFoldersIndexMap.contains(folderId)) {
         const QModelIndex modelIndex = index(this->chatFoldersIndexMap.value(folderId));
         LOG("Folder chat list unread chat count updated" << folderId << data(modelIndex, RoleUnreadChatCount));
@@ -388,4 +392,12 @@ void ChatFoldersModel::handleFolderChatListUnreadChatCountUpdated(int folderId) 
 void ChatFoldersModel::handleFoldersUnreadCountIncludeMutedChanged() {
     LOG("Folder unread count include muted setting changed");
     emit dataChanged(index(0), index(chatFolders.size()-1), QVector<int>{RoleUnreadChatCount});
+}
+
+void ChatFoldersModel::calculateUnreadStates() {
+    LOG("Calculating unread states");
+    mainChatListModel->calculateUnreadState();
+    archiveChatListModel->calculateUnreadState();
+    for (FolderChatListModel *model : chatModels)
+        model->calculateUnreadState();
 }

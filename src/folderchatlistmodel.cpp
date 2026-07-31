@@ -22,16 +22,9 @@ FolderChatListModel::FolderChatListModel(TDLibWrapper *tdLibWrapper, Settings *s
     connect(tdLibWrapper, &TDLibWrapper::folderChatListChatsLoaded, this, &FolderChatListModel::handleFolderChatsLoaded);
 }
 
-inline int FolderChatListModel::getFolderId() {
-    return folderId;
-}
-
 
 inline void FolderChatListModel::handleFolderUnreadChatCountUpdated(int folderId, const QVariantMap &chatCountInformation) {
-    if (this->folderId == folderId) {
-        handleUnreadChatCountUpdated(chatCountInformation);
-        this->chatFoldersModel->handleFolderChatListUnreadChatCountUpdated(folderId); // this might not be ideal...
-    }
+    if (this->folderId == folderId) handleUnreadChatCountUpdated(chatCountInformation);
 }
 inline void FolderChatListModel::handleFolderUnreadMessageCountUpdated(int folderId, const QVariantMap &messageCountInformation) {
     if (this->folderId == folderId) handleUnreadMessageCountUpdated(messageCountInformation);

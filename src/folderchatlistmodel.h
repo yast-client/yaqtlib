@@ -13,7 +13,7 @@ class FolderChatListModel : public ChatListModel {
 public:
     FolderChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, ChatFoldersModel* chatFoldersModel, int folderId);
 
-    int getFolderId();
+    inline int getFolderId() { return folderId; }
 
 private slots:
     void handleFolderUnreadChatCountUpdated(int folderId, const QVariantMap &chatCountInformation);

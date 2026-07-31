@@ -81,8 +81,10 @@ public:
 
     Q_INVOKABLE static Icon iconForName(const QString &name);
 
+    Q_INVOKABLE void calculateUnreadStates();
+
 public slots:
-    void handleFolderChatListUnreadChatCountUpdated(int folderId);
+    void handleFolderChatListUnreadChatCountChanged();
     void handleReady();
     void reset();
 

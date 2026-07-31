@@ -41,6 +41,7 @@ public slots:
     void handleChatAddedToList(ChatData *chatData, qlonglong order, bool isPinned);
 
 signals:
+    void countChanged();
     void unreadChatCountChanged();
     void unreadMessageCountChanged();
 
@@ -57,10 +58,6 @@ private slots:
     void handleChatRolesChanged(qlonglong chatId, const QVector<int> changedRoles);
     void handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
     void handleRelativeTimeRefreshTimer();
-
-signals:
-    void countChanged();
-    void unreadStateChanged(int unreadMessagesCount, int unreadChatsCount);
 
 protected:
     virtual void doLoad();
