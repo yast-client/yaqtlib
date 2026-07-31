@@ -10,6 +10,8 @@ class InvertedMediaMessagesModel : public MediaMessagesModel {
 public:
     explicit InvertedMediaMessagesModel(QObject *parent = nullptr);
 
+    Q_INVOKABLE virtual int calculateScrollPosition() const;
+
 protected:
     inline virtual void appendMessages(const QList<MessageData*> newMessages) override {
         MediaMessagesModel::prependMessages(newMessages);

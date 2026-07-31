@@ -42,3 +42,8 @@ void InvertedMediaMessagesModel::handleMessagesDeleted(qlonglong chatId, const Q
         }
     }
 }
+
+int InvertedMediaMessagesModel::calculateScrollPosition() const {
+    const int pos = JumpableMessagesModel::calculateScrollPosition();
+    return pos >= 0 ? pos : 0;
+}
