@@ -205,8 +205,8 @@ QVariantMap TDLibData::getUserInformation(qlonglong userId) {
     return this->usersById.value(userId);
 }
 
-bool TDLibData::hasUserInformation(const QString &userId) {
-    return this->usersById.contains(userId.toLongLong());
+bool TDLibData::hasUserInformation(qlonglong userId) {
+    return this->usersById.contains(userId);
 }
 
 TDLibWrapper::UserPrivacySettingRule TDLibData::getUserPrivacySettingRule(TDLibWrapper::UserPrivacySetting userPrivacySetting) {

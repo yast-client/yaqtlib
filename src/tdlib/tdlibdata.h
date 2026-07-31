@@ -47,7 +47,7 @@ public:
     qlonglong myUserId() const;
     Q_INVOKABLE QVariantMap getUserInformation();
     Q_INVOKABLE QVariantMap getUserInformation(qlonglong userId);
-    Q_INVOKABLE bool hasUserInformation(const QString &userId);
+    Q_INVOKABLE bool hasUserInformation(qlonglong userId);
     const Group* getGroup(qlonglong groupId, bool superGroup) const;
     Q_INVOKABLE QVariantMap getBasicGroup(qlonglong groupId) const;
     Q_INVOKABLE QVariantMap getSuperGroup(qlonglong groupId) const;
