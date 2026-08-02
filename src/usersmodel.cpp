@@ -62,7 +62,7 @@ QVariant UsersModel::data(const QModelIndex &index, int role) const {
     switch (static_cast<UserRole>(role)) {
         case RoleDisplay: return user;
         case RoleTitle: return Utilities::getUserName(user);
-        case RoleUserId: return user.value("id");
+        case RoleUserId: return user.value("id").toLongLong();
         case RoleUsername: return user.value("usernames").toMap().value("editable_username").toString();
         case RolePhoneNumber: return user.value("phone_number");
         case RolePhoto: return user.value("profile_photo");
