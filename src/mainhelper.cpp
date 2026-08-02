@@ -48,7 +48,6 @@ MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view, TDLibWrapper
     stickerManager(tdLibWrapper),
     knownUsersModel(tdLibWrapper, view.data()),
     knownUsersProxyModel(view.data()),
-    contactsModel(tdLibWrapper, view.data()),
     suggestedActionsManager(tdLibWrapper, view.data())
 {}
 
@@ -66,6 +65,8 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     qmlRegisterType<InvertedMediaMessagesModel>(uri, 1, 0, "InvertedMediaMessagesModel");
     qmlRegisterType<UserProfilePicturesModel>(uri, 1, 0, "UserProfilePicturesModel");
     qmlRegisterType<ChatPhotosModel>(uri, 1, 0, "ChatPhotosModel");
+    qmlRegisterType<UsersModel>(uri, 1, 0, "UsersModel");
+    qmlRegisterType<ContactsModel>(uri, 1, 0, "ContactsModel");
 
     Settings *settings = new Settings(view.data());
     context->setContextProperty("yaqtSettings", settings);
@@ -109,7 +110,6 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     context->setContextProperty("dBusAdaptor", appContext->dbusAdaptor);
     context->setContextProperty("waveformManager", &appContext->waveformManager);
     context->setContextProperty("stickerManager", &appContext->stickerManager);
-    context->setContextProperty("contactsModel", &appContext->contactsModel);
     context->setContextProperty("suggestedActionsManager", &appContext->suggestedActionsManager);
 
     return appContext;

@@ -134,6 +134,7 @@ signals:
     void myUserIdUpdated();
     void userUpdated(qlonglong userId, const QVariantMap &userInformation);
     void myUserUpdated();
+    void userIsContactUpdated(qlonglong userId, bool isContact);
     void userPrivacySettingUpdated(TDLibWrapper::UserPrivacySetting setting, TDLibWrapper::UserPrivacySettingRule rule);
 
     // Chats

@@ -94,6 +94,11 @@ namespace {
     const QString ALBUM_COVER_MINITHUMBNAIL("album_cover_minithumbnail");
     const QString FILE_NAME("file_name");
 
+    const QString FIRST_NAME("first_name");
+    const QString LAST_NAME("last_name");
+    const QString PHONE_NUMBER("phone_number");
+    const QString NOTE("note");
+
     const QChar LT('<');
     const QString HTML_LT("&lt;");
     const QChar GT('>');
@@ -746,8 +751,8 @@ QString Utilities::getUnknownUserName(const QVariantMap &user) {
 }
 
 QString Utilities::getUserName(const QVariantMap &userInformation) {
-    const QString firstName = userInformation.value("first_name").toString();
-    const QString lastName = userInformation.value("last_name").toString();
+    const QString firstName = userInformation.value(FIRST_NAME).toString();
+    const QString lastName = userInformation.value(LAST_NAME).toString();
     const QString result = QString(firstName + " " + lastName).trimmed();
     if (!result.isEmpty())
         return result;
@@ -1178,4 +1183,11 @@ QString Utilities::getMessageGroupCallText(const QVariantMap &messageGroupCall, 
     if (messageGroupCall.value("was_missed").toBool())
         return tr("Missed Group Call");
     return tr("Incoming Group Call");
+}
+
+QVariantMap Utilities::makeImportedContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note, bool forceEmptyNote) {
+    QVariantMap contact{{FIRST_NAME, firstName}, {LAST_NAME, lastName}, {PHONE_NUMBER, phoneNumber}};
+    if (!note.isEmpty() || forceEmptyNote)
+        contact.insert(NOTE, note);
+    return contact;
 }

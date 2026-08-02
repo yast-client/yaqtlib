@@ -83,7 +83,7 @@ signals:
     void errorReceived(const int code, const QString &message, const QVariant &extra);
     void serviceNotificationReceived(const QString &type, const QVariantMap &content);
     void secretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat);
-    void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
+    void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, const QString &extra);
     void chatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread);
     void chatDraftMessageUpdated(qlonglong chatId, const QVariantMap &draftMessage, const QVariantList &positions);
     void inlineQueryResults(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QVariantMap &button, const QString &extra);

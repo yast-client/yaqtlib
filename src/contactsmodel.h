@@ -1,86 +1,67 @@
 //@ SPDX-FileCopyrightText: 2024-present roundedrectangle
-//@ SPDX-FileCopyrightText: 2020 Sebastian J. Wolf and other contributors
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <QAbstractListModel>
-#include <QVariantList>
+#include "usersmodel.h"
 #include <QSortFilterProxyModel>
 
-#include "tdlib/tdlibwrapper.h"
-#include "tdlib/tdlibdata.h"
-
-class ContactsListModel : public QAbstractListModel {
+class ContactsListModel : public UsersModel {
     Q_OBJECT
 
 public:
-    enum ContactRole {
-        RoleDisplay = Qt::DisplayRole,
-        RolePhoto,
-        RoleTitle,
-        RoleUserId,
-        RoleUsername,
-        RolePhoneNumber,
-        RoleUserStatus,
-        RoleUserLastOnline,
-        RoleIsSupport,
-        RoleFilter
-    };
-
+    ContactsListModel(QObject *parent = nullptr);
     ContactsListModel(TDLibWrapper *tdLibWrapper, QObject *parent = nullptr);
 
-    virtual QHash<int,QByteArray> roleNames() const override;
-    virtual int rowCount(const QModelIndex &) const override;
-    virtual QVariant data(const QModelIndex &index, int role) const override;
+    void fetch();
+    bool compare(const QModelIndex &index1, const QModelIndex &index2, bool byStatus = false) const;
 
-    bool compare(const QModelIndex &index1, const QModelIndex &index2) const;
+    friend class ContactsModel;
 
-signals:
-    void contactsImported();
-    void singleContactAdded(const QString &userId);
-    void contactNotFound();
-
-public slots:
+private slots:
     void handleUsersReceived(const QString &extra, const QVariantList &userIds, int totalCount);
-    void handleUserUpdated(qlonglong userId);
-    void handleContactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
-    void handleOkReceived(const QVariant &extraVariant);
+    void handleUserIsContactUpdated(qlonglong userId, bool isContact);
+
+protected:
+    virtual void setupTdLibWrapper() override;
 
 private:
-    TDLibWrapper *tdLibWrapper;
-    QList<QString> contactIds;
+    bool compareUsersByName(const QModelIndex &index1, const QModelIndex &index2) const;
+    bool compareUsersByStatus(const QModelIndex &index1, const QModelIndex &index2) const;
 
-    void addUser(const QString &userId);
-    bool compareUsersByName(const QVariantMap &user1, const QVariantMap &user2) const;
+public:
+    QString query;
 };
 
 
-
-class ContactsModel : public QSortFilterProxyModel
-{
+class ContactsModel : public QSortFilterProxyModel {
     Q_OBJECT
+    Q_PROPERTY(TDLibWrapper *tdlib READ tdLibWrapper WRITE setTdLibWrapper NOTIFY tdLibWrapperChanged)
+    Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
+    Q_PROPERTY(bool sortByStatus MEMBER sortByStatus WRITE setSortByStatus NOTIFY sortByStatusChanged)
+
 public:
+    ContactsModel(TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
 
-    ContactsModel(TDLibWrapper *tdLibWrapper, QObject *parent = nullptr);
+    inline TDLibWrapper *tdLibWrapper() { return contactsListModel.tdLibWrapper; }
+    inline void setTdLibWrapper(TDLibWrapper *tdLibWrapper) { contactsListModel.setTdLibWrapper(tdLibWrapper); }
 
-    Q_INVOKABLE void startImportingContacts();
-    Q_INVOKABLE void stopImportingContacts(bool singleContact = false);
-    Q_INVOKABLE void importContact(const QString &firstName, const QString &lastName, const QString &phoneNumber);
-    Q_INVOKABLE void importContact(const QVariantMap &singlePerson);
+    inline QString query() { return contactsListModel.query; }
+    void setQuery(const QString &newQuery);
+    void setSortByStatus(bool value);
 
 protected:
     virtual bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
 
 signals:
-    void contactsImported();
-    void singleContactAdded(const QString &userId);
-    void contactNotFound();
+    void tdLibWrapperChanged();
+    void loaded();
+    void queryChanged();
+    void sortByStatusChanged();
 
 private:
-    TDLibWrapper *tdLibWrapper;
-    QVariantList deviceContacts;
     ContactsListModel contactsListModel;
+    bool sortByStatus = true;
 
     bool compareUsers(const QString &userId1, const QString &userId2);
 };

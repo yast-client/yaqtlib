@@ -301,9 +301,11 @@ public:
     Q_INVOKABLE void joinChatByInviteLink(const QString &inviteLink, bool isChannel = false);
     Q_INVOKABLE void getDeepLinkInfo(const QString &link);
     Q_INVOKABLE void getContacts();
+    Q_INVOKABLE void searchContacts(const QString &query, const int limit = 100);
     Q_INVOKABLE void closeSecretChat(int secretChatId);
-    Q_INVOKABLE void importContacts(const QVariantList &contacts, bool single = false);
-    Q_INVOKABLE void addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, bool sharePhoneNumber);
+    Q_INVOKABLE void importContacts(const QVariantList &contacts, const QString &extra = QString());
+    Q_INVOKABLE void importContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note = {}, const QString &extra = QString());
+    Q_INVOKABLE void addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, const QVariantMap &note = {}, bool sharePhoneNumber = true);
     Q_INVOKABLE void removeContacts(QStringList userIds);
     Q_INVOKABLE void removeContact(QString userId);
     Q_INVOKABLE void searchChatMessages(qlonglong chatId, const QString &query, int extra, qlonglong fromMessageId = 0, SearchMessagesFilter filter = SearchMessagesFilterEmpty, int limit = 50, int offset = 0);
@@ -419,6 +421,8 @@ public:
     Q_INVOKABLE void removeNotification(int groupId, int id);
     Q_INVOKABLE void removeNotificationGroup(int groupId, int maxNotificationId);
     Q_INVOKABLE QVariantMap getMarkdownText(const QVariantMap &formattedText);
+    Q_INVOKABLE void getApplicationDownloadLink();
+    Q_INVOKABLE void setUserNote(qlonglong userId, const QVariantMap &note);
 
 signals:
     void authorizationStateChanged();
@@ -473,7 +477,7 @@ signals:
     void messageSendersReceived(const QString &extra, const QVariantList &messageSenders, int totalCount);
     void errorReceived(int code, const QString &message, const QVariant &extra);
     void serviceNotificationReceived(const QString &type, const QVariantMap &content);
-    void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, bool single);
+    void contactsImported(const QVariantList &importerCount, const QVariantList &userIds, const QString &extra);
     void messageNotFound(qlonglong chatId, qlonglong messageId);
     void inlineQueryResultsReceived(const QString &inlineQueryId, const QString &nextOffset, const QVariantList &results, const QVariantMap &button, const QString &extra);
     void callbackQueryAnswer(const QString &text, bool alert, const QString &url);

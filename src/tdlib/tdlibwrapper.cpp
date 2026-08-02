@@ -115,6 +115,7 @@ namespace {
     const QString CODE("code");
     const QString TYPE_GET_MESSAGE("getMessage");
     const QString NOTIFICATION_GROUP_ID("notification_group_id");
+    const QString NOTE("note");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -1068,7 +1069,12 @@ void TDLibWrapper::getDeepLinkInfo(const QString &link) {
 
 void TDLibWrapper::getContacts() {
     LOG("Retrieving contacts");
-    this->sendRequest(QVariantMap{{_TYPE, "getContacts"}, {_EXTRA, "contactsRequested"}});
+    sendRequest({{_TYPE, "getContacts"}, {_EXTRA, "contacts"}});
+}
+
+void TDLibWrapper::searchContacts(const QString &query, const int limit) {
+    LOG("Searching for contacts" << query << limit);
+    sendRequest({{_TYPE, "searchContacts"}, {QUERY, query}, {LIMIT, limit}, {_EXTRA, "contacts:"+query}});
 }
 
 void TDLibWrapper::closeSecretChat(int secretChatId) {
@@ -1076,24 +1082,27 @@ void TDLibWrapper::closeSecretChat(int secretChatId) {
     this->sendRequest(QVariantMap{{_TYPE, "closeSecretChat"}, {SECRET_CHAT_ID, secretChatId}});
 }
 
-void TDLibWrapper::importContacts(const QVariantList &contacts, bool single) {
-    LOG("Importing contacts");
-    this->sendRequest(QVariantMap{{_TYPE, "importContacts"}, {"contacts", contacts}, {_EXTRA, single}});
+void TDLibWrapper::importContacts(const QVariantList &contacts, const QString &extra) {
+    LOG("Importing contacts" << contacts.size());
+    this->sendRequest(QVariantMap{{_TYPE, "importContacts"}, {"contacts", contacts}, {_EXTRA, extra}});
 }
 
-void TDLibWrapper::addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, bool sharePhoneNumber) {
-    LOG("Adding contact" << userId << firstName);
-    sendRequest(QVariantMap{
-                          {_TYPE, "addContact"},
-                          {CONTACT, QVariantMap{
-                               {_TYPE, CONTACT},
-                               {PHONE_NUMBER, phone},
-                               {FIRST_NAME, firstName},
-                               {LAST_NAME, lastName},
-                               {USER_ID, userId}
-                           }},
-                          {"share_phone_number", sharePhoneNumber}
-                      });
+void TDLibWrapper::importContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note, const QString &extra) {
+    LOG("Importing a contact" << firstName << lastName << phoneNumber << note.value(TEXT).toString());
+    importContacts({Utilities::makeImportedContact(firstName, lastName, phoneNumber, note)}, extra);
+}
+
+void TDLibWrapper::addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, const QVariantMap &note, bool sharePhoneNumber) {
+    LOG("Adding contact" << userId << firstName << phone << note.value(TEXT).toString() << sharePhoneNumber);
+    QVariantMap contact{
+        {PHONE_NUMBER, phone},
+        {FIRST_NAME, firstName},
+        {LAST_NAME, lastName},
+        {USER_ID, userId}
+    };
+    if (!note.isEmpty())
+        contact.insert(NOTE, note);
+    sendRequest({{_TYPE, "addContact"}, {CONTACT, contact}, {"share_phone_number", sharePhoneNumber}});
 }
 
 void TDLibWrapper::removeContacts(QStringList userIds) {
@@ -1907,9 +1916,9 @@ void TDLibWrapper::translateText(const QVariantMap &text, const QString &languag
     LOG("Translating text" << languageCode << extra);
     this->sendRequest(QVariantMap{
         {_TYPE, "translateText"},
-    {TEXT, text},
-    {"to_language_code", languageCode},
-    {_EXTRA, extra}
+        {TEXT, text},
+        {"to_language_code", languageCode},
+        {_EXTRA, extra}
     });
 }
 
@@ -2780,4 +2789,14 @@ void TDLibWrapper::removeNotificationGroup(int groupId, int maxNotificationId) {
 
 QVariantMap TDLibWrapper::getMarkdownText(const QVariantMap &formattedText) {
     return executeRequest({{_TYPE, "getMarkdownText"}, {TEXT, formattedText}});
+}
+
+void TDLibWrapper::getApplicationDownloadLink() {
+    LOG("Getting application download link");
+    sendRequest({{_TYPE, "getApplicationDownloadLink"}, {_EXTRA, "applicationDownloadLink"}});
+}
+
+void TDLibWrapper::setUserNote(qlonglong userId, const QVariantMap &note) {
+    LOG("Setting user note" << userId);
+    sendRequest({{_TYPE, "setUserNote"}, {USER_ID, userId}, {NOTE, note}});
 }

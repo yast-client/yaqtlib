@@ -1,222 +1,133 @@
 //@ SPDX-FileCopyrightText: 2024-present roundedrectangle
-//@ SPDX-FileCopyrightText: 2020 Sebastian J. Wolf and other contributors
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "contactsmodel.h"
-#include <QListIterator>
+#include "tdlib/tdlibdata.h"
 
 #define DEBUG_MODULE ContactsModel
 #include "debuglog.h"
 
-namespace {
-    const QString STATUS("status");
-    const QString ID("id");
-    const QString TYPE("type");
-    const QString FIRST_NAME("first_name");
-    const QString LAST_NAME("last_name");
-    const QString USERNAMES("usernames");
-    const QString EDITABLE_USERNAME("editable_username");
-    const QString PHONE_NUMBER("phone_number");
-    const QString _TYPE("@type");
-    const QString _EXTRA("@extra");
-    const QHash<int,QByteArray> ROLE_NAMES{
-        {ContactsListModel::ContactRole::RoleDisplay, "display"},
-        {ContactsListModel::ContactRole::RoleTitle, "title"},
-        {ContactsListModel::ContactRole::RoleUserId, "user_id"},
-        {ContactsListModel::ContactRole::RoleUsername, "username"},
-        {ContactsListModel::ContactRole::RolePhoneNumber, "phone_number"},
-        {ContactsListModel::ContactRole::RolePhoto, "photo_data"},
-        {ContactsListModel::ContactRole::RoleUserStatus, "user_status"},
-        {ContactsListModel::ContactRole::RoleUserLastOnline, "user_last_online"},
-        {ContactsListModel::ContactRole::RoleIsSupport, "is_support"},
-        {ContactsListModel::ContactRole::RoleFilter, "filter"},
-    };
-}
 
-ContactsListModel::ContactsListModel(TDLibWrapper *tdLibWrapper, QObject *parent)
-    : QAbstractListModel(parent) {
-    this->tdLibWrapper = tdLibWrapper;
+ContactsListModel::ContactsListModel(QObject *parent) : UsersModel(parent) {}
+ContactsListModel::ContactsListModel(TDLibWrapper *tdLibWrapper, QObject *parent) : UsersModel(tdLibWrapper, parent) {}
+
+void ContactsListModel::setupTdLibWrapper() {
+    UsersModel::setupTdLibWrapper();
+
     connect(tdLibWrapper, &TDLibWrapper::usersReceived, this, &ContactsListModel::handleUsersReceived);
-    connect(tdLibWrapper->data(), &TDLibData::userUpdated, this, &ContactsListModel::handleUserUpdated);
-    connect(tdLibWrapper, &TDLibWrapper::contactsImported, this, &ContactsListModel::handleContactsImported);
-    connect(tdLibWrapper, &TDLibWrapper::okReceived, this, &ContactsListModel::handleOkReceived);
+    connect(tdLibWrapper->data(), &TDLibData::userIsContactUpdated, this, &ContactsListModel::handleUserIsContactUpdated);
+
+    if (userIds.isEmpty()) fetch();
 }
 
-QHash<int, QByteArray> ContactsListModel::roleNames() const {
-    return ROLE_NAMES;
+void ContactsListModel::fetch() {
+    if (!tdLibWrapper) return;
+    LOG("Fetching contacts" << query);
+    if (query.isEmpty())
+        tdLibWrapper->getContacts();
+    else
+        tdLibWrapper->searchContacts(query);
 }
 
-int ContactsListModel::rowCount(const QModelIndex &) const {
-    return this->contactIds.size();
-}
-
-QVariant ContactsListModel::data(const QModelIndex &index, int role) const {
-    if (index.isValid()) {
-        QVariantMap requestedContact = tdLibWrapper->data()->getUserInformation(this->contactIds.value(index.row()).toLongLong());
-        switch (static_cast<ContactRole>(role)) {
-            case ContactRole::RoleDisplay: return requestedContact;
-            case ContactRole::RoleTitle: return QString(requestedContact.value(FIRST_NAME).toString() + " " + requestedContact.value(LAST_NAME).toString()).trimmed();
-            case ContactRole::RoleUserId: return requestedContact.value(ID);
-            case ContactRole::RoleUsername: return requestedContact.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString();
-            case ContactRole::RolePhoneNumber: return requestedContact.value(PHONE_NUMBER);
-            case ContactRole::RolePhoto: return requestedContact.value("profile_photo");
-            case ContactRole::RoleUserStatus: return requestedContact.value(STATUS).toMap().value(_TYPE);
-            case ContactRole::RoleUserLastOnline: return requestedContact.value(STATUS).toMap().value("was_online");
-            case ContactRole::RoleIsSupport: return requestedContact.value("is_support").toBool();
-            case ContactRole::RoleFilter: return QString(
-                        requestedContact.value(FIRST_NAME).toString()
-                        + " " + requestedContact.value(LAST_NAME).toString()
-                        + " " + requestedContact.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString()
-                        + " " + requestedContact.value(PHONE_NUMBER).toString()
-                        ).trimmed();
-        }
-    }
-    return QVariant();
-}
-
-void ContactsListModel::addUser(const QString &userId) {
-    /*if (!tdLibWrapper->data()->hasUserInformation(userId)) { // FIXME: why was this here?
-        tdLibWrapper->getUserFullInfo(userId);
-    }*/
-    beginInsertRows(QModelIndex(), contactIds.size(), contactIds.size());
-    this->contactIds.append(userId);
-    endInsertRows();
-}
-
-void ContactsListModel::handleUsersReceived(const QString &extra, const QVariantList &userIds, int totalCount)
-{
-    if (extra == "contactsRequested") {
-        LOG("Received contacts list..." << totalCount);
-        this->contactIds.clear();
-        for (const QVariant &userIdVariant : userIds)
-            addUser(userIdVariant.toString());
+void ContactsListModel::handleUsersReceived(const QString &extra, const QVariantList &userIds, int totalCount) {
+    if (extra == "contacts") {
+        LOG("Received contacts" << totalCount);
+        setUserVariantIds(userIds);
+    } else if (!query.isEmpty() && extra == "contacts:"+query) {
+        LOG("Received contacts for query" << query);
+        setUserVariantIds(userIds);
     }
 }
 
-void ContactsListModel::handleUserUpdated(qlonglong userId) {
-    int i = contactIds.indexOf(QString::number(userId));
-    if (i > -1) {
-        const QModelIndex modelIndex = index(i);
-        emit dataChanged(modelIndex, modelIndex);
-        LOG("Updated user" << userId << data(modelIndex, ContactRole::RoleUserStatus));
-
-
-        //auto newIndex = std::upper_bound(contactIds.begin(), contactIds.end(), i);//, [this](const QString &a, const QString &b) { return compareUsers(a, b); });
-        //newIndex;
-        //QModelIndex parent;
-        //beginMoveRows(parent, a, b, parent, c);
-        // todo: sort, and somehow notify the model about this...
-    }
-}
-
-void ContactsListModel::handleContactsImported(const QVariantList &/*importerCount*/, const QVariantList &userIds, bool single) {
-    LOG("Imported" << userIds.size() << "contacts");
-    for (const QVariant &userIdVariant : userIds) {
-        const QString userId = userIdVariant.toString();
-        if (userId == "0") continue;
-        addUser(userId);
-    }
-    if (single) {
-        QString userId = userIds.value(0).toString();
-        if (userId == "0")
-            emit contactNotFound();
-        else emit singleContactAdded(userId);
-    } else emit contactsImported();
-}
-
-void ContactsListModel::handleOkReceived(const QVariant &extraVariant) {
-    const QVariantMap extra = extraVariant.toMap();
-    if (extra.value("@type").toString() == "removeContacts") {
-        LOG("Removing contacts");
-        for (QString userId : extra.value("user_ids").toStringList()) {
-            int i = contactIds.indexOf(userId);
-            if (i < 0) return;
+void ContactsListModel::handleUserIsContactUpdated(qlonglong userId, bool isContact) {
+    if (isContact) {
+        if (userIds.contains(userId)) {
+            LOG("Contact removed" << userId);
+            const int i = userIds.indexOf(userId);
             beginRemoveRows(QModelIndex(), i, i);
-            contactIds.removeAt(i);
+            userIds.removeAt(i);
             endRemoveRows();
-            // here no need to sort
         }
+    } else if (!userIds.contains(userId)) {
+        LOG("Contact added" << userId);
+        const int i = userIds.size();
+        beginInsertRows(QModelIndex(), i, i);
+        userIds.append(userId);
+        endInsertRows();
     }
 }
 
-bool ContactsListModel::compareUsersByName(const QVariantMap &user1, const QVariantMap &user2) const {
-    const QString firstName1 = user1.value(FIRST_NAME).toString();
-    const QString firstName2 = user2.value(FIRST_NAME).toString();
-    if (firstName1 != firstName2)
-        return firstName1 < firstName2;
+bool ContactsListModel::compareUsersByName(const QModelIndex &index1, const QModelIndex &index2) const {
+    for (UserRole role : {RoleTitle, RoleUsername, RolePhoneNumber}) {
+        const QString value1 = data(index1, role).toString(), value2 = data(index2, role).toString();
+        if (value1 != value2)
+            return value1 < value2;
+    }
 
-    const QString lastName1 = user1.value(LAST_NAME).toString();
-    const QString lastName2 = user2.value(LAST_NAME).toString();
-    if (!lastName1.isEmpty() && lastName1 != lastName2)
-        return lastName1 < lastName2;
-
-    const QString username1 = user1.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString();
-    const QString username2 = user2.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString();
-    if (!username1.isEmpty())
-        return username1 < username2;
-
-    const QString phone1 = user1.value(PHONE_NUMBER).toString();
-    const QString phone2 = user2.value(PHONE_NUMBER).toString();
-    if (!phone1.isEmpty() && phone1 != phone2)
-        return phone1 < phone2;
-
-    return user1.value(ID).toLongLong() < user2.value(ID).toLongLong();
+    return data(index1, RoleUserId).toLongLong() < data(index2, RoleUserId).toLongLong();
 }
 
-bool ContactsListModel::compare(const QModelIndex &index1, const QModelIndex &index2) const {
-    const QVariantMap user1 = tdLibWrapper->data()->getUserInformation(contactIds.value(index1.row()).toLongLong());
-    const QVariantMap user2 = tdLibWrapper->data()->getUserInformation(contactIds.value(index2.row()).toLongLong());
+bool ContactsListModel::compareUsersByStatus(const QModelIndex &index1, const QModelIndex &index2) const {
+    static QString USER_STATUS_OFFLINE = "userStatusOffline";
+    static QStringList statuses{"userStatusEmpty", "userStatusLastMonth", "userStatusLastWeek", USER_STATUS_OFFLINE, "userStatusRecently", "userStatusOnline"};
+    const QString status1 = data(index1, RoleUserStatus).toString(),
+            status2 = data(index2, RoleUserStatus).toString();
 
-    // todo: compare by status (and add an option to compare by name, like right now)
-    return compareUsersByName(user1, user2);
+    const int statusIndex1 = statuses.indexOf(status1),
+            statusIndex2 = statuses.indexOf(status2);
+    if (statusIndex1 != statusIndex2)
+        return statusIndex1 < statusIndex2;
+
+    if (status1 == USER_STATUS_OFFLINE) {
+        const int lastOnline1 = data(index1, RoleUserLastOnline).toInt(),
+                lastOnline2 = data(index2, RoleUserLastOnline).toInt();
+        if (lastOnline1 != lastOnline2)
+            return lastOnline1 < lastOnline2;
+    }
+
+    return compareUsersByName(index1, index2);
 }
 
+bool ContactsListModel::compare(const QModelIndex &index1, const QModelIndex &index2, bool byStatus) const {
+    if (!index1.isValid()) return false;
+    if (!index2.isValid()) return true;
+
+    return byStatus ? compareUsersByStatus(index1, index2) : compareUsersByName(index1, index2);
+}
 
 
 ContactsModel::ContactsModel(TDLibWrapper *tdLibWrapper, QObject *parent)
     : QSortFilterProxyModel(parent),
-    tdLibWrapper(tdLibWrapper),
-    contactsListModel(tdLibWrapper, parent)
+    contactsListModel(tdLibWrapper, this)
 {
-    this->tdLibWrapper = tdLibWrapper;
+    connect(&contactsListModel, &ContactsListModel::tdLibWrapperChanged, this, &ContactsModel::tdLibWrapperChanged);
+    connect(&contactsListModel, &ContactsListModel::modelReset, this, &ContactsModel::loaded);
 
     setSourceModel(&contactsListModel);
-    setFilterRole(ContactsListModel::RoleFilter);
-    setFilterCaseSensitivity(Qt::CaseInsensitive);
     setDynamicSortFilter(true);
-    sort(0); // initial sort
-
-    connect(&contactsListModel, &ContactsListModel::contactsImported, this, &ContactsModel::contactsImported);
-    connect(&contactsListModel, &ContactsListModel::singleContactAdded, this, &ContactsModel::singleContactAdded);
-    connect(&contactsListModel, &ContactsListModel::contactNotFound, this, &ContactsModel::contactNotFound);
 }
 
 bool ContactsModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const {
-    return contactsListModel.compare(source_left, source_right);
+    return contactsListModel.compare(source_left, source_right, sortByStatus);
 }
 
-void ContactsModel::startImportingContacts() {
-    this->deviceContacts.clear();
-}
-
-void ContactsModel::stopImportingContacts(bool singleContact) {
-    if (!deviceContacts.isEmpty()) {
-        LOG("Importing found contacts" << deviceContacts.size());
-        this->tdLibWrapper->importContacts(deviceContacts, singleContact);
+void ContactsModel::setQuery(const QString &newQuery) {
+    if (contactsListModel.query != newQuery) {
+        LOG("Set query" << newQuery);
+        contactsListModel.query = newQuery;
+        contactsListModel.fetch();
+        setDynamicSortFilter(false);
+        sort(-1);
+        emit queryChanged();
     }
 }
 
-void ContactsModel::importContact(const QString &firstName, const QString &lastName, const QString &phoneNumber) {
-    deviceContacts.append(QVariantMap{{FIRST_NAME, firstName}, {LAST_NAME, lastName}, {PHONE_NUMBER, phoneNumber}});
-    LOG("Found contact" << firstName << lastName << phoneNumber);
-}
-
-void ContactsModel::importContact(const QVariantMap &singlePerson) {
-    QString firstName = singlePerson.value("firstName").toString();
-    QVariantList phoneNumbers = singlePerson.value("phoneNumbers").toList();
-    if (!firstName.isEmpty() && !phoneNumbers.isEmpty()) {
-        for (const QVariant &phoneNumber : phoneNumbers) {
-            importContact(firstName, singlePerson.value("lastName").toString(), phoneNumber.toString());
-        }
+void ContactsModel::setSortByStatus(bool value) {
+    if (sortByStatus != value) {
+        LOG("Set sort by status" << value);
+        sortByStatus = value;
+        invalidate();
+        sort(0);
+        emit sortByStatusChanged();
     }
 }

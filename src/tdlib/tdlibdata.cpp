@@ -23,6 +23,7 @@ namespace {
     const QString FIRST_NAME("first_name");
     const QString LAST_NAME("last_name");
     const QString STATUS("status");
+    const QString IS_CONTACT("is_contact");
 
     const QString TYPE_CHAT_POSITION("chatPosition");
     const QString LAST_MESSAGE("last_message");
@@ -290,15 +291,23 @@ qlonglong TDLibData::myUserId() const {
     return options->value(MY_ID).toLongLong();
 }
 
-void TDLibData::handleUserUpdated(const QVariantMap &updatedUserInformation) {
-    qlonglong updatedUserId = updatedUserInformation.value(ID).toLongLong();
-    if (updatedUserId == this->options->value(MY_ID).toLongLong()) {
+void TDLibData::handleUserUpdated(const QVariantMap &user) {
+    qlonglong userId = user.value(ID).toLongLong();
+    if (userId == this->options->value(MY_ID).toLongLong()) {
         LOG("Current user information updated");
-        this->userInformation = updatedUserInformation;
+        this->userInformation = user;
         emit myUserUpdated();
     }
-    LOG("User information updated:" << updatedUserInformation.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString() << updatedUserInformation.value(FIRST_NAME).toString() << updatedUserInformation.value(LAST_NAME).toString());
-    updateUserInformation(updatedUserId, updatedUserInformation);
+    LOG("User information updated:" << user.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString() << user.value(FIRST_NAME).toString() << user.value(LAST_NAME).toString());
+
+    const bool isContact = user.value(IS_CONTACT).toBool();
+    // this also emits the signal if the user is new and it's a contact, which is used by ContactsModel
+    if (usersById.value(userId).value(IS_CONTACT).toBool() != isContact) {
+        LOG("User is contact updated" << userId << isContact);
+        emit userIsContactUpdated(userId, isContact);
+    }
+
+    updateUserInformation(userId, user);
 }
 
 void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &userStatusInformation) {
@@ -307,9 +316,8 @@ void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &use
         this->userInformation.insert(STATUS, userStatusInformation);
     }
     QVariantMap updatedUserInformation = this->usersById.value(userId);
-    if(updatedUserInformation.value(STATUS) == userStatusInformation) {
+    if (updatedUserInformation.value(STATUS) == userStatusInformation)
         return;
-    }
     LOG("User status information updated:" << userId << userStatusInformation.value(_TYPE).toString());
     updatedUserInformation.insert(STATUS, userStatusInformation);
     updateUserInformation(userId, updatedUserInformation);

@@ -598,10 +598,13 @@ void TDLibReceiver::processUpdateMessageEdited(const QVariantMap &receivedInform
     emit messageEditedUpdated(chatId, messageId, receivedInformation.value("edit_date").toInt(), receivedInformation.value("reply_markup").toMap());
 }
 
-void TDLibReceiver::processImportedContacts(const QVariantMap &receivedInformation)
-{
-    LOG("Contacts were imported");
-    emit contactsImported(receivedInformation.value("importer_count").toList(), receivedInformation.value("user_ids").toList(), receivedInformation.value(_EXTRA).toBool());
+void TDLibReceiver::processImportedContacts(const QVariantMap &receivedInformation) {
+    const QVariantList importerCount = receivedInformation.value("importer_count").toList();
+    const QVariantList userIds = receivedInformation.value("user_ids").toList();
+    const QString extra = receivedInformation.value(_EXTRA).toString();
+
+    LOG("Received importedContacts" << importerCount.size() << userIds.size() << extra);
+    emit contactsImported(importerCount, userIds, extra);
 }
 
 void TDLibReceiver::processUpdateChatIsMarkedAsUnread(const QVariantMap &receivedInformation)

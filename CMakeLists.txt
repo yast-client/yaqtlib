@@ -180,6 +180,7 @@ target_sources(yaqtlib PRIVATE
     src/chat/chatphotosmodel.cpp
     src/ngfinterface.cpp
     src/tdlib/tdlibdata.cpp
+    src/usersmodel.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -223,4 +224,5 @@ target_sources(yaqtlib PRIVATE
     src/chat/chatphotosmodel.h
     src/ngfinterface.h
     src/tdlib/tdlibdata.h
+    src/usersmodel.h
 )

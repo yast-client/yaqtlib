@@ -86,6 +86,8 @@ public:
     QString formatChatActions(bool isUser, const QHash<TDLibData::MessageSender, ChatData::ChatAction> &chatActions) const;
     static qreal getChatActionsProgress(bool isUser, const QList<ChatData::ChatAction> &chatActions);
 
+    Q_INVOKABLE static QVariantMap makeImportedContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note, bool forceEmptyNote = false);
+
 private:
     struct FormattedTextInsertion;
 
