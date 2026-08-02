@@ -1094,15 +1094,12 @@ void TDLibWrapper::importContact(const QString &firstName, const QString &lastNa
 
 void TDLibWrapper::addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, const QVariantMap &note, bool sharePhoneNumber) {
     LOG("Adding contact" << userId << firstName << phone << note.value(TEXT).toString() << sharePhoneNumber);
-    QVariantMap contact{
-        {PHONE_NUMBER, phone},
-        {FIRST_NAME, firstName},
-        {LAST_NAME, lastName},
-        {USER_ID, userId}
-    };
-    if (!note.isEmpty())
-        contact.insert(NOTE, note);
-    sendRequest({{_TYPE, "addContact"}, {CONTACT, contact}, {"share_phone_number", sharePhoneNumber}});
+    sendRequest({
+        {_TYPE, "addContact"},
+        {USER_ID, userId},
+        {CONTACT, Utilities::makeImportedContact(firstName, lastName, phone, note)},
+        {"share_phone_number", sharePhoneNumber}
+    });
 }
 
 void TDLibWrapper::removeContacts(QStringList userIds) {
