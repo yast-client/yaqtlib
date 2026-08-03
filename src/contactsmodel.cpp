@@ -41,19 +41,19 @@ void ContactsListModel::handleUsersReceived(const QString &extra, const QVariant
 
 void ContactsListModel::handleUserIsContactUpdated(qlonglong userId, bool isContact) {
     if (isContact) {
-        if (userIds.contains(userId)) {
-            LOG("Contact removed" << userId);
-            const int i = userIds.indexOf(userId);
-            beginRemoveRows(QModelIndex(), i, i);
-            userIds.removeAt(i);
-            endRemoveRows();
+        if (!userIds.contains(userId)) {
+            LOG("Contact added" << userId);
+            const int i = userIds.size();
+            beginInsertRows(QModelIndex(), i, i);
+            userIds.append(userId);
+            endInsertRows();
         }
-    } else if (!userIds.contains(userId)) {
-        LOG("Contact added" << userId);
-        const int i = userIds.size();
-        beginInsertRows(QModelIndex(), i, i);
-        userIds.append(userId);
-        endInsertRows();
+    } else if (userIds.contains(userId)) {
+        LOG("Contact removed" << userId);
+        const int i = userIds.indexOf(userId);
+        beginRemoveRows(QModelIndex(), i, i);
+        userIds.removeAt(i);
+        endRemoveRows();
     }
 }
 
