@@ -23,18 +23,18 @@ struct MessageData {
         RoleGeneratedContentUnread,
 
         RoleIsFirstInSequence,
-        RoleIsLastInSequence,
+        RoleIsLastInSequence
     };
 
     enum RoleFlag {
-        RoleFlagDisplay = 0x01,
-        RoleFlagMessageId = 0x02,
-        RoleFlagMessageContentType = 0x04,
-        RoleFlagMessageViewCount = 0x08,
-        RoleFlagMessageReactions = 0x16,
-        RoleFlagMessageAlbumEntryFilter = 0x32,
-        RoleFlagMessageAlbumMessageIds = 0x64,
-        RoleFlagMessageAlbumMessages = 0x128,
+        RoleFlagDisplay = 1 << 0,
+        RoleFlagMessageId = 1 << 1,
+        RoleFlagMessageContentType = 1 << 2,
+        RoleFlagMessageViewCount = 1 << 3,
+        RoleFlagMessageReactions = 1 << 4,
+        RoleFlagMessageAlbumEntryFilter = 1 << 5,
+        RoleFlagMessageAlbumMessageIds = 1 << 6,
+        RoleFlagMessageAlbumMessages = 1 << 7
     };
 
     MessageData(const QVariantMap &data, qlonglong msgid);
