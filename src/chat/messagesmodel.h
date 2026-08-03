@@ -32,7 +32,6 @@ public:
     Q_INVOKABLE QVariantList getMessageIdsForAlbum(qlonglong albumId) const;
     Q_INVOKABLE QVariantList getMessagesForAlbum(qlonglong albumId, int startAt = 0) const;
 
-    Q_INVOKABLE int getMessageIndex(qlonglong messageId);
     inline qlonglong getChatId() const { return chatId; }
 
     Q_INVOKABLE void markGeneratedContentAsRead(int index);

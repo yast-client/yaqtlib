@@ -136,16 +136,6 @@ QVariantList MessagesModel::getMessages(const QVariantList &messageIds) const {
     return foundMessages;
 }
 
-int MessagesModel::getMessageIndex(qlonglong messageId) {
-    if (messages.size() == 0) {
-        return -1;
-    }
-    if (messageIndexMap.contains(messageId)) {
-        return messageIndexMap.value(messageId);
-    }
-    return -1;
-}
-
 QVariantList MessagesModel::getMessageIdsForAlbum(qlonglong albumId) const {
     return albumMessageMap.value(albumId);
 }
