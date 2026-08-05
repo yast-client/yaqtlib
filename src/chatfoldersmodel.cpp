@@ -370,7 +370,7 @@ void ChatFoldersModel::removeRange(int firstDeleted, int lastDeleted) {
 }
 
 void ChatFoldersModel::handleMainChatListUnreadChatCountUpdated() {
-    if (mainChatListIndex > 0 && mainChatListIndex < chatFolders.size()) {
+    if (mainChatListIndex >= 0 && mainChatListIndex < chatFolders.size()) {
         LOG("Main chat list unread chat count updated");
         const QModelIndex modelIndex = index(mainChatListIndex);
         emit dataChanged(modelIndex, modelIndex, {RoleUnreadChatCount});
