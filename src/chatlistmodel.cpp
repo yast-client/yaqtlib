@@ -377,13 +377,13 @@ void ChatListModel::handleRelativeTimeRefreshTimer() {
 void ChatListModel::handleUnreadChatCountUpdated(const QVariantMap &chatCountInformation) {
     this->unreadChatCount = chatCountInformation.value(UNREAD_COUNT).toInt();
     this->unreadUnmutedChatCount = chatCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
-    unreadChatCountChanged();
+    emit unreadChatCountChanged();
 }
 
 void ChatListModel::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {
     this->unreadMessageCount = messageCountInformation.value(UNREAD_COUNT).toInt();
     this->unreadUnmutedMessageCount = messageCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
-    unreadMessageCountChanged();
+    emit unreadMessageCountChanged();
 }
 
 int ChatListModel::getUnreadChatCount(bool asFolder) const {

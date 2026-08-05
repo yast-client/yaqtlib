@@ -373,7 +373,7 @@ void ChatFoldersModel::handleMainChatListUnreadChatCountUpdated() {
     if (mainChatListIndex > 0 && mainChatListIndex < chatFolders.size()) {
         LOG("Main chat list unread chat count updated");
         const QModelIndex modelIndex = index(mainChatListIndex);
-        emit dataChanged(modelIndex, modelIndex, QVector<int>{RoleUnreadChatCount});
+        emit dataChanged(modelIndex, modelIndex, {RoleUnreadChatCount});
     }
 }
 
@@ -385,13 +385,13 @@ void ChatFoldersModel::handleFolderChatListUnreadChatCountChanged() {
     if (this->chatFoldersIndexMap.contains(folderId)) {
         const QModelIndex modelIndex = index(this->chatFoldersIndexMap.value(folderId));
         LOG("Folder chat list unread chat count updated" << folderId << data(modelIndex, RoleUnreadChatCount));
-        emit dataChanged(modelIndex, modelIndex, QVector<int>{RoleUnreadChatCount});
+        emit dataChanged(modelIndex, modelIndex, {RoleUnreadChatCount});
     }
 }
 
 void ChatFoldersModel::handleFoldersUnreadCountIncludeMutedChanged() {
     LOG("Folder unread count include muted setting changed");
-    emit dataChanged(index(0), index(chatFolders.size()-1), QVector<int>{RoleUnreadChatCount});
+    emit dataChanged(index(0), index(chatFolders.size()-1), {RoleUnreadChatCount});
 }
 
 void ChatFoldersModel::calculateUnreadStates() {

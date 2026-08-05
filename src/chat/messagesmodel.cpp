@@ -17,8 +17,7 @@ namespace {
     const QString CHAT_ID("chat_id");
 }
 
-MessagesModel::MessagesModel(QObject *parent) : QAbstractListModel(parent), tdLibWrapper(nullptr), chatId(0) {
-}
+MessagesModel::MessagesModel(QObject *parent) : QAbstractListModel(parent), tdLibWrapper(nullptr), chatId(0) {}
 
 MessagesModel::MessagesModel(TDLibWrapper *tdLibWrapper, QObject *parent) : MessagesModel(parent) {
     this->tdLibWrapper = tdLibWrapper;
