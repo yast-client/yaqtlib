@@ -25,16 +25,19 @@ ChatMessagesModel::ChatMessagesModel(TDLibWrapper *tdLibWrapper, qlonglong chatI
 {
     this->chatId = chatId;
 
-    connect(this->tdLibWrapper, SIGNAL(messagesReceived(qlonglong, int, const QVariantList &, int)), this, SLOT(handleMessagesReceived(qlonglong, int, const QVariantList &, int)));
-    connect(this->tdLibWrapper, &TDLibWrapper::foundChatMessagesReceived, this, &ChatMessagesModel::handleFoundChatMessagesReceived);
-    connect(this->tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &ChatMessagesModel::handleNewMessageReceived);
+    connect(tdLibWrapper, SIGNAL(messagesReceived(qlonglong, int, const QVariantList &, int)), this, SLOT(handleMessagesReceived(qlonglong, int, const QVariantList &, int)));
+    connect(tdLibWrapper, &TDLibWrapper::foundChatMessagesReceived, this, &ChatMessagesModel::handleFoundChatMessagesReceived);
+    connect(tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &ChatMessagesModel::handleNewMessageReceived);
 
-    connect(this->tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatMessagesModel::handleSponsoredMessagesReceived);
+    connect(tdLibWrapper, &TDLibWrapper::sponsoredMessagesReceived, this, &ChatMessagesModel::handleSponsoredMessagesReceived);
 }
 
 bool ChatMessagesModel::clear() {
     LOG("Clearing chat model");
-    this->searchQuery.clear();
+    searchQuery.clear();
+    emit searchQueryChanged();
+    containsSponsoredMessages = false;
+    emit containsSponsoredMessagesChanged();
     return ReadableMessagesModel::clear();
 }
 
@@ -197,6 +200,11 @@ void ChatMessagesModel::handlePrepareMessagesReceived(int totalCount, UpdateType
 
             pendingSponsoredMessages.erase(pendingSponsoredMessages.begin(), pendingSponsoredMessages.begin() + i);
         }
+    }
+
+    if (!containsSponsoredMessages && qobject_cast<ChatManager*>(parent())->isChannel() && (fromUpdate == UpdateInitial || fromUpdate == UpdateReload)) {
+        LOG("Retreiving sponsored messages for a channel");
+        tdLibWrapper->getChatSponsoredMessages(chatId);
     }
 }
 
@@ -468,6 +476,11 @@ void ChatManager::finishInitialization() {
     tdLibWrapper->openChat(chatId);
     if (!pendingJoinRequests().isEmpty())
         emit pendingJoinRequestsChanged();
+
+    if (isBot()) {
+        LOG("Retreiving sponsored message for a bot");
+        tdLibWrapper->getChatSponsoredMessages(chatId);
+    }
 }
 
 void ChatManager::initializeMainModels(qlonglong fromMessageId) {
