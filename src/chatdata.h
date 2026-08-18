@@ -45,7 +45,13 @@ public:
         RoleChatMainActionType,
         RoleChatActionsText,
         RoleChatActionsProgress,
-        RoleViewAsTopics
+        RoleViewAsTopics,
+
+        RoleAccentColorId,
+        RoleBackgroundCustomEmojiId,
+        RoleUpgradedGiftColors,
+        RoleProfileAccentColorId,
+        RoleProfileBackgroundCustomEmojiId
     };
 
     ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data);
@@ -85,6 +91,12 @@ public:
     qreal getChatActionsProgress() const;
     bool viewAsTopics() const;
 
+    int accentColorId() const;
+    QString backgroundCustomEmojiId() const;
+    QVariantMap upgradedGiftColors() const;
+    int profileAccentColorId() const;
+    QString profileBackgroundCustomEmojiId() const;
+
     bool isChannel() const;
     bool isMarkedAsUnread() const;
     bool isPrivateOrSecretChat() const;
@@ -94,6 +106,7 @@ public:
     bool updateLastReadOutboxMessageId(qlonglong messageId);
     QVector<int> updateLastMessage(const QVariantMap &message);
     QVector<int> updateGroup(const TDLibData::Group *group);
+    QVector<int> updateAccentColors(int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
 
 public:
     QVariantMap chatData;

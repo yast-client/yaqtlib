@@ -18,6 +18,7 @@ class TDLibData : public QObject {
     Q_PROPERTY(qlonglong myUserId READ myUserId NOTIFY myUserIdUpdated)
     Q_PROPERTY(QVariantMap defaultReactionType MEMBER defaultReactionType NOTIFY defaultReactionTypeChanged)
     Q_PROPERTY(QStringList activeEmojiReactions MEMBER activeEmojiReactions NOTIFY activeEmojiReactionsChanged)
+    Q_PROPERTY(QVariantList availableAccentColors READ availableAccentColors NOTIFY accentColorsUpdated)
 
 public:
     explicit TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver);
@@ -61,6 +62,8 @@ public:
     Q_INVOKABLE bool canSkipChatJoinDialog(qlonglong chatId);
     Q_INVOKABLE bool isDiceEmoji(const QString &text);
     QVariantMap getDefaultReactionType() const;
+    Q_INVOKABLE QVariant getAccentColor(int id) const;
+    QVariantList availableAccentColors() const;
 
     Q_INVOKABLE TDLibWrapper::NotificationSettingsScope getChatNotificationSettingsScope(qlonglong chatId);
     Q_INVOKABLE inline QVariantMap scopeNotificationSettings(TDLibWrapper::NotificationSettingsScope scope) {
@@ -105,6 +108,7 @@ private slots:
     void handleChatPendingJoinRequestsUpdated(qlonglong chatId, const QVariantMap &pendingJoinRequests);
     void handleChatViewAsTopicsUpdated(qlonglong chatId, bool viewAsTopics);
     void handleChatPermissionsUpdated(qlonglong chatId, const QVariantMap &permissions);
+    void handleChatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
 
     void handleChatActionUpdated(qlonglong chatId, const QVariantMap &topicId, const QVariantMap &sender, const QVariantMap &action);
 
@@ -122,6 +126,7 @@ private slots:
     void handleActiveEmojiReactionsUpdated(const QStringList& emojis);
     void handleDiceEmojisUpdated(const QStringList &emojis);
     void handleDefaultReactionTypeUpdated(const QVariantMap &reactionType);
+    void handleAccentColorsUpdated(const QVariantList &colors, QList<int> availableAccentColorIds);
 
 signals:
     // used by TDLibWrapper
@@ -180,6 +185,7 @@ signals:
     // Misc
     void activeEmojiReactionsChanged();
     void defaultReactionTypeChanged();
+    void accentColorsUpdated();
 
 private:
     void initializePropertyMaps();
@@ -203,6 +209,8 @@ private:
     QStringList diceEmojis;
     QMap<TDLibWrapper::NotificationSettingsScope, QVariantMap> scopesNotificationSettings;
     QVariantMap defaultReactionType;
+    QHash<int, QVariantMap> accentColors;
+    QList<int> availableAccentColorIds;
 };
 
 uint qHash(const TDLibData::MessageSender &key, uint seed = 0) noexcept;

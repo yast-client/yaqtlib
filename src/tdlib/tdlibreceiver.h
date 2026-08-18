@@ -149,6 +149,8 @@ signals:
     void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
     void chatUnreadPollVoteCountUpdated(qlonglong chatId, int value);
     void messageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
+    void accentColorsUpdated(const QVariantList &colors, QList<int> availableAccentColorIds);
+    void chatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -272,7 +274,9 @@ private:
         {"httpUrl", &TDLibReceiver::processHttpUrl},
         {"updateMessageUnreadReactions", &TDLibReceiver::processUpdateMessageUnreadReactions},
         {"updateChatUnreadPollVoteCount", &TDLibReceiver::processUpdateChatUnreadPollVoteCount},
-        {"updateMessageContainsUnreadPollVotes", &TDLibReceiver::processUpdateMessageContainsUnreadPollVotes}
+        {"updateMessageContainsUnreadPollVotes", &TDLibReceiver::processUpdateMessageContainsUnreadPollVotes},
+        {"updateAccentColors", &TDLibReceiver::processUpdateAccentColors},
+        {"updateChatAccentColors", &TDLibReceiver::processUpdateChatAccentColors}
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
@@ -410,6 +414,8 @@ private:
     void processUpdateMessageUnreadReactions(const QVariantMap &receivedInformation);
     void processUpdateChatUnreadPollVoteCount(const QVariantMap &receivedInformation);
     void processUpdateMessageContainsUnreadPollVotes(const QVariantMap &receivedInformation);
+    void processUpdateAccentColors(const QVariantMap &receivedInformation);
+    void processUpdateChatAccentColors(const QVariantMap &receivedInformation);
 
 public:
     void processError(const QVariantMap &receivedInformation);

@@ -27,7 +27,8 @@ public:
         RolePhoneNumber,
         RoleUserStatus,
         RoleUserLastOnline,
-        RoleIsSupport
+        RoleIsSupport,
+        RoleAccentColorId
     };
 
     void setTdLibWrapper(TDLibWrapper *tdLibWrapper);

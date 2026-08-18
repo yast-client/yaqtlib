@@ -37,6 +37,12 @@ namespace {
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
     const QString VIEW_AS_TOPICS("view_as_topics");
+
+    const QString ACCENT_COLOR_ID("accent_color_id");
+    const QString BACKGROUND_CUSTOM_EMOJI_ID("background_custom_emoji_id");
+    const QString UPGRADED_GIFT_COLORS("upgraded_gift_colors");
+    const QString PROFILE_ACCENT_COLOR_ID("profile_accent_color_id");
+    const QString PROFILE_BACKGROUND_CUSTOM_EMOJI_ID("profile_background_custom_emoji_id");
 }
 
 ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data) :
@@ -269,4 +275,47 @@ qreal ChatData::getChatActionsProgress() const {
 
 bool ChatData::viewAsTopics() const {
     return chatData.value(VIEW_AS_TOPICS).toBool();
+}
+
+QVector<int> ChatData::updateAccentColors(int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId) {
+    QVector<int> changedRoles;
+
+    if (chatData.value(ACCENT_COLOR_ID).toInt() != accentColorId) {
+        chatData.insert(ACCENT_COLOR_ID, accentColorId);
+        changedRoles.append(RoleAccentColorId);
+    }
+    if (chatData.value(BACKGROUND_CUSTOM_EMOJI_ID).toString() != backgroundCustomEmojiId) {
+        chatData.insert(BACKGROUND_CUSTOM_EMOJI_ID, backgroundCustomEmojiId);
+        changedRoles.append(RoleBackgroundCustomEmojiId);
+    }
+    if (chatData.value(UPGRADED_GIFT_COLORS).toMap() != upgradedGiftColors) {
+        chatData.insert(UPGRADED_GIFT_COLORS, upgradedGiftColors);
+        changedRoles.append(RoleUpgradedGiftColors);
+    }
+    if (chatData.value(PROFILE_ACCENT_COLOR_ID).toInt() != profileAccentColorId) {
+        chatData.insert(PROFILE_ACCENT_COLOR_ID, profileAccentColorId);
+        changedRoles.append(RoleProfileAccentColorId);
+    }
+    if (chatData.value(PROFILE_BACKGROUND_CUSTOM_EMOJI_ID).toString() != profileBackgroundCustomEmojiId) {
+        chatData.insert(PROFILE_BACKGROUND_CUSTOM_EMOJI_ID, profileBackgroundCustomEmojiId);
+        changedRoles.append(RoleProfileBackgroundCustomEmojiId);
+    }
+
+    return changedRoles;
+}
+
+int ChatData::accentColorId() const {
+    return chatData.value(ACCENT_COLOR_ID).toInt();
+}
+QString ChatData::backgroundCustomEmojiId() const {
+    return chatData.value(BACKGROUND_CUSTOM_EMOJI_ID).toString();
+}
+QVariantMap ChatData::upgradedGiftColors() const {
+    return chatData.value(UPGRADED_GIFT_COLORS).toMap();
+}
+int ChatData::profileAccentColorId() const {
+    return chatData.value(PROFILE_ACCENT_COLOR_ID).toInt();
+}
+QString ChatData::profileBackgroundCustomEmojiId() const {
+    return chatData.value(PROFILE_BACKGROUND_CUSTOM_EMOJI_ID).toString();
 }

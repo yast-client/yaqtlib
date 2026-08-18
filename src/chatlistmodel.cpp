@@ -153,7 +153,12 @@ QHash<int,QByteArray> ChatListModel::roleNames() const {
         {ChatData::RoleChatMainActionType, "chat_main_action_type"},
         {ChatData::RoleChatActionsText, "chat_actions_text"},
         {ChatData::RoleChatActionsProgress, "chat_actions_progress"},
-        {ChatData::RoleViewAsTopics, "view_as_topics"}
+        {ChatData::RoleViewAsTopics, "view_as_topics"},
+        {ChatData::RoleAccentColorId, "accent_color_id"},
+        {ChatData::RoleBackgroundCustomEmojiId, "background_custom_emoji_id"},
+        {ChatData::RoleUpgradedGiftColors, "upgraded_gift_colors"},
+        {ChatData::RoleProfileAccentColorId, "profile_accent_color_id"},
+        {ChatData::RoleProfileBackgroundCustomEmojiId, "profile_background_custom_emoji_id"}
     };
 }
 
@@ -200,6 +205,11 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const {
         case ChatData::RoleChatActionsText: return data->data->getChatActionsText();
         case ChatData::RoleChatActionsProgress: return data->data->getChatActionsProgress();
         case ChatData::RoleViewAsTopics: return data->data->viewAsTopics();
+        case ChatData::RoleAccentColorId: return data->data->accentColorId();
+        case ChatData::RoleBackgroundCustomEmojiId: return data->data->backgroundCustomEmojiId();
+        case ChatData::RoleUpgradedGiftColors: return data->data->upgradedGiftColors();
+        case ChatData::RoleProfileAccentColorId: return data->data->profileAccentColorId();
+        case ChatData::RoleProfileBackgroundCustomEmojiId: return data->data->profileBackgroundCustomEmojiId();
         }
     }
     return QVariant();

@@ -48,7 +48,8 @@ QHash<int, QByteArray> UsersModel::roleNames() const {
         {RolePhoto, "photo_data"},
         {RoleUserStatus, "user_status"},
         {RoleUserLastOnline, "user_last_online"},
-        {RoleIsSupport, "is_support"}
+        {RoleIsSupport, "is_support"},
+        {RoleAccentColorId, "accent_color_id"}
     };
 }
 
@@ -69,6 +70,7 @@ QVariant UsersModel::data(const QModelIndex &index, int role) const {
         case RoleUserStatus: return user.value(STATUS).toMap().value("@type");
         case RoleUserLastOnline: return user.value(STATUS).toMap().value("was_online");
         case RoleIsSupport: return user.value("is_support").toBool();
+        case RoleAccentColorId: return user.value("accent_color_id").toInt();
     }
     return {};
 }

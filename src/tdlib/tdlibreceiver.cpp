@@ -1327,3 +1327,30 @@ void TDLibReceiver::processUpdateMessageContainsUnreadPollVotes(const QVariantMa
     emit messageContainsUnreadPollVotesUpdated(chatId, messageId, value);
     emit chatUnreadPollVoteCountUpdated(chatId, unreadPollVoteCount);
 }
+
+void TDLibReceiver::processUpdateAccentColors(const QVariantMap &receivedInformation) {
+    QVariantList colors = receivedInformation.value("colors").toList();
+    QList<int> availableAccentColorIds;
+
+    QVariantList availableAccentColorVariantIds = receivedInformation.value("available_accent_color_ids").toList();
+    availableAccentColorIds.reserve(availableAccentColorVariantIds.size());
+    for (const QVariant &id : availableAccentColorVariantIds)
+        availableAccentColorIds.append(id.toInt());
+
+    LOG("Received updateAccentColors" << colors.size() << "custom colors," << availableAccentColorIds.size() << "available");
+    emit accentColorsUpdated(colors, availableAccentColorIds);
+}
+
+void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    int accentColorId = receivedInformation.value("accent_color_id").toInt();
+    const QString backgroundCustomEmojiId = receivedInformation.value("background_custom_emoji_id").toString();
+    const QVariantMap upgradedGiftColors = receivedInformation.value("upgraded_gift_colors").toMap();
+    int profileAccentColorId = receivedInformation.value("profile_accent_color_id").toInt();
+    const QString profileBackgroundCustomEmojiId = receivedInformation.value("profile_accent_color_id").toString();
+
+    LOG("Received updateChatAccentColors" << chatId << "accent color" << accentColorId
+        << "background custom emoji" << backgroundCustomEmojiId.toLongLong()
+        << "profile accent color" << profileAccentColorId << "profile background custom emoji" << profileBackgroundCustomEmojiId.toLongLong());
+    emit chatAccentColorsUpdated(chatId, accentColorId, backgroundCustomEmojiId, upgradedGiftColors, profileAccentColorId, profileBackgroundCustomEmojiId);
+}

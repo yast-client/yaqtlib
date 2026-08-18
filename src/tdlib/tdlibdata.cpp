@@ -149,6 +149,7 @@ TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
     connect(tdLibReceiver, &TDLibReceiver::chatPendingJoinRequestsUpdated, this, &TDLibData::handleChatPendingJoinRequestsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::chatViewAsTopicsUpdated, this, &TDLibData::handleChatViewAsTopicsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::chatPermissionsUpdated, this, &TDLibData::handleChatPermissionsUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::chatAccentColorsUpdated, this, &TDLibData::handleChatAccentColorsUpdated);
 
     connect(tdLibReceiver, &TDLibReceiver::chatActionUpdated, this, &TDLibData::handleChatActionUpdated);
 
@@ -167,6 +168,7 @@ TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
     connect(tdLibReceiver, &TDLibReceiver::activeEmojiReactionsUpdated, this, &TDLibData::handleActiveEmojiReactionsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::diceEmojisUpdated, this, &TDLibData::handleDiceEmojisUpdated);
     connect(tdLibReceiver, &TDLibReceiver::defaultReactionTypeUpdated, this, &TDLibData::handleDefaultReactionTypeUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::accentColorsUpdated, this, &TDLibData::handleAccentColorsUpdated);
 }
 
 TDLibData::~TDLibData() {
@@ -516,6 +518,12 @@ void TDLibData::handleChatPermissionsUpdated(qlonglong chatId, const QVariantMap
     emit chatRolesUpdated(chatId, {ChatData::RolePermissions});
 }
 
+void TDLibData::handleChatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId) {
+    ChatData *chat = getChatDataForce(chatId);
+    QVector<int> roles = chat->updateAccentColors(accentColorId, backgroundCustomEmojiId, upgradedGiftColors, profileAccentColorId, profileBackgroundCustomEmojiId);
+    emit chatRolesUpdated(chatId, roles);
+}
+
 void TDLibData::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {
     const QVariantMap chatList = messageCountInformation.value(CHAT_LIST).toMap();
     const QString chatListType = chatList.value(_TYPE).toString();
@@ -757,4 +765,29 @@ void TDLibData::handleDefaultReactionTypeUpdated(const QVariantMap &reactionType
 
 QVariantMap TDLibData::getDefaultReactionType() const {
     return defaultReactionType;
+}
+
+void TDLibData::handleAccentColorsUpdated(const QVariantList &colors, QList<int> availableAccentColorIds) {
+    accentColors.clear();
+    accentColors.reserve(colors.size());
+    for (const QVariant &colorVariant : colors) {
+        QVariantMap color = colorVariant.toMap();
+        accentColors.insert(color.value(ID).toInt(), color);
+    }
+
+    this->availableAccentColorIds = availableAccentColorIds;
+    emit accentColorsUpdated();
+}
+
+QVariant TDLibData::getAccentColor(int id) const {
+    if (!accentColors.contains(id)) return {};
+    return accentColors.value(id);
+}
+
+QVariantList TDLibData::availableAccentColors() const {
+    QVariantList colors;
+    colors.reserve(availableAccentColorIds.size());
+    for (int id : availableAccentColorIds)
+        colors.append(accentColors.value(id));
+    return colors;
 }
