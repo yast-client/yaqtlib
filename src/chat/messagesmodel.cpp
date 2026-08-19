@@ -119,12 +119,6 @@ QVariantMap MessagesModel::getMessage(int index) const {
     return {};
 }
 
-QVariant MessagesModel::getMessage(int messageIndex, MessageData::Role role) const {
-    if (messageIndex >= 0 && messageIndex < messages.size())
-        return data(index(messageIndex), role);
-    return {};
-}
-
 QVariantList MessagesModel::getAllMessageIds() const {
     LOG("Returning all message IDs" << messageIndexMap.size());
     QVariantList result;

@@ -27,7 +27,6 @@ public:
     Q_INVOKABLE virtual bool clear();
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE QVariantMap getMessage(int index) const;
-    Q_INVOKABLE QVariant getMessage(int index, MessageData::Role role) const;
     Q_INVOKABLE int getMessageIndex(qlonglong messageId) const { return messageIndexMap.value(messageId, -1); }
     Q_INVOKABLE QVariantList getAllMessageIds() const;
     Q_INVOKABLE QVariantList getMessages(const QVariantList &messageIds) const;
