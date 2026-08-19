@@ -116,8 +116,13 @@ void MessagesModel::reset() {
 QVariantMap MessagesModel::getMessage(int index) const {
     if (index >= 0 && index < messages.size())
         return messages.at(index)->messageData;
+    return {};
+}
 
-    return QVariantMap();
+QVariant MessagesModel::getMessage(int messageIndex, MessageData::Role role) const {
+    if (messageIndex >= 0 && messageIndex < messages.size())
+        return data(index(messageIndex), role);
+    return {};
 }
 
 QVariantList MessagesModel::getMessages(const QVariantList &messageIds) const {

@@ -9,6 +9,9 @@
 #include <QVector>
 
 struct MessageData {
+    Q_GADGET
+
+public:
     enum Role {
         RoleDisplay = Qt::DisplayRole,
         RoleMessageId,
@@ -26,6 +29,7 @@ struct MessageData {
         RoleIsFirstInSequence,
         RoleIsLastInSequence
     };
+    Q_ENUM(Role)
 
     enum RoleFlag {
         RoleFlagDisplay = 1 << 0,
