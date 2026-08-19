@@ -88,6 +88,11 @@ public:
 
     Q_INVOKABLE static QVariantMap makeImportedContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note, bool forceEmptyNote = false);
 
+    Q_INVOKABLE static bool hasRoleInVector(const QVector<int> &changedRoles, const QList<int> &neededRoles);
+    Q_INVOKABLE static inline bool hasRoleInVector(const QVector<int> &changedRoles, int role) {
+        return hasRoleInVector(changedRoles, QList<int>{role});
+    }
+
 private:
     struct FormattedTextInsertion;
 

@@ -14,6 +14,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QRegularExpression>
+#include <QSet>
 
 #include <zlib.h>
 
@@ -1190,4 +1191,10 @@ QVariantMap Utilities::makeImportedContact(const QString &firstName, const QStri
     if (!note.isEmpty() || forceEmptyNote)
         contact.insert(NOTE, note);
     return contact;
+}
+
+bool Utilities::hasRoleInVector(const QVector<int> &changedRoles, const QList<int> &neededRoles) {
+    return std::any_of(changedRoles.begin(), changedRoles.end(), [&neededRoles](int role) {
+        return neededRoles.contains(role);
+    });
 }

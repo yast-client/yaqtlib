@@ -10,6 +10,7 @@
 #include "basemessagabledata.h"
 
 class ChatData : public BaseMessagableData {
+    Q_GADGET
 public:
     enum Role {
         RoleDisplay = Qt::DisplayRole,
@@ -53,6 +54,7 @@ public:
         RoleProfileAccentColorId,
         RoleProfileBackgroundCustomEmojiId
     };
+    Q_ENUM(Role)
 
     ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data);
     ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, qlonglong chatId);
