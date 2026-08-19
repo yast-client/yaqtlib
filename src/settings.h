@@ -62,7 +62,7 @@ public:
     SETTING_(bool, notificationTurnsDisplayOn)
     SETTING(bool, notificationSoundsEnabled, true)
     SETTING_(bool, notificationSuppressContent)
-    SETTING(bool, notificationShowDefaultReaction, true)
+    SETTING_(bool, notificationShowDefaultReaction)
     SETTING(bool, inChatNgf, true)
 
     SETTING(bool, storageOptimizer, true)
