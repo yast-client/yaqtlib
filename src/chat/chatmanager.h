@@ -75,6 +75,12 @@ class ChatManager : public QObject {
     Q_PROPERTY(QVariantMap pendingJoinRequests READ pendingJoinRequests NOTIFY pendingJoinRequestsChanged)
     Q_PROPERTY(QVariantMap permissions READ permissions WRITE setPermissions NOTIFY permissionsChanged)
 
+    Q_PROPERTY(int accentColorId READ accentColorId NOTIFY accentColorIdChanged)
+    Q_PROPERTY(QString backgroundCustomEmojiId READ backgroundCustomEmojiId NOTIFY backgroundCustomEmojiIdChanged)
+    Q_PROPERTY(QVariantMap upgradedGiftColors READ upgradedGiftColors NOTIFY upgradedGiftColorsChanged)
+    Q_PROPERTY(int profileAccentColorId READ profileAccentColorId NOTIFY profileAccentColorIdChanged)
+    Q_PROPERTY(QString profileBackgroundCustomEmojiId READ profileBackgroundCustomEmojiId NOTIFY profileBackgroundCustomEmojiIdChanged)
+
     Q_PROPERTY(QVariantMap botSponsoredMessage MEMBER botSponsoredMessage NOTIFY botSponsoredMessageChanged)
 
     Q_PROPERTY(ChatMessagesModel* model MEMBER chatMessagesModel NOTIFY messagesModelChanged)
@@ -117,6 +123,12 @@ public:
     QVariantMap permissions() const;
     void setPermissions(const QVariantMap &permissions);
 
+    int accentColorId() const;
+    QString backgroundCustomEmojiId() const;
+    QVariantMap upgradedGiftColors() const;
+    int profileAccentColorId() const;
+    QString profileBackgroundCustomEmojiId() const;
+
     inline TDLibWrapper::ChatActionType chatMainActionType() {
         return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
     }
@@ -143,6 +155,12 @@ signals:
     void photoChanged();
     void pendingJoinRequestsChanged();
     void permissionsChanged();
+
+    void accentColorIdChanged();
+    void backgroundCustomEmojiIdChanged();
+    void upgradedGiftColorsChanged();
+    void profileAccentColorIdChanged();
+    void profileBackgroundCustomEmojiIdChanged();
 
     void botSponsoredMessageChanged();
 

@@ -381,30 +381,20 @@ void ChatManager::handleNewChatDiscovered(qlonglong chatId) {
 
 void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> changedRoles) {
     if (this->chatId == chatId) {
-        if (changedRoles.contains(ChatData::RolePhoto)) {
-            LOG("Chat photo updated" << chatId);
+        if (changedRoles.contains(ChatData::RolePhoto))
             emit photoChanged();
-        }
-        if (changedRoles.contains(ChatData::RolePermissions)) {
-            LOG("Chat permissions updated" << chatId);
+        if (changedRoles.contains(ChatData::RolePermissions))
             emit permissionsChanged();
-        }
-        if (changedRoles.contains(ChatData::RoleChatActionsText)) {
-            LOG("Chat actions text updated" << chatId);
+        if (changedRoles.contains(ChatData::RoleChatActionsText))
             emit chatActionsChanged();
-        }
-        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadInboxMessageId)) {
-            LOG("Chat last read inbox message ID updated" << chatId);
+
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadInboxMessageId))
             emit chatMessagesModel->lastReadInboxMessageIdChanged();
-        }
-        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadOutboxMessageId)) {
-            LOG("Chat last read outbox message ID updated" << chatId);
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleLastReadOutboxMessageId))
             emit chatMessagesModel->lastReadOutboxMessageIdChanged();
-        }
-        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleUnreadCount)) {
-            LOG("Chat unread count updated" << chatId);
+        if (this->chatMessagesModel && changedRoles.contains(ChatData::RoleUnreadCount))
             emit chatMessagesModel->unreadCountUpdated();
-        }
+
         if (changedRoles.contains(ChatData::RoleViewAsTopics)) {
             LOG("View as topics value updated" << chatId << viewAsTopics());
             emit viewAsTopicsChanged();
@@ -413,6 +403,18 @@ void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> ch
             if (chatMessagesModel || topicsModel)
                 this->initializeMainModels();
         }
+
+        if (changedRoles.contains(ChatData::RoleAccentColorId))
+            emit accentColorIdChanged();
+        if (changedRoles.contains(ChatData::RoleBackgroundCustomEmojiId))
+            emit backgroundCustomEmojiIdChanged();
+        if (changedRoles.contains(ChatData::RoleUpgradedGiftColors))
+            emit upgradedGiftColorsChanged();
+        if (changedRoles.contains(ChatData::RoleProfileAccentColorId))
+            emit profileAccentColorIdChanged();
+        if (changedRoles.contains(ChatData::RoleProfileBackgroundCustomEmojiId))
+            emit profileBackgroundCustomEmojiIdChanged();
+
         LOG("Chat roles updated" << chatId << changedRoles);
         emit chatInformationChanged();
     }
@@ -521,4 +523,25 @@ void ChatManager::initializeMainModels(qlonglong fromMessageId) {
 bool ChatManager::viewAsTopics() {
     ChatData *chat = getChatData();
     return chat ? chat->viewAsTopics() : false;
+}
+
+int ChatManager::accentColorId() const {
+    ChatData *data = getChatData();
+    return data ? data->accentColorId() : -1;
+}
+QString ChatManager::backgroundCustomEmojiId() const {
+    ChatData *data = getChatData();
+    return data ? data->backgroundCustomEmojiId() : QString();
+}
+QVariantMap ChatManager::upgradedGiftColors() const {
+    ChatData *data = getChatData();
+    return data ? data->upgradedGiftColors() : QVariantMap();
+}
+int ChatManager::profileAccentColorId() const {
+    ChatData *data = getChatData();
+    return data ? data->profileAccentColorId() : -1;
+}
+QString ChatManager::profileBackgroundCustomEmojiId() const {
+    ChatData *data = getChatData();
+    return data ? data->profileBackgroundCustomEmojiId() : QString();
 }
