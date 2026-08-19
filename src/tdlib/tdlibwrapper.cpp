@@ -473,13 +473,13 @@ void TDLibWrapper::getChatHistory(qlonglong chatId, int extra, qlonglong fromMes
     });
 }
 
-void TDLibWrapper::viewMessage(qlonglong chatId, qlonglong messageId, bool force, MessageSource source) {
-    LOG("Viewing message" << chatId << messageId << force << source);
+void TDLibWrapper::viewMessages(qlonglong chatId, const QVariantList &messageIds, bool force, MessageSource source) {
+    LOG("Viewing messages" << chatId << messageIds << force << source);
     QVariantMap request{
         {_TYPE, "viewMessages"},
         {CHAT_ID, chatId},
         {"force_read", force},
-        {MESSAGE_IDS, QVariantList{messageId}}
+        {MESSAGE_IDS, messageIds}
     };
 
     if (source != MessageSourceAuto)
