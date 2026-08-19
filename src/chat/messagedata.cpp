@@ -69,6 +69,9 @@ QVector<int> MessageData::flagsToRoles(uint flags) {
     if (flags & RoleFlagMessageId) {
         roles.append(RoleMessageId);
     }
+    if (flags & RoleFlagIsSponsored) {
+        roles.append(RoleIsSponsored);
+    }
     if (flags & RoleFlagMessageContentType) {
         roles.append(RoleMessageContentType);
     }
@@ -114,6 +117,8 @@ QVector<int> MessageData::diff(const MessageData *message) const {
         roles.append(RoleDisplay);
         if (message->messageId != messageId)
             roles.append(RoleMessageId);
+        if (message->isSponsored != isSponsored)
+            roles.append(RoleIsSponsored);
         if (message->messageContentType != messageContentType)
             roles.append(RoleMessageContentType);
         if (message->viewCount != viewCount)

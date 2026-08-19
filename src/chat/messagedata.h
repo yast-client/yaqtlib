@@ -12,6 +12,7 @@ struct MessageData {
     enum Role {
         RoleDisplay = Qt::DisplayRole,
         RoleMessageId,
+        RoleIsSponsored,
         RoleMessageContentType,
         RoleMessageViewCount,
         RoleMessageReactions,
@@ -29,12 +30,13 @@ struct MessageData {
     enum RoleFlag {
         RoleFlagDisplay = 1 << 0,
         RoleFlagMessageId = 1 << 1,
-        RoleFlagMessageContentType = 1 << 2,
-        RoleFlagMessageViewCount = 1 << 3,
-        RoleFlagMessageReactions = 1 << 4,
-        RoleFlagMessageAlbumEntryFilter = 1 << 5,
-        RoleFlagMessageAlbumMessageIds = 1 << 6,
-        RoleFlagMessageAlbumMessages = 1 << 7
+        RoleFlagIsSponsored = 1 << 2,
+        RoleFlagMessageContentType = 1 << 3,
+        RoleFlagMessageViewCount = 1 << 4,
+        RoleFlagMessageReactions = 1 << 5,
+        RoleFlagMessageAlbumEntryFilter = 1 << 6,
+        RoleFlagMessageAlbumMessageIds = 1 << 7,
+        RoleFlagMessageAlbumMessages = 1 << 8
     };
 
     MessageData(const QVariantMap &data, qlonglong msgid);

@@ -48,6 +48,7 @@ QHash<int,QByteArray> MessagesModel::roleNames() const {
     return QHash<int,QByteArray>{
         {MessageData::RoleDisplay, "display"},
         {MessageData::RoleMessageId, "message_id"},
+        {MessageData::RoleIsSponsored, "is_sponsored"},
         {MessageData::RoleMessageContentType, "content_type"},
         {MessageData::RoleMessageViewCount, "view_count"},
         {MessageData::RoleMessageReactions, "reactions"},
@@ -72,6 +73,7 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const {
         switch ((MessageData::Role)role) {
         case MessageData::RoleDisplay: return message->messageData;
         case MessageData::RoleMessageId: return message->messageId;
+        case MessageData::RoleIsSponsored: return message->isSponsored;
         case MessageData::RoleMessageContentType: return message->messageContentType;
         case MessageData::RoleMessageViewCount: return message->viewCount;
         case MessageData::RoleMessageReactions: return message->reactions;
