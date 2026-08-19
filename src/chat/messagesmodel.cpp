@@ -125,6 +125,15 @@ QVariant MessagesModel::getMessage(int messageIndex, MessageData::Role role) con
     return {};
 }
 
+QVariantList MessagesModel::getAllMessageIds() const {
+    LOG("Returning all message IDs" << messageIndexMap.size());
+    QVariantList result;
+    result.reserve(messageIndexMap.size());
+    for (qlonglong id : messageIndexMap.keys())
+        result.append(id);
+    return result;
+}
+
 QVariantList MessagesModel::getMessages(const QVariantList &messageIds) const {
     LOG("Getting messages for IDs" << messageIds.size());
     if (messageIds.isEmpty())
