@@ -29,7 +29,7 @@ public:
     Q_INVOKABLE QVariantMap getMessage(int index) const;
     Q_INVOKABLE int getMessageIndex(qlonglong messageId) const { return messageIndexMap.value(messageId, -1); }
     Q_INVOKABLE QVariantList getMessages(const QVariantList &messageIds) const;
-    Q_INVOKABLE QVariantList getMessageIdsForAlbum(qlonglong albumId) const;
+    Q_INVOKABLE QVariantList getMessageIdsForAlbum(const QString &albumId) const;
     Q_INVOKABLE QVariantList getMessagesForAlbum(qlonglong albumId, int startAt = 0) const;
 
     inline qlonglong getChatId() const { return chatId; }

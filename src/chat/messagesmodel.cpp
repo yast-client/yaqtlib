@@ -137,8 +137,8 @@ QVariantList MessagesModel::getMessages(const QVariantList &messageIds) const {
     return foundMessages;
 }
 
-QVariantList MessagesModel::getMessageIdsForAlbum(qlonglong albumId) const {
-    return albumMessageMap.value(albumId);
+QVariantList MessagesModel::getMessageIdsForAlbum(const QString &albumId) const {
+    return albumMessageMap.value(albumId.toLongLong());
 }
 
 QVariantList MessagesModel::getMessagesForAlbum(qlonglong albumId, int startAt) const {
