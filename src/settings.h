@@ -67,7 +67,7 @@ public:
 
     SETTING(bool, storageOptimizer, true)
 
-    ENUM_SETTING(bool, onlineOnlyMode, SponsoredMessHandle)
+    SETTING_(bool, onlineOnlyMode)
 
     ENUM_SETTING(SponsoredMess, sponsoredMess, SponsoredMessHandle)
     SETTING_(int, sponsoredMessagesMessagesBetween)
