@@ -13,18 +13,15 @@ namespace {
     const QString STATUS("status");
 }
 
-ChatPermissionFilterModel::ChatPermissionFilterModel(QObject *parent) : QSortFilterProxyModel(parent)
-{
+ChatPermissionFilterModel::ChatPermissionFilterModel(QObject *parent) : QSortFilterProxyModel(parent) {
     setDynamicSortFilter(true);
 }
 
-void ChatPermissionFilterModel::setSource(QObject *model)
-{
+void ChatPermissionFilterModel::setSource(QObject *model) {
     setSourceModel(qobject_cast<ChatListModel*>(model));
 }
 
-void ChatPermissionFilterModel::setSourceModel(QAbstractItemModel *model)
-{
+void ChatPermissionFilterModel::setSourceModel(QAbstractItemModel *model) {
     if (sourceModel() != model) {
         LOG(model);
         QSortFilterProxyModel::setSourceModel(model);
@@ -32,13 +29,7 @@ void ChatPermissionFilterModel::setSourceModel(QAbstractItemModel *model)
     }
 }
 
-TDLibWrapper *ChatPermissionFilterModel::getTDLibWrapper() const
-{
-    return tdLibWrapper;
-}
-
-void ChatPermissionFilterModel::setTDLibWrapper(QObject *obj)
-{
+void ChatPermissionFilterModel::setTDLibWrapper(QObject *obj) {
     TDLibWrapper *wrapper = qobject_cast<TDLibWrapper*>(obj);
     if (tdLibWrapper != wrapper) {
         tdLibWrapper = wrapper;
@@ -47,13 +38,7 @@ void ChatPermissionFilterModel::setTDLibWrapper(QObject *obj)
     }
 }
 
-QStringList ChatPermissionFilterModel::getRequirePermissions() const
-{
-    return requirePermissions;
-}
-
-void ChatPermissionFilterModel::setRequirePermissions(QStringList permissions)
-{
+void ChatPermissionFilterModel::setRequirePermissions(QStringList permissions) {
     if (requirePermissions != permissions) {
         requirePermissions = permissions;
         LOG(requirePermissions);
@@ -62,14 +47,36 @@ void ChatPermissionFilterModel::setRequirePermissions(QStringList permissions)
     }
 }
 
-bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
-{
+void ChatPermissionFilterModel::setAdditionalFilter(AdditionalFilter value) {
+    if (additionalFilter != value) {
+        additionalFilter = value;
+        LOG("Setting additional filter" << value);
+        invalidateFilter();
+        emit additionalFilterChanged();
+    }
+}
+
+bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const {
     QAbstractItemModel* model = sourceModel();
-    if (model && tdLibWrapper && !requirePermissions.isEmpty()) {
+    if (model && tdLibWrapper) {
         const TDLibData::Group* group = nullptr;
         const QModelIndex index(model->index(sourceRow, 0, sourceParent));
-        TDLibWrapper::ChatType chatType = (TDLibWrapper::ChatType)
-            model->data(index, ChatData::RoleChatType).toInt();
+        TDLibWrapper::ChatType chatType = static_cast<TDLibWrapper::ChatType>(model->data(index, ChatData::RoleChatType).toInt());
+
+        switch (additionalFilter) {
+        case AdditionalFilterNone:
+            break;
+        case AdditionalFilterNonSecret:
+            if (chatType == TDLibWrapper::ChatTypeSecret)
+                return false;
+            break;
+        case AdditionalFilterSecretOnly:
+            if (chatType != TDLibWrapper::ChatTypeSecret)
+                return false;
+            break;
+        }
+
+        if (requirePermissions.isEmpty()) return true;
 
         switch (chatType) {
         case TDLibWrapper::ChatTypeUnknown:
@@ -85,8 +92,7 @@ bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelInde
         }
 
         if (group) {
-            TDLibWrapper::ChatMemberStatus memberStatus = (TDLibWrapper::ChatMemberStatus)
-                model->data(index, ChatData::RoleChatMemberStatus).toInt();
+            TDLibWrapper::ChatMemberStatus memberStatus = static_cast<TDLibWrapper::ChatMemberStatus>(model->data(index, ChatData::RoleChatMemberStatus).toInt());
             QVariantMap permissions;
 
             switch (memberStatus) {
@@ -105,14 +111,9 @@ bool ChatPermissionFilterModel::filterAcceptsRow(int sourceRow, const QModelInde
                 return false;
             }
 
-            if (!permissions.isEmpty()) {
-                const int n = requirePermissions.count();
-                for (int i = 0; i < n; i++) {
-                    if (permissions.value(requirePermissions.at(i)).toBool()) {
-                        return true;
-                    }
-                }
-            }
+            if (!permissions.isEmpty())
+                for (const QString &permission : requirePermissions)
+                    if (permissions.value(permission).toBool()) return true;
         }
     }
     return false;
