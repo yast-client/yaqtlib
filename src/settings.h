@@ -31,6 +31,13 @@ public:
     };
     Q_ENUM(SponsoredMess)
 
+    enum SponsoredChats {
+        SponsoredChatsHandle,
+        SponsoredChatsIgnore = 1000,
+        SponsoredChatsAutoView = 1001
+    };
+    Q_ENUM(SponsoredChats)
+
     enum NotificationFeedback {
         NotificationFeedbackNone,
         NotificationFeedbackNew,
@@ -71,6 +78,7 @@ public:
 
     ENUM_SETTING(SponsoredMess, sponsoredMess, SponsoredMessHandle)
     SETTING_(int, sponsoredMessagesMessagesBetween)
+    ENUM_SETTING(SponsoredChats, sponsoredChats, SponsoredChatsHandle)
 
     SETTING(bool, sendMarkdown, true)
 

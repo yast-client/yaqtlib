@@ -561,6 +561,7 @@ private slots:
     void handleStickerSets(const QVariantList &stickerSets, int totalCount, const QString &extra);
     void handleErrorReceived(int code, const QString &message, const QVariant &extra);
     void handleSponsoredMessagesReceived(qlonglong chatId, const QVariantList &messages, int messagesBetween);
+    void handleSponsoredChatsReceived(const QVariantList &chats);
     void handleNetworkConfigurationChanged(const QNetworkConfiguration &config);
     void handleFoundChatMessagesReceived(qlonglong chatId, int extra, int extra2, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
     void handleCountReceived(int count, const QString &extra);

@@ -1798,6 +1798,22 @@ void TDLibWrapper::handleSponsoredMessagesReceived(qlonglong chatId, const QVari
     }
 }
 
+void TDLibWrapper::handleSponsoredChatsReceived(const QVariantList &chats) {
+    switch (settings->sponsoredChats()) {
+    case Settings::SponsoredChatsHandle:
+        emit sponsoredChatsReceived(chats);
+        break;
+    case Settings::SponsoredChatsAutoView:
+        LOG("Auto-viewing sponsored chats");
+        for (const QVariant &chat : chats)
+            viewSponsoredChat(chat.toMap().value("unique_id").toLongLong());
+        break;
+    case Settings::SponsoredChatsIgnore:
+        LOG("Ignoring sponsored chats");
+        break;
+    }
+}
+
 void TDLibWrapper::handleNetworkConfigurationChanged(const QNetworkConfiguration &config) {
     LOG("A network configuration changed, updating network type" << config.bearerTypeName() << config.state());
 
