@@ -116,6 +116,7 @@ namespace {
     const QString TYPE_GET_MESSAGE("getMessage");
     const QString NOTIFICATION_GROUP_ID("notification_group_id");
     const QString NOTE("note");
+    const QString SPONSORED_CHAT_UNIQUE_ID("sponsored_chat_unique_id");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -2796,4 +2797,14 @@ void TDLibWrapper::getApplicationDownloadLink() {
 void TDLibWrapper::setUserNote(qlonglong userId, const QVariantMap &note) {
     LOG("Setting user note" << userId);
     sendRequest({{_TYPE, "setUserNote"}, {USER_ID, userId}, {NOTE, note}});
+}
+
+void TDLibWrapper::viewSponsoredChat(qlonglong uniqueId) {
+    LOG("Viewing sponsored chat" << uniqueId);
+    sendRequest({{_TYPE, "viewSponsoredChat"}, {SPONSORED_CHAT_UNIQUE_ID, uniqueId}});
+}
+
+void TDLibWrapper::openSponsoredChat(qlonglong uniqueId) {
+    LOG("Opening sponsored chat" << uniqueId);
+    sendRequest({{_TYPE, "openSponsoredChat"}, {SPONSORED_CHAT_UNIQUE_ID, uniqueId}});
 }

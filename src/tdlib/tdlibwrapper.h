@@ -426,6 +426,8 @@ public:
     Q_INVOKABLE QVariantMap getMarkdownText(const QVariantMap &formattedText);
     Q_INVOKABLE void getApplicationDownloadLink();
     Q_INVOKABLE void setUserNote(qlonglong userId, const QVariantMap &note);
+    Q_INVOKABLE void viewSponsoredChat(qlonglong uniqueId);
+    Q_INVOKABLE void openSponsoredChat(qlonglong uniqueId);
 
 signals:
     void authorizationStateChanged();
