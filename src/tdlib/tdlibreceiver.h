@@ -276,7 +276,8 @@ private:
         {"updateChatUnreadPollVoteCount", &TDLibReceiver::processUpdateChatUnreadPollVoteCount},
         {"updateMessageContainsUnreadPollVotes", &TDLibReceiver::processUpdateMessageContainsUnreadPollVotes},
         {"updateAccentColors", &TDLibReceiver::processUpdateAccentColors},
-        {"updateChatAccentColors", &TDLibReceiver::processUpdateChatAccentColors}
+        {"updateChatAccentColors", &TDLibReceiver::processUpdateChatAccentColors},
+        {"sponsoredChats", &TDLibReceiver::processSponsoredChats}
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
