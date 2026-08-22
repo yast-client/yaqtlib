@@ -64,13 +64,9 @@ void JumpableMessagesModel::handlePrepareMessagesReceived(int totalCount, Update
             startReached = true;
         else if (fromUpdate == UpdateInitial) // No messages in chat
             startReached = endReached = true;
-    } else if (messages.count() >= totalCount) {
-        LOG("Received all available messages" << messages.count() << totalCount);
-        startReached = endReached = true;
     }
 
     LOG("Updated endReached" << endReached << "startReached" << startReached);
-
     emit endReachedChanged();
 }
 
