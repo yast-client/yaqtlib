@@ -1845,6 +1845,10 @@ void TDLibWrapper::setTdlibParameters() {
     bool onlineOnlyMode = this->settings->onlineOnlyMode();
     QSettings hardwareSettings("/etc/hw-release", QSettings::NativeFormat);
 
+    QString appVersion = QCoreApplication::applicationVersion();
+    if (appVersion.isEmpty())
+        appVersion = "Unknown";
+
     this->sendRequest({
         {_TYPE, "setTdlibParameters"},
         {"api_id", TDLIB_API_ID},
@@ -1858,7 +1862,7 @@ void TDLibWrapper::setTdlibParameters() {
         {"system_language_code", QLocale::system().name()},
         {"device_model", hardwareSettings.value("NAME", "Unknown Mobile Device").toString()},
         {"system_version", QSysInfo::prettyProductName()},
-        {"application_version", "0.17"},
+        {"application_version", appVersion},
         //{"use_test_dc", true},
     });
 }
