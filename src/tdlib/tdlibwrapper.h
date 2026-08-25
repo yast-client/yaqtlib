@@ -429,6 +429,7 @@ public:
     Q_INVOKABLE void setUserNote(qlonglong userId, const QVariantMap &note);
     Q_INVOKABLE void viewSponsoredChat(qlonglong uniqueId);
     Q_INVOKABLE void openSponsoredChat(qlonglong uniqueId);
+    Q_INVOKABLE void fetchOption(const QString &name);
 
 signals:
     void authorizationStateChanged();

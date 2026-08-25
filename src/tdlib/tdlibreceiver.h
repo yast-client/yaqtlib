@@ -282,7 +282,8 @@ private:
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
         {"messageReadDate", &TDLibReceiver::processMessageReadDate},
-        {"chatJoinResult", &TDLibReceiver::processChatJoinResult}
+        {"chatJoinResult", &TDLibReceiver::processChatJoinResult},
+        {"optionValue", &TDLibReceiver::processOptionValue}
     };
     int clientId;
     bool isActive = true;
@@ -417,6 +418,7 @@ private:
     void processUpdateMessageContainsUnreadPollVotes(const QVariantMap &receivedInformation);
     void processUpdateAccentColors(const QVariantMap &receivedInformation);
     void processUpdateChatAccentColors(const QVariantMap &receivedInformation);
+    void processOptionValue(const QVariantMap &receivedInformation);
 
 public:
     void processError(const QVariantMap &receivedInformation);

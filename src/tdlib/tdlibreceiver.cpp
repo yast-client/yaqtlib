@@ -167,35 +167,35 @@ void TDLibReceiver::processReceivedDocument(const QJsonDocument &receivedJsonDoc
 }
 
 void TDLibReceiver::processUpdateOption(const QVariantMap &receivedInformation) {
-    const QString currentOption = receivedInformation.value(NAME).toString();
+    const QString name = receivedInformation.value(NAME).toString();
     const QVariant value = receivedInformation.value(VALUE).toMap().value(VALUE);
-    LOG("Option updated: " << currentOption << value);
-    emit optionUpdated(currentOption, value);
+    LOG("Option updated" << name << value);
+    emit optionUpdated(name, value);
 }
 
 void TDLibReceiver::processUpdateAuthorizationState(const QVariantMap &receivedInformation) {
     QVariantMap authorizationState = receivedInformation.value("authorization_state").toMap();
     QString authorizationStateType = authorizationState.take(_TYPE).toString();
-    LOG("Authorization state changed: " << authorizationStateType);
+    LOG("Authorization state changed" << authorizationStateType);
     emit authorizationStateChanged(authorizationStateType, authorizationState);
 }
 
 void TDLibReceiver::processUpdateConnectionState(const QVariantMap &receivedInformation) {
     QString connectionState = receivedInformation.value(STATE).toMap().value(_TYPE).toString();
-    LOG("Connection state changed: " << connectionState);
+    LOG("Connection state changed" << connectionState);
     emit connectionStateChanged(connectionState);
 }
 
 void TDLibReceiver::processUpdateUser(const QVariantMap &receivedInformation) {
     QVariantMap userInformation = receivedInformation.value("user").toMap();
-    VERBOSE("User was updated: " << userInformation.value("username").toString() << userInformation.value("first_name").toString() << userInformation.value("last_name").toString());
+    VERBOSE("User was updated" << userInformation.value("username").toString() << userInformation.value("first_name").toString() << userInformation.value("last_name").toString());
     emit userUpdated(userInformation);
 }
 
 void TDLibReceiver::processUpdateUserStatus(const QVariantMap &receivedInformation) {
     const qlonglong userId = receivedInformation.value(USER_ID).toLongLong();
     QVariantMap userStatusInformation = receivedInformation.value("status").toMap();
-    VERBOSE("User status was updated: " << userId << userStatusInformation.value(_TYPE).toString());
+    VERBOSE("User status was updated" << userId << userStatusInformation.value(_TYPE).toString());
     emit userStatusUpdated(userId, userStatusInformation);
 }
 
@@ -1353,4 +1353,11 @@ void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &receivedInf
         << "background custom emoji" << backgroundCustomEmojiId.toLongLong()
         << "profile accent color" << profileAccentColorId << "profile background custom emoji" << profileBackgroundCustomEmojiId.toLongLong());
     emit chatAccentColorsUpdated(chatId, accentColorId, backgroundCustomEmojiId, upgradedGiftColors, profileAccentColorId, profileBackgroundCustomEmojiId);
+}
+
+void TDLibReceiver::processOptionValue(const QVariantMap &receivedInformation) {
+    const QString name = receivedInformation.value(_EXTRA).toString();
+    const QVariant value = receivedInformation.value(VALUE);
+    LOG("Received optionValue" << name << value);
+    emit optionUpdated(name, value);
 }

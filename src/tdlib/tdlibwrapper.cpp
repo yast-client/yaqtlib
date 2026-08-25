@@ -2828,3 +2828,8 @@ void TDLibWrapper::openSponsoredChat(qlonglong uniqueId) {
     LOG("Opening sponsored chat" << uniqueId);
     sendRequest({{_TYPE, "openSponsoredChat"}, {SPONSORED_CHAT_UNIQUE_ID, uniqueId}});
 }
+
+void TDLibWrapper::fetchOption(const QString &name) {
+    LOG("Fetching latest option value" << name);
+    sendRequest({{_TYPE, "getOption"}, {NAME, name}, {_EXTRA, name}});
+}
