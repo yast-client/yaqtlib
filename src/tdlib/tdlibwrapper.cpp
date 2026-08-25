@@ -291,7 +291,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
 void TDLibWrapper::initializeTDLibData() {
     tdData = new TDLibData(this, tdLibReceiver);
 
-    // TODO: connect signals if ever needed
+    connect(tdData, &TDLibData::qmlOptionsValueChanged, this, &TDLibWrapper::handleOptionsValueChanged);
 }
 
 void TDLibWrapper::setInitialOptions() {
