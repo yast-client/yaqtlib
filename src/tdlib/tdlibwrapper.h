@@ -222,6 +222,7 @@ public:
 
     // Direct TDLib functions
     Q_INVOKABLE void close();
+    Q_INVOKABLE void setLogVerbosityLevel(int level = 2);
     Q_INVOKABLE void setAuthenticationPhoneNumber(const QString &phoneNumber);
     Q_INVOKABLE void checkAuthenticationCode(const QString &authenticationCode);
     Q_INVOKABLE void checkAuthenticationPassword(const QString &password);
@@ -575,7 +576,6 @@ private slots:
 private:
     void setOption(const QString &name, const QString &type, const QVariant &value);
     void setTdlibParameters();
-    void setLogVerbosityLevel();
     void initializeTDLibReceiver();
     void initializeTDLibData();
     void setInitialOptions();

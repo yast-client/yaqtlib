@@ -1867,9 +1867,9 @@ void TDLibWrapper::setTdlibParameters() {
     });
 }
 
-void TDLibWrapper::setLogVerbosityLevel() {
-    LOG("Setting log verbosity level");
-    this->sendRequest({{_TYPE, "setLogVerbosityLevel"}, {"new_verbosity_level", 2}});
+void TDLibWrapper::setLogVerbosityLevel(int level) {
+    LOG("Setting log verbosity level" << level);
+    this->sendRequest({{_TYPE, "setLogVerbosityLevel"}, {"new_verbosity_level", level}});
 }
 
 TDLibWrapper::ChatType TDLibWrapper::chatTypeFromString(const QString &type) {
