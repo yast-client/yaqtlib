@@ -405,6 +405,7 @@ public:
     Q_INVOKABLE void getInternalLink(const QVariantMap &type, const QString &extra, bool isHttp = false);
     Q_INVOKABLE void destroyInstance();
     Q_INVOKABLE void getScopeNotificationSettings(NotificationSettingsScope scope);
+    Q_INVOKABLE void getScopeNotificationSettings();
     Q_INVOKABLE void setScopeNotificationSettings(NotificationSettingsScope scope, const QVariantMap &settings);
     TDLibResponse *getSavedNotificationSound(qlonglong notificationSoundId, QObject *receiver, ResponseSlot slot);
     Q_INVOKABLE void getSavedNotificationSound(const QString &notificationSoundId);

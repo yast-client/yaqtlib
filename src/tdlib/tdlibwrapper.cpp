@@ -20,6 +20,7 @@
 #include <QRegularExpressionMatchIterator>
 #include <QDesktopServices>
 #include <QJSValue>
+#include <QMetaEnum>
 
 #define DEBUG_MODULE TDLibWrapper
 #include "debuglog.h"
@@ -2558,12 +2559,18 @@ QVariantMap TDLibWrapper::getNotificationSettingsScope(NotificationSettingsScope
 
 void TDLibWrapper::getScopeNotificationSettings(NotificationSettingsScope scope) {
     LOG("Getting scope notification settings" << scope);
-    this->sendRequest({{_TYPE, "getScopeNotificationSettings"}, {SCOPE, getNotificationSettingsScope(scope)}});
+    sendRequest({{_TYPE, "getScopeNotificationSettings"}, {SCOPE, getNotificationSettingsScope(scope)}});
+}
+
+void TDLibWrapper::getScopeNotificationSettings() {
+    QMetaEnum metaEnum = QMetaEnum::fromType<NotificationSettingsScope>();
+    for (int i=0; i < metaEnum.keyCount(); i++)
+        getScopeNotificationSettings(static_cast<NotificationSettingsScope>(metaEnum.value(i)));
 }
 
 void TDLibWrapper::setScopeNotificationSettings(NotificationSettingsScope scope, const QVariantMap &settings) {
     LOG("Setting scope notification settings" << scope);
-    this->sendRequest({
+    sendRequest({
         {_TYPE, "setScopeNotificationSettings"},
         {SCOPE, getNotificationSettingsScope(scope)},
         {NOTIFICATION_SETTINGS, settings}
