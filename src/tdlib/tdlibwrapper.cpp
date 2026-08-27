@@ -2339,8 +2339,11 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
     else if (type == "internalLinkTypeUnknownDeepLink")
         this->getDeepLinkInfo(linkType.value(LINK).toString());
     else if (type == "internalLinkTypeProxy") {
-        const QVariantMap &proxy = linkType.value(PROXY).toMap();
+        const QVariantMap proxy = linkType.value(PROXY).toMap();
         emit internalLinkTypeProxyReceived(proxy.value(SERVER).toString(), proxy.value(PORT).toInt(), proxy.value(TYPE).toMap());
+    } else if (type == "internalLinkTypeSettings") {
+        const QVariantMap section = linkType.value("section").toMap();
+        emit internalLinkTypeSettingsReceived(section.value(_TYPE).toString(), section.value("subsection").toString());
     } else
         emit linkUnsupportedByApp(type.mid(16));
 }

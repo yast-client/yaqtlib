@@ -545,6 +545,7 @@ signals:
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);
+    void internalLinkTypeSettingsReceived(const QString &section, const QString &subsection);
     void linkUnsupportedByApp(const QString &type);
 
     // For non-default extra value
