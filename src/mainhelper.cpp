@@ -80,6 +80,11 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     context->setContextProperty("tdData", tdData);
     qmlRegisterUncreatableType<TDLibData>(uri, 1, 0, "TDLibData", QString());
 
+    // Register TDLibWrapper enums used by TDLibData and others
+    qRegisterMetaType<TDLibWrapper::NotificationSettingsScope>("TDLibWrapper::NotificationSettingsScope");
+    qRegisterMetaType<TDLibWrapper::UserPrivacySetting>("TDLibWrapper::UserPrivacySetting");
+    qRegisterMetaType<TDLibWrapper::UserPrivacySettingRule>("TDLibWrapper::UserPrivacySettingRule");
+
     qmlRegisterUncreatableType<TDLibResponse>(uri, 1, 0, "TDLibResponse", QString());
     qmlRegisterUncreatableType<ChatData>(uri, 1, 0, "TDLibChat", QString());
     qmlRegisterUncreatableType<MessageData>(uri, 1, 0, "TDLibMessage", QString());
