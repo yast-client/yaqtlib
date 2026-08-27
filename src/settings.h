@@ -68,6 +68,7 @@ public:
     ENUM_SETTING(NotificationFeedback, notificationFeedback, NotificationFeedbackAll)
     SETTING_(bool, notificationTurnsDisplayOn)
     SETTING(bool, notificationSoundsEnabled, true)
+    SETTING_(bool, notificationAlwaysDefaultSound)
     SETTING_(bool, notificationSuppressContent)
     SETTING_(bool, notificationShowDefaultReaction)
     SETTING(bool, inChatNgf, true)

@@ -285,12 +285,12 @@ void NotificationManager::updateNotificationGroup(const QVariantMap &type, int g
         needFeedback = needFeedback && !notificationGroup->lastNotification().value("is_silent").toBool();
         LOG("Feedback" << needFeedback << notificationSoundId);
 
-        if (needFeedback && notificationSoundId > 0) {
+        if (needFeedback && settings->notificationSoundsEnabled() && !settings->notificationAlwaysDefaultSound() && notificationSoundId > 0) {
             tdLibWrapper->getSavedNotificationSound(notificationSoundId, this,
                 [this, groupId, needFeedback](const QString &type, const QVariantMap &sound) {
                     QSharedPointer<NotificationGroup> group = notificationGroups.value(groupId);
                     if (!group) {
-                        LOG("Notification was deleted before sound info was received");
+                        LOG("Notification was deleted before sound info was received" << groupId);
                         return;
                     }
 
