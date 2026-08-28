@@ -2325,6 +2325,27 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
 
     LOG("Internal link type received" << type);
 
+    if (type == "internalLinkTypeProxy") {
+        const QVariantMap proxy = linkType.value(PROXY).toMap();
+        emit internalLinkTypeProxyReceived(proxy.value(SERVER).toString(), proxy.value(PORT).toInt(), proxy.value(TYPE).toMap());
+        return;
+    }
+    if (type == "internalLinkTypeSettings") {
+        // some settings sections can be opened before authorization, so we leave checking authorization state to QML for this
+        const QVariantMap section = linkType.value("section").toMap();
+        emit internalLinkTypeSettingsReceived(section.value(_TYPE).toString(), section.value("subsection").toString());
+        return;
+    }
+
+    // authorizationState can't be WaitTDLibParameters here
+    // getInternalLinkType is a non-special preauthorization request,
+    // so if called before initial params are set TDLib will schedule it
+    // and return the response after authorization state update is sent
+    if (authorizationState != AuthorizationReady) {
+        LOG("Unauthorized, ignoring internal link type" << type << authorizationState);
+        return;
+    }
+
     if (type == "internalLinkTypePublicChat")
         // TODO: handle draft_text and open_profile
         this->searchPublicChatOpenDirectly(linkType.value("chat_username").toString());
@@ -2338,13 +2359,7 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
         this->checkChatInviteLink(linkType.value(INVITE_LINK).toString());
     else if (type == "internalLinkTypeUnknownDeepLink")
         this->getDeepLinkInfo(linkType.value(LINK).toString());
-    else if (type == "internalLinkTypeProxy") {
-        const QVariantMap proxy = linkType.value(PROXY).toMap();
-        emit internalLinkTypeProxyReceived(proxy.value(SERVER).toString(), proxy.value(PORT).toInt(), proxy.value(TYPE).toMap());
-    } else if (type == "internalLinkTypeSettings") {
-        const QVariantMap section = linkType.value("section").toMap();
-        emit internalLinkTypeSettingsReceived(section.value(_TYPE).toString(), section.value("subsection").toString());
-    } else
+    else
         emit linkUnsupportedByApp(type.mid(16));
 }
 
