@@ -132,183 +132,183 @@ void TDLibReceiver::receiverLoop() {
 }
 
 void TDLibReceiver::processReceivedDocument(const QJsonDocument &receivedJsonDocument) {
-    QVariantMap receivedInformation = receivedJsonDocument.object().toVariantMap();
-    QString objectTypeName = receivedInformation.value(_TYPE).toString();
+    QVariantMap data = receivedJsonDocument.object().toVariantMap();
+    QString objectTypeName = data.value(_TYPE).toString();
 
-    int clientId = receivedInformation.value("@client_id").toInt();
+    int clientId = data.value("@client_id").toInt();
     if (clientId != this->clientId) {
         LOG("Received document for non-current client ID; ignoring" << clientId);
         return;
     }
 
-    QString objectExtra = receivedInformation.value(_EXTRA).toString();
+    QString objectExtra = data.value(_EXTRA).toString();
     const QRegularExpression requestWithIdExtraRe("^R(\\d+)$");
     const QRegularExpressionMatch requestIdMatch = requestWithIdExtraRe.match(objectExtra);
     if (requestIdMatch.hasMatch()) {
         const qlonglong requestId = requestIdMatch.captured(1).toLongLong();
         LOG("Received response with request ID" << requestId);
-        //receivedInformation.remove(_EXTRA);
-        emit responseForRequestIdReceived(requestId, receivedInformation);
+        //data.remove(_EXTRA);
+        emit responseForRequestIdReceived(requestId, data);
         return;
     }
 
     if (Handler handler = handlers.value(objectTypeName))
-        (this->*handler)(receivedInformation);
+        (this->*handler)(data);
     else {
         auto it = abstractHandlers.begin();
         while (it != abstractHandlers.end() && !objectTypeName.startsWith(it.key()))
             ++it;
 
         if (it != abstractHandlers.end())
-            (this->*it.value())(receivedInformation);
+            (this->*it.value())(data);
         else
             LOG("Unhandled object type" << objectTypeName);
     }
 }
 
-void TDLibReceiver::processUpdateOption(const QVariantMap &receivedInformation) {
-    const QString name = receivedInformation.value(NAME).toString();
-    const QVariant value = receivedInformation.value(VALUE).toMap().value(VALUE);
+void TDLibReceiver::processUpdateOption(const QVariantMap &data) {
+    const QString name = data.value(NAME).toString();
+    const QVariant value = data.value(VALUE).toMap().value(VALUE);
     LOG("Option updated" << name << value);
     emit optionUpdated(name, value);
 }
 
-void TDLibReceiver::processUpdateAuthorizationState(const QVariantMap &receivedInformation) {
-    QVariantMap authorizationState = receivedInformation.value("authorization_state").toMap();
+void TDLibReceiver::processUpdateAuthorizationState(const QVariantMap &data) {
+    QVariantMap authorizationState = data.value("authorization_state").toMap();
     QString authorizationStateType = authorizationState.take(_TYPE).toString();
     LOG("Authorization state changed" << authorizationStateType);
     emit authorizationStateChanged(authorizationStateType, authorizationState);
 }
 
-void TDLibReceiver::processUpdateConnectionState(const QVariantMap &receivedInformation) {
-    QString connectionState = receivedInformation.value(STATE).toMap().value(_TYPE).toString();
+void TDLibReceiver::processUpdateConnectionState(const QVariantMap &data) {
+    QString connectionState = data.value(STATE).toMap().value(_TYPE).toString();
     LOG("Connection state changed" << connectionState);
     emit connectionStateChanged(connectionState);
 }
 
-void TDLibReceiver::processUpdateUser(const QVariantMap &receivedInformation) {
-    QVariantMap userInformation = receivedInformation.value("user").toMap();
+void TDLibReceiver::processUpdateUser(const QVariantMap &data) {
+    QVariantMap userInformation = data.value("user").toMap();
     VERBOSE("User was updated" << userInformation.value("username").toString() << userInformation.value("first_name").toString() << userInformation.value("last_name").toString());
     emit userUpdated(userInformation);
 }
 
-void TDLibReceiver::processUpdateUserStatus(const QVariantMap &receivedInformation) {
-    const qlonglong userId = receivedInformation.value(USER_ID).toLongLong();
-    QVariantMap userStatusInformation = receivedInformation.value("status").toMap();
+void TDLibReceiver::processUpdateUserStatus(const QVariantMap &data) {
+    const qlonglong userId = data.value(USER_ID).toLongLong();
+    QVariantMap userStatusInformation = data.value("status").toMap();
     VERBOSE("User status was updated" << userId << userStatusInformation.value(_TYPE).toString());
     emit userStatusUpdated(userId, userStatusInformation);
 }
 
-void TDLibReceiver::processUpdateFile(const QVariantMap &receivedInformation) {
-    const QVariantMap fileInformation = receivedInformation.value("file").toMap();
+void TDLibReceiver::processUpdateFile(const QVariantMap &data) {
+    const QVariantMap fileInformation = data.value("file").toMap();
     int id = fileInformation.value(ID).toInt();
     LOG("File was updated" << id);
     emit fileUpdated(id, fileInformation);
 }
 
-void TDLibReceiver::processFile(const QVariantMap &receivedInformation) {
-    int id = receivedInformation.value(ID).toInt();
+void TDLibReceiver::processFile(const QVariantMap &data) {
+    int id = data.value(ID).toInt();
     LOG("File was received" << id);
-    emit fileUpdated(id, receivedInformation);
+    emit fileUpdated(id, data);
 }
 
-void TDLibReceiver::processUpdateNewChat(const QVariantMap &receivedInformation) {
-    const QVariantMap chatInformation = receivedInformation.value("chat").toMap();
+void TDLibReceiver::processUpdateNewChat(const QVariantMap &data) {
+    const QVariantMap chatInformation = data.value("chat").toMap();
     LOG("New chat discovered: " << chatInformation.value(ID).toLongLong() << chatInformation.value(TITLE).toString());
     emit newChatDiscovered(chatInformation);
 }
 
-void TDLibReceiver::processUpdateChatAddedToList(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processUpdateChatAddedToList(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Chat added to a list" << chatId);
-    emit chatAddedToList(receivedInformation.value(CHAT_LIST).toMap(), chatId);
+    emit chatAddedToList(data.value(CHAT_LIST).toMap(), chatId);
 }
 
-void TDLibReceiver::processUpdateChatRemovedFromList(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processUpdateChatRemovedFromList(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Chat removed from a list" << chatId);
-    emit chatRemovedFromList(receivedInformation.value(CHAT_LIST).toMap(), chatId);
+    emit chatRemovedFromList(data.value(CHAT_LIST).toMap(), chatId);
 }
 
-void TDLibReceiver::processUpdateUnreadMessageCount(const QVariantMap &receivedInformation) {
-    LOG("Unread message count updated: " << receivedInformation.value("chat_list").toMap().value(_TYPE).toString() << receivedInformation.value(UNREAD_COUNT).toString());
-    emit unreadMessageCountUpdated(receivedInformation);
+void TDLibReceiver::processUpdateUnreadMessageCount(const QVariantMap &data) {
+    LOG("Unread message count updated: " << data.value("chat_list").toMap().value(_TYPE).toString() << data.value(UNREAD_COUNT).toString());
+    emit unreadMessageCountUpdated(data);
 }
 
-void TDLibReceiver::processUpdateUnreadChatCount(const QVariantMap &receivedInformation) {
-    LOG("Unread chat count updated: " << receivedInformation.value("chat_list").toMap().value(_TYPE).toString() << receivedInformation.value(UNREAD_COUNT).toString());
-    emit unreadChatCountUpdated(receivedInformation);
+void TDLibReceiver::processUpdateUnreadChatCount(const QVariantMap &data) {
+    LOG("Unread chat count updated: " << data.value("chat_list").toMap().value(_TYPE).toString() << data.value(UNREAD_COUNT).toString());
+    emit unreadChatCountUpdated(data);
 }
 
-void TDLibReceiver::processUpdateChatLastMessage(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const QVariantMap lastMessage = receivedInformation.value(LAST_MESSAGE).toMap();
+void TDLibReceiver::processUpdateChatLastMessage(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const QVariantMap lastMessage = data.value(LAST_MESSAGE).toMap();
     LOG("Last chat message updated" << chatId << lastMessage.value(ID).toLongLong());
     /*if (order.isValid() && order.toLongLong() == 0) // this seems to be already done by tdlib in updateChatRemovedFromList
         emit chatRemovedFromList(chatId);
     else*/
-    emit chatLastMessageUpdated(chatId, cleanupMap(lastMessage), receivedInformation.value(POSITIONS).toList());
+    emit chatLastMessageUpdated(chatId, cleanupMap(lastMessage), data.value(POSITIONS).toList());
 }
 
-void TDLibReceiver::processUpdateChatPosition(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    QVariantMap position = receivedInformation.value(POSITION).toMap();
+void TDLibReceiver::processUpdateChatPosition(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    QVariantMap position = data.value(POSITION).toMap();
 
     LOG("Chat position updated" << chatId);
     emit chatPositionUpdated(chatId, position);
 }
 
-void TDLibReceiver::processUpdateChatReadInbox(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong(),
-                lastReadInboxMessageId = receivedInformation.value(LAST_READ_INBOX_MESSAGE_ID).toLongLong();
-    int unreadCount = receivedInformation.value(UNREAD_COUNT).toInt();
+void TDLibReceiver::processUpdateChatReadInbox(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong(),
+                lastReadInboxMessageId = data.value(LAST_READ_INBOX_MESSAGE_ID).toLongLong();
+    int unreadCount = data.value(UNREAD_COUNT).toInt();
 
     LOG("Chat read information updated for" << chatId << "last read message ID:" << lastReadInboxMessageId <<  "unread count:" << unreadCount);
     emit chatReadInboxUpdated(chatId, lastReadInboxMessageId, unreadCount);
 }
 
-void TDLibReceiver::processUpdateChatReadOutbox(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong(),
-                lastReadOutboxMessageId = receivedInformation.value(LAST_READ_OUTBOX_MESSAGE_ID).toLongLong();
+void TDLibReceiver::processUpdateChatReadOutbox(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong(),
+                lastReadOutboxMessageId = data.value(LAST_READ_OUTBOX_MESSAGE_ID).toLongLong();
 
     LOG("Sent messages read information updated for" << chatId << "last read message ID:" << lastReadOutboxMessageId);
     emit chatReadOutboxUpdated(chatId, lastReadOutboxMessageId);
 }
 
-void TDLibReceiver::processUpdateChatAvailableReactions(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatAvailableReactions(const QVariantMap &data)
 {
-    const qlonglong chatId(receivedInformation.value(CHAT_ID).toLongLong());
-    const QVariantMap availableReactions(receivedInformation.value(AVAILABLE_REACTIONS).toMap());
+    const qlonglong chatId(data.value(CHAT_ID).toLongLong());
+    const QVariantMap availableReactions(data.value(AVAILABLE_REACTIONS).toMap());
     LOG("Available reactions updated for" << chatId << "new information:" << availableReactions);
     emit chatAvailableReactionsUpdated(chatId, availableReactions);
 }
 
-void TDLibReceiver::processUpdateBasicGroup(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateBasicGroup(const QVariantMap &data)
 {
-    const QVariantMap basicGroup(receivedInformation.value(BASIC_GROUP).toMap());
+    const QVariantMap basicGroup(data.value(BASIC_GROUP).toMap());
     const qlonglong basicGroupId = basicGroup.value(ID).toLongLong();
     LOG("Basic group information updated for " << basicGroupId);
     emit basicGroupUpdated(basicGroupId, basicGroup);
 }
 
-void TDLibReceiver::processUpdateSuperGroup(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateSuperGroup(const QVariantMap &data)
 {
-    const QVariantMap supergroup(receivedInformation.value(SUPERGROUP).toMap());
+    const QVariantMap supergroup(data.value(SUPERGROUP).toMap());
     const qlonglong superGroupId = supergroup.value(ID).toLongLong();
     LOG("Super group information updated for " << superGroupId);
     emit supergroupUpdated(superGroupId, supergroup);
 }
 
-void TDLibReceiver::processChatOnlineMemberCountUpdated(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processChatOnlineMemberCountUpdated(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Chat online member count updated" << chatId);
-    emit chatOnlineMemberCountUpdated(chatId, receivedInformation.value("online_member_count").toInt());
+    emit chatOnlineMemberCountUpdated(chatId, data.value("online_member_count").toInt());
 }
 
-void TDLibReceiver::processMessages(const QVariantMap &receivedInformation) {
-    const QStringList extra = receivedInformation.value(_EXTRA).toString().split(":");
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
-    const QVariantList messages = cleanupList(receivedInformation.value(MESSAGES).toList());
+void TDLibReceiver::processMessages(const QVariantMap &data) {
+    const QStringList extra = data.value(_EXTRA).toString().split(":");
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
+    const QVariantList messages = cleanupList(data.value(MESSAGES).toList());
     qlonglong chatId;
     if (extra.value(0) == QStringLiteral("thread")) {
         chatId = extra.value(1).toLongLong();
@@ -327,92 +327,92 @@ void TDLibReceiver::processMessages(const QVariantMap &receivedInformation) {
     }
 }
 
-void TDLibReceiver::processFoundChatMessages(const QVariantMap &receivedInformation) {
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
-    const qlonglong nextFromMessageId = receivedInformation.value(NEXT_FROM_MESSAGE_ID).toLongLong();
-    const QStringList extra = receivedInformation.value(_EXTRA).toString().split(":");
+void TDLibReceiver::processFoundChatMessages(const QVariantMap &data) {
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
+    const qlonglong nextFromMessageId = data.value(NEXT_FROM_MESSAGE_ID).toLongLong();
+    const QStringList extra = data.value(_EXTRA).toString().split(":");
     qlonglong chatId = extra.value(0).toLongLong();
     const int extra1 = extra.value(1).toInt(), extra2 = extra.value(2).toInt();
     LOG("Received found chat messages for chat" << chatId << "extras" << extra1 << extra2 << "amount:" << totalCount << "next from message id:" << nextFromMessageId);
-    emit foundChatMessagesReceived(chatId, extra1, extra2, cleanupList(receivedInformation.value(MESSAGES).toList()), totalCount, nextFromMessageId);
+    emit foundChatMessagesReceived(chatId, extra1, extra2, cleanupList(data.value(MESSAGES).toList()), totalCount, nextFromMessageId);
 }
 
-void TDLibReceiver::processSponsoredMessages(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(_EXTRA).toLongLong(); // See TDLibWrapper::getChatSponsoredMessages
-    const QVariantList messages(receivedInformation.value(MESSAGES).toList());
-    const int messagesBetween = receivedInformation.value("messages_between").toInt();
+void TDLibReceiver::processSponsoredMessages(const QVariantMap &data) {
+    const qlonglong chatId = data.value(_EXTRA).toLongLong(); // See TDLibWrapper::getChatSponsoredMessages
+    const QVariantList messages(data.value(MESSAGES).toList());
+    const int messagesBetween = data.value("messages_between").toInt();
     LOG("Received" << messages.count() << "sponsored messages for chat" << chatId << "messages between" << messagesBetween);
     emit sponsoredMessagesReceived(chatId, messages, messagesBetween);
 }
 
-void TDLibReceiver::processUpdateNewMessage(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateNewMessage(const QVariantMap &data)
 {
-    const QVariantMap message = receivedInformation.value(MESSAGE).toMap();
+    const QVariantMap message = data.value(MESSAGE).toMap();
     const qlonglong chatId = message.value(CHAT_ID).toLongLong();
     LOG("Received new message for chat" << chatId);
     emit newMessageReceived(chatId, cleanupMap(message));
 }
 
-void TDLibReceiver::processMessage(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(ID).toLongLong();
-    const QString extra = receivedInformation.value(_EXTRA).toString();
+void TDLibReceiver::processMessage(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(ID).toLongLong();
+    const QString extra = data.value(_EXTRA).toString();
     LOG("Received message" << chatId << messageId << extra);
-    emit messageReceived(chatId, messageId, cleanupMap(receivedInformation), extra);
+    emit messageReceived(chatId, messageId, cleanupMap(data), extra);
 }
 
-void TDLibReceiver::processMessageLinkInfo(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE).toMap().value(ID).toLongLong();
+void TDLibReceiver::processMessageLinkInfo(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE).toMap().value(ID).toLongLong();
     LOG("Received message link info" << chatId << messageId);
     emit messageLinkInfoReceived(chatId, messageId);
 }
 
-void TDLibReceiver::processMessageSendSucceeded(const QVariantMap &receivedInformation) {
-    const qlonglong oldMessageId = receivedInformation.value(OLD_MESSAGE_ID).toLongLong();
-    const QVariantMap message = receivedInformation.value(MESSAGE).toMap();
+void TDLibReceiver::processMessageSendSucceeded(const QVariantMap &data) {
+    const qlonglong oldMessageId = data.value(OLD_MESSAGE_ID).toLongLong();
+    const QVariantMap message = data.value(MESSAGE).toMap();
     const qlonglong chatId = message.value(CHAT_ID).toLongLong();
     const qlonglong messageId = message.value(ID).toLongLong();
     LOG("Message send succeeded" << messageId << oldMessageId);
     emit messageSendSucceeded(chatId, oldMessageId, messageId, cleanupMap(message));
 }
 
-void TDLibReceiver::processUpdateActiveNotifications(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateActiveNotifications(const QVariantMap &data)
 {
     LOG("Received active notification groups");
-    emit activeNotificationsUpdated(receivedInformation.value("groups").toList());
+    emit activeNotificationsUpdated(data.value("groups").toList());
 }
 
-void TDLibReceiver::processUpdateNotificationGroup(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateNotificationGroup(const QVariantMap &data) {
     LOG("Received updated notification group");
-    emit notificationGroupUpdated(receivedInformation);
+    emit notificationGroupUpdated(data);
 }
 
-void TDLibReceiver::processUpdateNotification(const QVariantMap &receivedInformation) {
-    int groupId = receivedInformation.value("notification_group_id").toInt();
-    const QVariantMap notification = receivedInformation.value("notification").toMap();
+void TDLibReceiver::processUpdateNotification(const QVariantMap &data) {
+    int groupId = data.value("notification_group_id").toInt();
+    const QVariantMap notification = data.value("notification").toMap();
     LOG("Notification updated" << notification.value(ID).toInt() << "group" << groupId);
     emit notificationUpdated(groupId, notification);
 }
 
-void TDLibReceiver::processUpdateChatNotificationSettings(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processUpdateChatNotificationSettings(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Chat notification settings updated" << chatId);
-    emit chatNotificationSettingsUpdated(chatId, receivedInformation.value("notification_settings").toMap());
+    emit chatNotificationSettingsUpdated(chatId, data.value("notification_settings").toMap());
 }
 
-void TDLibReceiver::processUpdateMessageContent(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateMessageContent(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Message content updated" << chatId << messageId);
-    emit messageContentUpdated(chatId, messageId, cleanupMap(receivedInformation.value(NEW_CONTENT).toMap()));
+    emit messageContentUpdated(chatId, messageId, cleanupMap(data.value(NEW_CONTENT).toMap()));
 }
 
-void TDLibReceiver::processUpdateDeleteMessages(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateDeleteMessages(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const QVariantList messageIds = receivedInformation.value(MESSAGE_IDS).toList();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const QVariantList messageIds = data.value(MESSAGE_IDS).toList();
     QList<qlonglong> ids;
     const int n = messageIds.size();
     ids.reserve(n);
@@ -423,245 +423,245 @@ void TDLibReceiver::processUpdateDeleteMessages(const QVariantMap &receivedInfor
     emit messagesDeleted(chatId, ids);
 }
 
-void TDLibReceiver::processChats(const QVariantMap &receivedInformation) {
-    const QString extra = receivedInformation.value(_EXTRA).toString();
-    const QVariantList chatIds = receivedInformation.value(CHAT_IDS).toList();
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
+void TDLibReceiver::processChats(const QVariantMap &data) {
+    const QString extra = data.value(_EXTRA).toString();
+    const QVariantList chatIds = data.value(CHAT_IDS).toList();
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
     LOG("Received chats" << extra << totalCount);
     emit chats(extra, chatIds, totalCount);
 }
 
-void TDLibReceiver::processSponsoredChats(const QVariantMap &receivedInformation) {
-    emit sponsoredChatsReceived(cleanupList(receivedInformation.value("chats").toList()));
+void TDLibReceiver::processSponsoredChats(const QVariantMap &data) {
+    emit sponsoredChatsReceived(cleanupList(data.value("chats").toList()));
 }
 
-void TDLibReceiver::processChat(const QVariantMap &receivedInformation) {
-    LOG("Chat received" << receivedInformation.value(ID).toLongLong());
-    emit chat(receivedInformation, receivedInformation.value(_EXTRA));
+void TDLibReceiver::processChat(const QVariantMap &data) {
+    LOG("Chat received" << data.value(ID).toLongLong());
+    emit chat(data, data.value(_EXTRA));
 }
 
-void TDLibReceiver::processUpdateRecentStickers(const QVariantMap &receivedInformation) {
-    bool isAttached = receivedInformation.value("is_attached").toBool();
+void TDLibReceiver::processUpdateRecentStickers(const QVariantMap &data) {
+    bool isAttached = data.value("is_attached").toBool();
     LOG("Received updateRecentStickers is attached:" << isAttached);
     QList<int> ids;
-    for (const QVariant &id : receivedInformation.value(STICKER_IDS).toList())
+    for (const QVariant &id : data.value(STICKER_IDS).toList())
         ids.append(id.toInt());
     emit recentStickersUpdated(isAttached, ids);
 }
 
-void TDLibReceiver::processUpdateFavoriteStickers(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateFavoriteStickers(const QVariantMap &data) {
     LOG("Received updateFavoriteStickers");
     QList<int> ids;
-    for (const QVariant &id : receivedInformation.value(STICKER_IDS).toList())
+    for (const QVariant &id : data.value(STICKER_IDS).toList())
         ids.append(id.toInt());
     emit favoriteStickersUpdated(ids);
 }
 
-void TDLibReceiver::processStickers(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processStickers(const QVariantMap &data) {
     LOG("Received stickers");
-    emit stickers(cleanupList(receivedInformation.value(STICKERS).toList()), receivedInformation.value(_EXTRA));
+    emit stickers(cleanupList(data.value(STICKERS).toList()), data.value(_EXTRA));
 }
 
-void TDLibReceiver::processUpdateInstalledStickerSets(const QVariantMap &receivedInformation) {
-    const QString stickerType = receivedInformation.value("sticker_type").toMap().value(_TYPE).toString();
+void TDLibReceiver::processUpdateInstalledStickerSets(const QVariantMap &data) {
+    const QString stickerType = data.value("sticker_type").toMap().value(_TYPE).toString();
     LOG("Installed sticker sets updated" << stickerType);
-    emit installedStickerSetsUpdated(stickerType, receivedInformation.value("sticker_set_ids").toList());
+    emit installedStickerSetsUpdated(stickerType, data.value("sticker_set_ids").toList());
 }
 
-void TDLibReceiver::processStickerSets(const QVariantMap &receivedInformation) {
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
-    const QString extra = receivedInformation.value(_EXTRA).toString();
+void TDLibReceiver::processStickerSets(const QVariantMap &data) {
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
+    const QString extra = data.value(_EXTRA).toString();
     LOG("Received stickerSets" << totalCount << extra);
-    emit stickerSets(cleanupList(receivedInformation.value(SETS).toList()), totalCount, extra);
+    emit stickerSets(cleanupList(data.value(SETS).toList()), totalCount, extra);
 }
 
-void TDLibReceiver::processStickerSet(const QVariantMap &receivedInformation) {
-    const QString id = receivedInformation.value(ID).toString();
+void TDLibReceiver::processStickerSet(const QVariantMap &data) {
+    const QString id = data.value(ID).toString();
     LOG("Received stickerSet" << id);
-    emit stickerSet(id, cleanupMap(receivedInformation));
+    emit stickerSet(id, cleanupMap(data));
 }
-void TDLibReceiver::processChatMembers(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(_EXTRA).toLongLong();
+void TDLibReceiver::processChatMembers(const QVariantMap &data) {
+    const qlonglong chatId = data.value(_EXTRA).toLongLong();
     LOG("Received super group members" << chatId);
-    emit chatMembers(chatId, receivedInformation.value("members").toList(), receivedInformation.value(TOTAL_COUNT).toInt());
+    emit chatMembers(chatId, data.value("members").toList(), data.value(TOTAL_COUNT).toInt());
 }
 
-void TDLibReceiver::processUserFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong userId = receivedInformation.value(_EXTRA).toLongLong();
+void TDLibReceiver::processUserFullInfo(const QVariantMap &data) {
+    const qlonglong userId = data.value(_EXTRA).toLongLong();
     LOG("Received userFullInfo" << userId);
-    emit userFullInfo(userId, receivedInformation);
+    emit userFullInfo(userId, data);
 }
 
-void TDLibReceiver::processUpdateUserFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong userId = receivedInformation.value(USER_ID).toLongLong();
+void TDLibReceiver::processUpdateUserFullInfo(const QVariantMap &data) {
+    const qlonglong userId = data.value(USER_ID).toLongLong();
     LOG("Received updateUserFullInfo" << userId);
-    emit userFullInfoUpdated(userId, receivedInformation.value("user_full_info").toMap());
+    emit userFullInfoUpdated(userId, data.value("user_full_info").toMap());
 }
 
-void TDLibReceiver::processBasicGroupFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong groupId = receivedInformation.value(_EXTRA).toLongLong();
+void TDLibReceiver::processBasicGroupFullInfo(const QVariantMap &data) {
+    const qlonglong groupId = data.value(_EXTRA).toLongLong();
     LOG("Received basicGroupFullInfo" << groupId);
-    emit basicGroupFullInfo(groupId, receivedInformation);
+    emit basicGroupFullInfo(groupId, data);
 }
-void TDLibReceiver::processUpdateBasicGroupFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong groupId = receivedInformation.value("basic_group_id").toLongLong();
+void TDLibReceiver::processUpdateBasicGroupFullInfo(const QVariantMap &data) {
+    const qlonglong groupId = data.value("basic_group_id").toLongLong();
     LOG("Received updateBasicGroupFullInfo" << groupId);
-    emit basicGroupFullInfoUpdated(groupId, receivedInformation.value("basic_group_full_info").toMap());
+    emit basicGroupFullInfoUpdated(groupId, data.value("basic_group_full_info").toMap());
 }
 
-void TDLibReceiver::processSupergroupFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong groupId = receivedInformation.value(_EXTRA).toLongLong();
+void TDLibReceiver::processSupergroupFullInfo(const QVariantMap &data) {
+    const qlonglong groupId = data.value(_EXTRA).toLongLong();
     LOG("Received updateSuperGroupFullInfo" << groupId);
-    emit supergroupFullInfo(groupId, receivedInformation);
+    emit supergroupFullInfo(groupId, data);
 }
 
-void TDLibReceiver::processUpdateSupergroupFullInfo(const QVariantMap &receivedInformation) {
-    const qlonglong groupId = receivedInformation.value("supergroup_id").toLongLong();
+void TDLibReceiver::processUpdateSupergroupFullInfo(const QVariantMap &data) {
+    const qlonglong groupId = data.value("supergroup_id").toLongLong();
     LOG("Received updateSuperGroupFullInfo" << groupId);
-    emit supergroupFullInfoUpdated(groupId, receivedInformation.value("supergroup_full_info").toMap());
+    emit supergroupFullInfoUpdated(groupId, data.value("supergroup_full_info").toMap());
 }
 
-void TDLibReceiver::processChatPhotos(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(_EXTRA).toLongLong();
+void TDLibReceiver::processChatPhotos(const QVariantMap &data) {
+    const qlonglong chatId = data.value(_EXTRA).toLongLong();
     LOG("Received chatPhotos" << chatId);
-    emit chatPhotos(chatId, receivedInformation.value("photos").toList(), receivedInformation.value(TOTAL_COUNT).toInt());
+    emit chatPhotos(chatId, data.value("photos").toList(), data.value(TOTAL_COUNT).toInt());
 }
 
-void TDLibReceiver::processUpdateChatPermissions(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processUpdateChatPermissions(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Chat permissions updated" << chatId);
-    emit chatPermissionsUpdated(chatId, receivedInformation.value("permissions").toMap());
+    emit chatPermissionsUpdated(chatId, data.value("permissions").toMap());
 }
 
-void TDLibReceiver::processUpdateChatPhoto(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatPhoto(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Photo updated for chat" << chatId);
-    emit chatPhotoUpdated(chatId, receivedInformation.value(PHOTO).toMap());
+    emit chatPhotoUpdated(chatId, data.value(PHOTO).toMap());
 }
 
-void TDLibReceiver::processUpdateChatTitle(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatTitle(const QVariantMap &data)
 {
     LOG("Received UpdateChatTitle");
-    emit chatTitleUpdated(receivedInformation.value(CHAT_ID).toLongLong(), receivedInformation.value(TITLE).toString());
+    emit chatTitleUpdated(data.value(CHAT_ID).toLongLong(), data.value(TITLE).toString());
 }
 
-void TDLibReceiver::processUpdateMessageIsPinned(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateMessageIsPinned(const QVariantMap &data) {
     LOG("Received UpdateMessageIsPinned");
-    emit messageIsPinnedUpdated(receivedInformation.value(CHAT_ID).toLongLong(), receivedInformation.value(MESSAGE_ID).toLongLong(), receivedInformation.value("is_pinned").toBool());
+    emit messageIsPinnedUpdated(data.value(CHAT_ID).toLongLong(), data.value(MESSAGE_ID).toLongLong(), data.value("is_pinned").toBool());
 }
 
-void TDLibReceiver::processUsers(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUsers(const QVariantMap &data)
 {
     LOG("Received Users");
-    emit usersReceived(receivedInformation.value(_EXTRA).toString(), receivedInformation.value("user_ids").toList(), receivedInformation.value(TOTAL_COUNT).toInt());
+    emit usersReceived(data.value(_EXTRA).toString(), data.value("user_ids").toList(), data.value(TOTAL_COUNT).toInt());
 }
 
-void TDLibReceiver::processMessageSenders(const QVariantMap &receivedInformation)
+void TDLibReceiver::processMessageSenders(const QVariantMap &data)
 {
     LOG("Received Message Senders");
-    emit messageSendersReceived(receivedInformation.value(_EXTRA).toString(), receivedInformation.value("senders").toList(), receivedInformation.value(TOTAL_COUNT).toInt());
+    emit messageSendersReceived(data.value(_EXTRA).toString(), data.value("senders").toList(), data.value(TOTAL_COUNT).toInt());
 }
 
-void TDLibReceiver::processError(const QVariantMap &receivedInformation)
+void TDLibReceiver::processError(const QVariantMap &data)
 {
     LOG("Received an error");
-    emit errorReceived(receivedInformation.value("code").toInt(), receivedInformation.value(MESSAGE).toString(), receivedInformation.value(_EXTRA));
+    emit errorReceived(data.value("code").toInt(), data.value(MESSAGE).toString(), data.value(_EXTRA));
 }
 
-void TDLibReceiver::ok(const QVariantMap &receivedInformation) {
-    if (receivedInformation.contains(_EXTRA)) {
-        QVariant extra = receivedInformation.value(_EXTRA);
+void TDLibReceiver::ok(const QVariantMap &data) {
+    if (data.contains(_EXTRA)) {
+        QVariant extra = data.value(_EXTRA);
         LOG("Received an OK" << extra.userType());
         emit okReceived(extra);
     } else
         LOG("Received an OK");
 }
 
-void TDLibReceiver::processUpdateServiceNotification(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateServiceNotification(const QVariantMap &data) {
     LOG("Received updateServiceNotification");
-    emit serviceNotificationReceived(receivedInformation.value(TYPE).toString(), receivedInformation.value(CONTENT).toMap());
+    emit serviceNotificationReceived(data.value(TYPE).toString(), data.value(CONTENT).toMap());
 }
 
-void TDLibReceiver::processUpdateSecretChat(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateSecretChat(const QVariantMap &data)
 {
     LOG("A secret chat was updated");
-    QVariantMap updatedSecretChat = receivedInformation.value(SECRET_CHAT).toMap();
+    QVariantMap updatedSecretChat = data.value(SECRET_CHAT).toMap();
     emit secretChatUpdated(updatedSecretChat.value(ID).toLongLong(), updatedSecretChat);
 }
 
-void TDLibReceiver::processUpdateMessageEdited(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateMessageEdited(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Message was edited" << chatId << messageId);
-    emit messageEditedUpdated(chatId, messageId, receivedInformation.value("edit_date").toInt(), receivedInformation.value("reply_markup").toMap());
+    emit messageEditedUpdated(chatId, messageId, data.value("edit_date").toInt(), data.value("reply_markup").toMap());
 }
 
-void TDLibReceiver::processImportedContacts(const QVariantMap &receivedInformation) {
-    const QVariantList importerCount = receivedInformation.value("importer_count").toList();
-    const QVariantList userIds = receivedInformation.value("user_ids").toList();
-    const QString extra = receivedInformation.value(_EXTRA).toString();
+void TDLibReceiver::processImportedContacts(const QVariantMap &data) {
+    const QVariantList importerCount = data.value("importer_count").toList();
+    const QVariantList userIds = data.value("user_ids").toList();
+    const QString extra = data.value(_EXTRA).toString();
 
     LOG("Received importedContacts" << importerCount.size() << userIds.size() << extra);
     emit contactsImported(importerCount, userIds, extra);
 }
 
-void TDLibReceiver::processUpdateChatIsMarkedAsUnread(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatIsMarkedAsUnread(const QVariantMap &data)
 {
     LOG("The unread state of a chat was updated");
-    emit chatIsMarkedAsUnreadUpdated(receivedInformation.value(CHAT_ID).toLongLong(), receivedInformation.value("is_marked_as_unread").toBool());
+    emit chatIsMarkedAsUnreadUpdated(data.value(CHAT_ID).toLongLong(), data.value("is_marked_as_unread").toBool());
 }
 
-void TDLibReceiver::processUpdateChatDraftMessage(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatDraftMessage(const QVariantMap &data)
 {
     LOG("Draft message was updated");
-    emit chatDraftMessageUpdated(receivedInformation.value(CHAT_ID).toLongLong(), cleanupMap(receivedInformation.value(DRAFT_MESSAGE).toMap()), receivedInformation.value(POSITIONS).toList());
+    emit chatDraftMessageUpdated(data.value(CHAT_ID).toLongLong(), cleanupMap(data.value(DRAFT_MESSAGE).toMap()), data.value(POSITIONS).toList());
 }
 
-void TDLibReceiver::processInlineQueryResults(const QVariantMap &receivedInformation) {
-    const QString id = receivedInformation.value("inline_query_id").toString();
-    const QString nextOffset = receivedInformation.value("next_offset").toString();
-    const QVariantList results = receivedInformation.value("results").toList();
+void TDLibReceiver::processInlineQueryResults(const QVariantMap &data) {
+    const QString id = data.value("inline_query_id").toString();
+    const QString nextOffset = data.value("next_offset").toString();
+    const QVariantList results = data.value("results").toList();
     LOG("Received inline query results" << id << nextOffset << results.size());
-    emit inlineQueryResults(id, nextOffset, results, receivedInformation.value("button").toMap(), receivedInformation.value(_EXTRA).toString());
+    emit inlineQueryResults(id, nextOffset, results, data.value("button").toMap(), data.value(_EXTRA).toString());
 }
 
-void TDLibReceiver::processCallbackQueryAnswer(const QVariantMap &receivedInformation)
+void TDLibReceiver::processCallbackQueryAnswer(const QVariantMap &data)
 {
     LOG("Callback Query answer");
-    emit callbackQueryAnswer(receivedInformation.value(TEXT).toString(), receivedInformation.value("alert").toBool(), receivedInformation.value("url").toString());
+    emit callbackQueryAnswer(data.value(TEXT).toString(), data.value("alert").toBool(), data.value("url").toString());
 }
 
-void TDLibReceiver::processUserPrivacySettingRules(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUserPrivacySettingRules(const QVariantMap &data)
 {
     LOG("User privacy setting rules");
-    emit userPrivacySettingRules(receivedInformation);
+    emit userPrivacySettingRules(data);
 }
 
-void TDLibReceiver::processUpdateUserPrivacySettingRules(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateUserPrivacySettingRules(const QVariantMap &data)
 {
     LOG("User privacy setting rules updated");
-    emit userPrivacySettingRulesUpdated(receivedInformation);
+    emit userPrivacySettingRulesUpdated(data);
 }
 
-void TDLibReceiver::processUpdateMessageInteractionInfo(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateMessageInteractionInfo(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Message interaction info updated" << chatId << messageId);
-    emit messageInteractionInfoUpdated(chatId, messageId, receivedInformation.value(INTERACTION_INFO).toMap());
+    emit messageInteractionInfoUpdated(chatId, messageId, data.value(INTERACTION_INFO).toMap());
 }
 
-void TDLibReceiver::processSessions(const QVariantMap &receivedInformation)
+void TDLibReceiver::processSessions(const QVariantMap &data)
 {
-    int inactiveSessionTTLDays = receivedInformation.value("inactive_session_ttl_days").toInt();
-    QVariantList sessions = receivedInformation.value("sessions").toList();
+    int inactiveSessionTTLDays = data.value("inactive_session_ttl_days").toInt();
+    QVariantList sessions = data.value("sessions").toList();
     emit sessionsReceived(inactiveSessionTTLDays, sessions);
 }
 
-void TDLibReceiver::processAvailableReactions(const QVariantMap &receivedInformation) {
-    QVariantMap reactions(receivedInformation);
+void TDLibReceiver::processAvailableReactions(const QVariantMap &data) {
+    QVariantMap reactions(data);
 
     const QStringList extra = reactions.take(_EXTRA).toString().split(":");
     qlonglong chatId = extra.value(0).toLongLong(), messageId = extra.value(1).toLongLong();
@@ -671,33 +671,33 @@ void TDLibReceiver::processAvailableReactions(const QVariantMap &receivedInforma
     emit availableReactionsReceived(chatId, messageId, reactions, unavailabilityReason);
 }
 
-void TDLibReceiver::processUpdateChatUnreadMentionCount(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const int unreadMentionCount = receivedInformation.value(UNREAD_MENTION_COUNT).toInt();
+void TDLibReceiver::processUpdateChatUnreadMentionCount(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const int unreadMentionCount = data.value(UNREAD_MENTION_COUNT).toInt();
     LOG("Chat unread mention count updated" << chatId << unreadMentionCount);
     emit chatUnreadMentionCountUpdated(chatId, unreadMentionCount);
 }
 
-void TDLibReceiver::processUpdateMessageMentionRead(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
-    const int unreadMentionCount = receivedInformation.value(UNREAD_MENTION_COUNT).toInt();
+void TDLibReceiver::processUpdateMessageMentionRead(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
+    const int unreadMentionCount = data.value(UNREAD_MENTION_COUNT).toInt();
 
     LOG("Message mention read" << chatId << messageId << "unread mention count" << unreadMentionCount);
     emit messageMentionRead(chatId, messageId);
     emit chatUnreadMentionCountUpdated(chatId, unreadMentionCount);
 }
 
-void TDLibReceiver::processUpdateChatUnreadReactionCount(const QVariantMap &receivedInformation)
+void TDLibReceiver::processUpdateChatUnreadReactionCount(const QVariantMap &data)
 {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const int unreadReactionCount = receivedInformation.value(UNREAD_REACTION_COUNT).toInt();
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const int unreadReactionCount = data.value(UNREAD_REACTION_COUNT).toInt();
     LOG("Chat unread reaction count updated" << chatId << unreadReactionCount);
     emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
 }
 
-void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &receivedInformation) {
-    emit activeEmojiReactionsUpdated(receivedInformation.value(EMOJIS).toStringList());
+void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &data) {
+    emit activeEmojiReactionsUpdated(data.value(EMOJIS).toStringList());
 }
 
 // Recursively removes (some) unused entries from QVariantMaps to reduce
@@ -972,108 +972,108 @@ const QVariantList TDLibReceiver::cleanupList(const QVariantList& list, bool *up
     }
 }
 
-void TDLibReceiver::processMessageProperties(const QVariantMap &receivedInformation) {
-    const QVariantMap extra = receivedInformation.value(_EXTRA).toMap();
+void TDLibReceiver::processMessageProperties(const QVariantMap &data) {
+    const QVariantMap extra = data.value(_EXTRA).toMap();
     const qlonglong chatId = extra.value(CHAT_ID).toLongLong();
     const qlonglong messageId = extra.value(MESSAGE_ID).toLongLong();
     LOG("Received message properties" << messageId);
-    emit messagePropertiesReceived(chatId, messageId, receivedInformation);
+    emit messagePropertiesReceived(chatId, messageId, data);
 }
 
-void TDLibReceiver::processStorageStatisticsFast(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processStorageStatisticsFast(const QVariantMap &data) {
     LOG("Received storageStatisticsFast");
-    emit storageStatisticsFastReceived(receivedInformation);
+    emit storageStatisticsFastReceived(data);
 }
 
-void TDLibReceiver::processStorageStatistics(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processStorageStatistics(const QVariantMap &data) {
     LOG("Received storageStatistics");
-    emit storageStatisticsReceived(receivedInformation);
+    emit storageStatisticsReceived(data);
 }
 
-void TDLibReceiver::processFormattedText(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processFormattedText(const QVariantMap &data) {
     LOG("Received formattedText");
-    QVariantMap formattedText = receivedInformation;
+    QVariantMap formattedText = data;
     const QString extra = formattedText.take(_EXTRA).toString();
     emit formattedTextReceived(formattedText, extra);
 }
 
-void TDLibReceiver::processUpdateChatAction(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+void TDLibReceiver::processUpdateChatAction(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
     LOG("Received updateChatAction" << chatId);
-    emit chatActionUpdated(chatId, receivedInformation.value(TOPIC_ID).toMap(), receivedInformation.value(SENDER_ID).toMap(), receivedInformation.value("action").toMap());
+    emit chatActionUpdated(chatId, data.value(TOPIC_ID).toMap(), data.value(SENDER_ID).toMap(), data.value("action").toMap());
 }
 
-void TDLibReceiver::processEmojiKeywords(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processEmojiKeywords(const QVariantMap &data) {
     LOG("Received emojiKeywords");
     QVariantList emojis;
-    for (QVariant emojiKeyword : receivedInformation.value("emoji_keywords").toList()) {
+    for (QVariant emojiKeyword : data.value("emoji_keywords").toList()) {
         QString emoji = emojiKeyword.toMap().value("emoji").toString();
         if (!emoji.isEmpty()) emojis.append(emoji);
     }
     //if (!emojis.isEmpty())
-    emit emojiKeywordsReceived(receivedInformation.value(_EXTRA).toString(), emojis);
+    emit emojiKeywordsReceived(data.value(_EXTRA).toString(), emojis);
 }
 
-void TDLibReceiver::processUpdateDiceEmojis(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateDiceEmojis(const QVariantMap &data) {
     LOG("Received updateDiceEmojis");
-    emit diceEmojisUpdated(receivedInformation.value(EMOJIS).toStringList());
+    emit diceEmojisUpdated(data.value(EMOJIS).toStringList());
 }
 
-void TDLibReceiver::processUpdateSuggestedActions(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateSuggestedActions(const QVariantMap &data) {
     LOG("Received updateSuggestedActions");
-    emit suggestedActionsUpdated(receivedInformation.value("added_actions").toList(), receivedInformation.value("removed_actions").toList());
+    emit suggestedActionsUpdated(data.value("added_actions").toList(), data.value("removed_actions").toList());
 }
 
-void TDLibReceiver::processCount(const QVariantMap &receivedInformation) {
-    const QString extra = receivedInformation.value(_EXTRA).toString();
-    const int count = receivedInformation.value("count").toInt();
+void TDLibReceiver::processCount(const QVariantMap &data) {
+    const QString extra = data.value(_EXTRA).toString();
+    const int count = data.value("count").toInt();
     LOG("Received count" << extra << count);
     emit countReceived(count, extra);
 }
-void TDLibReceiver::processChatLists(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processChatLists(const QVariantMap &data) {
     LOG("Received chatLists");
-    emit chatListsReceived(receivedInformation.value(_EXTRA).toLongLong(), receivedInformation.value(CHAT_LISTS).toList());
+    emit chatListsReceived(data.value(_EXTRA).toLongLong(), data.value(CHAT_LISTS).toList());
 }
 
-void TDLibReceiver::processArchiveChatListSettings(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processArchiveChatListSettings(const QVariantMap &data) {
     LOG("Received archiveChatListSettings");
     emit archiveChatListSettingsReceived(
-                receivedInformation.value("archive_and_mute_new_chats_from_unknown_users").toBool(),
-                receivedInformation.value("keep_unmuted_chats_archived").toBool(),
-                receivedInformation.value("keep_chats_from_folders_archived").toBool()
+                data.value("archive_and_mute_new_chats_from_unknown_users").toBool(),
+                data.value("keep_unmuted_chats_archived").toBool(),
+                data.value("keep_chats_from_folders_archived").toBool()
                 );
 }
 
-void TDLibReceiver::processUpdateChatFolders(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processUpdateChatFolders(const QVariantMap &data) {
     LOG("Received updateChatFolders");
-    emit chatFoldersUpdated(receivedInformation.value("chat_folders").toList(), receivedInformation.value("main_chat_list_position").toInt(), receivedInformation.value("are_tags_enabled").toBool());
+    emit chatFoldersUpdated(data.value("chat_folders").toList(), data.value("main_chat_list_position").toInt(), data.value("are_tags_enabled").toBool());
 }
 
-void TDLibReceiver::processForumTopics(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(_EXTRA).toLongLong();
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
+void TDLibReceiver::processForumTopics(const QVariantMap &data) {
+    const qlonglong chatId = data.value(_EXTRA).toLongLong();
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
     LOG("Received forumTopics" << chatId << totalCount);
 
     emit forumTopicsReceived(
                 chatId,
                 totalCount,
-                receivedInformation.value("topics").toList(),
-                receivedInformation.value("next_offset_date").toInt(),
-                receivedInformation.value("next_offset_message_id").toLongLong(),
-                receivedInformation.value("next_offset_forum_topic_id").toInt()
+                data.value("topics").toList(),
+                data.value("next_offset_date").toInt(),
+                data.value("next_offset_message_id").toLongLong(),
+                data.value("next_offset_forum_topic_id").toInt()
                 );
 }
 
-void TDLibReceiver::processUpdateForumTopic(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const int forumTopicId = receivedInformation.value(FORUM_TOPIC_ID).toInt();
+void TDLibReceiver::processUpdateForumTopic(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const int forumTopicId = data.value(FORUM_TOPIC_ID).toInt();
     LOG("Received updateForumTopic" << chatId << forumTopicId);
 
-    emit forumTopicUpdated(chatId, forumTopicId, receivedInformation);
+    emit forumTopicUpdated(chatId, forumTopicId, data);
 }
 
-void TDLibReceiver::processUpdateForumTopicInfo(const QVariantMap &receivedInformation) {
-    QVariantMap info = receivedInformation.value(INFO).toMap();
+void TDLibReceiver::processUpdateForumTopicInfo(const QVariantMap &data) {
+    QVariantMap info = data.value(INFO).toMap();
     const qlonglong chatId = info.take(CHAT_ID).toLongLong();
     const int forumTopicId = info.value(FORUM_TOPIC_ID).toInt();
     LOG("Received updateForumTopicInfo" << chatId << forumTopicId);
@@ -1081,114 +1081,114 @@ void TDLibReceiver::processUpdateForumTopicInfo(const QVariantMap &receivedInfor
     emit forumTopicInfoUpdated(chatId, forumTopicId, info);
 }
 
-void TDLibReceiver::processUpdateChatPendingJoinRequests(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const QVariantMap requests = receivedInformation.value("pending_join_requests").toMap();
+void TDLibReceiver::processUpdateChatPendingJoinRequests(const QVariantMap &data) {
+    const qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const QVariantMap requests = data.value("pending_join_requests").toMap();
     LOG("Received updateChatPendingJoinRequests" << chatId << requests.value(TOTAL_COUNT).toInt());
 
     emit chatPendingJoinRequestsUpdated(chatId, requests);
 }
 
-void TDLibReceiver::processChatJoinRequests(const QVariantMap &receivedInformation) {
-    const qlonglong chatId = receivedInformation.value(_EXTRA).toLongLong();
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
+void TDLibReceiver::processChatJoinRequests(const QVariantMap &data) {
+    const qlonglong chatId = data.value(_EXTRA).toLongLong();
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
     LOG("Received chatJoinRequests" << chatId << totalCount);
 
-    emit chatJoinRequestsReceived(chatId, totalCount, receivedInformation.value("requests").toList());
+    emit chatJoinRequestsReceived(chatId, totalCount, data.value("requests").toList());
 }
 
-void TDLibReceiver::processInternalLinkType(const QVariantMap &receivedInformation) {
-    const QString extra = receivedInformation.value(_EXTRA).toString();
-    LOG("Received internalLinkType" << receivedInformation.value(_TYPE).toString() << "extra:" << extra);
-    emit internalLinkTypeReceived(receivedInformation, extra);
+void TDLibReceiver::processInternalLinkType(const QVariantMap &data) {
+    const QString extra = data.value(_EXTRA).toString();
+    LOG("Received internalLinkType" << data.value(_TYPE).toString() << "extra:" << extra);
+    emit internalLinkTypeReceived(data, extra);
 }
 
-void TDLibReceiver::processDeepLinkInfo(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processDeepLinkInfo(const QVariantMap &data) {
     LOG("Received deepLinkInfo");
-    emit deepLinkInfoReceived(receivedInformation.value(TEXT).toMap(), receivedInformation.value("need_update_application").toBool());
+    emit deepLinkInfoReceived(data.value(TEXT).toMap(), data.value("need_update_application").toBool());
 }
 
-void TDLibReceiver::processUser(const QVariantMap &receivedInformation) {
-    const bool open = receivedInformation.value(_EXTRA).toBool();
+void TDLibReceiver::processUser(const QVariantMap &data) {
+    const bool open = data.value(_EXTRA).toBool();
     LOG("Received user open on found" << open);
-    emit userReceived(receivedInformation, open);
+    emit userReceived(data, open);
 }
 
-void TDLibReceiver::processChatInviteLinkInfo(const QVariantMap &receivedInformation) {
-    LOG("Received chatInviteLinkInfo" << receivedInformation.value(TITLE).toString() << receivedInformation.value(ID).toLongLong());
-    emit chatInviteLinkInfoReceived(receivedInformation.value(_EXTRA).toString(), receivedInformation);
+void TDLibReceiver::processChatInviteLinkInfo(const QVariantMap &data) {
+    LOG("Received chatInviteLinkInfo" << data.value(TITLE).toString() << data.value(ID).toLongLong());
+    emit chatInviteLinkInfoReceived(data.value(_EXTRA).toString(), data);
 }
 
-void TDLibReceiver::processUpdateChatViewAsTopics(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    bool viewAsTopics = receivedInformation.value("view_as_topics").toBool();
+void TDLibReceiver::processUpdateChatViewAsTopics(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    bool viewAsTopics = data.value("view_as_topics").toBool();
     LOG("Received updateChatViewAsTopics" << chatId << viewAsTopics);
     emit chatViewAsTopicsUpdated(chatId, viewAsTopics);
 }
 
-void TDLibReceiver::processForumTopic(const QVariantMap &receivedInformation) {
-    const QVariantMap info = receivedInformation.value(INFO).toMap();
+void TDLibReceiver::processForumTopic(const QVariantMap &data) {
+    const QVariantMap info = data.value(INFO).toMap();
     qlonglong chatId = info.value(CHAT_ID).toLongLong();
     int forumTopicId = info.value(FORUM_TOPIC_ID).toInt();
     LOG("Received forumTopic" << chatId << forumTopicId);
-    emit forumTopicReceived(chatId, forumTopicId, receivedInformation);
+    emit forumTopicReceived(chatId, forumTopicId, data);
 }
 
-void TDLibReceiver::processUpdateMessageSuggestedPostInfo(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+void TDLibReceiver::processUpdateMessageSuggestedPostInfo(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Received updateMessageSuggestedPostInfo" << chatId << messageId);
-    emit messageSuggestedPostInfoUpdated(chatId, messageId, receivedInformation.value("suggested_post_info").toMap());
+    emit messageSuggestedPostInfoUpdated(chatId, messageId, data.value("suggested_post_info").toMap());
 }
 
-void TDLibReceiver::processUpdateMessageContentOpened(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+void TDLibReceiver::processUpdateMessageContentOpened(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Received updateMessageContentOpened" << chatId << messageId);
     emit messageContentOpened(chatId, messageId);
 }
 
-void TDLibReceiver::processUpdateMessageFactCheck(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+void TDLibReceiver::processUpdateMessageFactCheck(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Received updateMessageFactCheck" << chatId << messageId);
-    emit messageFactCheckUpdated(chatId, messageId, receivedInformation.value("fact_check").toMap());
+    emit messageFactCheckUpdated(chatId, messageId, data.value("fact_check").toMap());
 }
 
-void TDLibReceiver::processUpdateStickerSet(const QVariantMap &receivedInformation) {
-    const QVariantMap stickerSet = receivedInformation.value("sticker_set").toMap();
+void TDLibReceiver::processUpdateStickerSet(const QVariantMap &data) {
+    const QVariantMap stickerSet = data.value("sticker_set").toMap();
     const QString id = stickerSet.value(ID).toString();
     LOG("Received updateStickerSet" << id);
     emit stickerSetUpdated(id, cleanupMap(stickerSet));
 }
 
-void TDLibReceiver::processPollVoters(const QVariantMap &receivedInformation) {
-    const QString extra = receivedInformation.value(_EXTRA).toString();
-    const int totalCount = receivedInformation.value(TOTAL_COUNT).toInt();
+void TDLibReceiver::processPollVoters(const QVariantMap &data) {
+    const QString extra = data.value(_EXTRA).toString();
+    const int totalCount = data.value(TOTAL_COUNT).toInt();
     LOG("Received pollVoters" << extra << totalCount);
-    emit pollVotersReceived(extra, receivedInformation.value("voters").toList(), totalCount);
+    emit pollVotersReceived(extra, data.value("voters").toList(), totalCount);
 }
 
-void TDLibReceiver::processAddedProxies(const QVariantMap &receivedInformation) {
-    const QVariantList proxies = receivedInformation.value("proxies").toList();
+void TDLibReceiver::processAddedProxies(const QVariantMap &data) {
+    const QVariantList proxies = data.value("proxies").toList();
     LOG("Received addedProxies" << proxies.size());
     emit addedProxiesReceived(proxies);
 }
 
-void TDLibReceiver::processAddedProxy(const QVariantMap &receivedInformation) {
-    QVariantMap addedProxy = receivedInformation;
+void TDLibReceiver::processAddedProxy(const QVariantMap &data) {
+    QVariantMap addedProxy = data;
     const QString extra = addedProxy.take(_EXTRA).toString();
     LOG("Received addedProxy" << addedProxy.value(ID).toInt() << extra);
     emit addedProxyReceived(addedProxy, extra);
 }
 
-void TDLibReceiver::processSeconds(const QVariantMap &receivedInformation) {
-    const double seconds = receivedInformation.value("seconds").toDouble();
+void TDLibReceiver::processSeconds(const QVariantMap &data) {
+    const double seconds = data.value("seconds").toDouble();
 
-    if (receivedInformation.value(_EXTRA).toString() == "ping")
+    if (data.value(_EXTRA).toString() == "ping")
         emit pingReceived(seconds);
 
-    const QVariantMap extra = receivedInformation.value(_EXTRA).toMap();
+    const QVariantMap extra = data.value(_EXTRA).toMap();
     if (extra.value(_TYPE) == "proxy") {
         LOG("Received proxy ping" << seconds);
         emit proxyPingReceived(extra.value("server").toString(), extra.value("port").toInt(), extra.value(TYPE).toMap(), seconds);
@@ -1196,57 +1196,57 @@ void TDLibReceiver::processSeconds(const QVariantMap &receivedInformation) {
         LOG("Received unknown seconds, ignoring" << seconds);
 }
 
-void TDLibReceiver::processUpdateScopeNotificationSettings(const QVariantMap &receivedInformation) {
-    const QString type = receivedInformation.value("scope").toMap().value(_TYPE).toString();
+void TDLibReceiver::processUpdateScopeNotificationSettings(const QVariantMap &data) {
+    const QString type = data.value("scope").toMap().value(_TYPE).toString();
     LOG("Scope notification settings updated" << type);
-    emit scopeNotificationSettingsUpdated(type, receivedInformation.value(NOTIFICATION_SETTINGS).toMap());
+    emit scopeNotificationSettingsUpdated(type, data.value(NOTIFICATION_SETTINGS).toMap());
 }
 
-void TDLibReceiver::processScopeNotificationSettings(const QVariantMap &receivedInformation) {
-    QVariantMap settings = receivedInformation;
+void TDLibReceiver::processScopeNotificationSettings(const QVariantMap &data) {
+    QVariantMap settings = data;
     const QString type = settings.take(_EXTRA).toString();
     LOG("Scope notification settings received" << type);
     emit scopeNotificationSettingsReceived(type, settings);
 }
 
-void TDLibReceiver::processNotificationSound(const QVariantMap &receivedInformation) {
-    const QString id = receivedInformation.value(ID).toString();
-    const QString extra = receivedInformation.value(_EXTRA).toString();
+void TDLibReceiver::processNotificationSound(const QVariantMap &data) {
+    const QString id = data.value(ID).toString();
+    const QString extra = data.value(_EXTRA).toString();
     LOG("Notification sound received" << id << extra);
-    emit notificationSoundReceived(id, receivedInformation, extra);
+    emit notificationSoundReceived(id, data, extra);
 }
 
-void TDLibReceiver::processNotificationSounds(const QVariantMap &receivedInformation) {
-    const QVariantList sounds = receivedInformation.value("notification_sounds").toList();
+void TDLibReceiver::processNotificationSounds(const QVariantMap &data) {
+    const QVariantList sounds = data.value("notification_sounds").toList();
     LOG("Notification sound received" << sounds.size());
     emit notificationSoundsReceived(sounds);
 }
 
-void TDLibReceiver::processUpdateSavedNotificationSounds(const QVariantMap &receivedInformation) {
-    const QStringList soundIds = receivedInformation.value("notification_sound_ids").toStringList();
+void TDLibReceiver::processUpdateSavedNotificationSounds(const QVariantMap &data) {
+    const QStringList soundIds = data.value("notification_sound_ids").toStringList();
     LOG("Saved notification sounds updated" << soundIds.size());
     emit savedNotificationSoundsUpdated(soundIds);
 }
 
-void TDLibReceiver::processUpdateDefaultReactionType(const QVariantMap &receivedInformation) {
-    const QVariantMap reactionType = receivedInformation.value("reaction_type").toMap();
+void TDLibReceiver::processUpdateDefaultReactionType(const QVariantMap &data) {
+    const QVariantMap reactionType = data.value("reaction_type").toMap();
     LOG("Default reaction type updated" << reactionType.value(_TYPE).toString());
     emit defaultReactionTypeUpdated(reactionType);
 }
 
-void TDLibReceiver::processText(const QVariantMap &receivedInformation) {
+void TDLibReceiver::processText(const QVariantMap &data) {
     LOG("Text received");
-    emit textReceived(receivedInformation.value(TEXT).toString(), receivedInformation.value(_EXTRA).toString());
+    emit textReceived(data.value(TEXT).toString(), data.value(_EXTRA).toString());
 }
 
-void TDLibReceiver::processCallId(const QVariantMap &receivedInformation) {
-    int id = receivedInformation.value(ID).toInt();
+void TDLibReceiver::processCallId(const QVariantMap &data) {
+    int id = data.value(ID).toInt();
     LOG("Call ID received" << id);
     emit callIdReceived(id);
 }
 
-void TDLibReceiver::processUpdateCall(const QVariantMap &receivedInformation) {
-    const QVariantMap call = receivedInformation.value("call").toMap();
+void TDLibReceiver::processUpdateCall(const QVariantMap &data) {
+    const QVariantMap call = data.value("call").toMap();
     int id = call.value(ID).toInt();
     qlonglong uniqueId = call.value("unique_id").toLongLong(),
             userId = call.value(USER_ID).toLongLong();
@@ -1255,84 +1255,84 @@ void TDLibReceiver::processUpdateCall(const QVariantMap &receivedInformation) {
     emit callUpdated(id, uniqueId, userId, call.value("is_outgoing").toBool(), call.value("is_video").toBool(), call.value(STATE).toMap());
 }
 
-void TDLibReceiver::processUpdateNewCallSignalingData(const QVariantMap &receivedInformation) {
-    int callId = receivedInformation.value("call_id").toInt();
+void TDLibReceiver::processUpdateNewCallSignalingData(const QVariantMap &data) {
+    int callId = data.value("call_id").toInt();
     LOG("New call signaling data received" << callId);
 
-    emit newCallSignalingDataReceived(callId, QByteArray::fromBase64(receivedInformation.value("data").toString().toUtf8()));
+    emit newCallSignalingDataReceived(callId, QByteArray::fromBase64(data.value("data").toString().toUtf8()));
 }
 
-void TDLibReceiver::processMessageReadDate(const QVariantMap &receivedInformation) {
-    const QVariantMap extra = receivedInformation.value(_EXTRA).toMap();
+void TDLibReceiver::processMessageReadDate(const QVariantMap &data) {
+    const QVariantMap extra = data.value(_EXTRA).toMap();
     qlonglong chatId = extra.value(CHAT_ID).toLongLong(),
             messageId = extra.value(MESSAGE_ID).toLongLong();
-    const QString type = receivedInformation.value(_TYPE).toString();
+    const QString type = data.value(_TYPE).toString();
     LOG("Received" << type << chatId << messageId);
 
-    QVariant readDate = type == "messageReadDateRead" ? receivedInformation.value("read_date") : type;
+    QVariant readDate = type == "messageReadDateRead" ? data.value("read_date") : type;
     emit messageReadDateReceived(chatId, messageId, readDate);
 }
 
-void TDLibReceiver::processChatJoinResult(const QVariantMap &receivedInformation) {
-    const QString type = receivedInformation.value(_TYPE).toString();
-    const QVariantMap extra = receivedInformation.value(_EXTRA).toMap();
+void TDLibReceiver::processChatJoinResult(const QVariantMap &data) {
+    const QString type = data.value(_TYPE).toString();
+    const QVariantMap extra = data.value(_EXTRA).toMap();
     bool isChannel = extra.value("isChannel").toBool(),
             byInviteLink = extra.value("invite_link").toBool();
 
     LOG("Chat join result received" << type << "is a channel:" << isChannel << "by invite link:" << byInviteLink);
-    emit chatJoinResultReceived(type, receivedInformation, isChannel, byInviteLink);
+    emit chatJoinResultReceived(type, data, isChannel, byInviteLink);
 }
 
-void TDLibReceiver::processUpdateChatJoinResult(const QVariantMap &receivedInformation) {
-    const QString queryId = receivedInformation.value("query_id").toString();
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const QString resultType = receivedInformation.value("result").toMap().value(_TYPE).toString();
+void TDLibReceiver::processUpdateChatJoinResult(const QVariantMap &data) {
+    const QString queryId = data.value("query_id").toString();
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const QString resultType = data.value("result").toMap().value(_TYPE).toString();
 
     LOG("Received updateChatJoinResult" << queryId << chatId << resultType);
     emit chatJoinRequestResultReceived(queryId, chatId, resultType);
 }
 
-void TDLibReceiver::processHttpUrl(const QVariantMap &receivedInformation) {
-    const QString url = receivedInformation.value("url").toString();
-    const QString extra = receivedInformation.value(_EXTRA).toString();
+void TDLibReceiver::processHttpUrl(const QVariantMap &data) {
+    const QString url = data.value("url").toString();
+    const QString extra = data.value(_EXTRA).toString();
     LOG("Received httpUrl" << url << extra);
     emit httpUrlReceived(url, extra);
 }
 
-void TDLibReceiver::processUpdateMessageUnreadReactions(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
-    QVariantList unreadReactions = receivedInformation.value("unread_reactions").toList();
-    int unreadReactionCount = receivedInformation.value(UNREAD_REACTION_COUNT).toInt();
+void TDLibReceiver::processUpdateMessageUnreadReactions(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
+    QVariantList unreadReactions = data.value("unread_reactions").toList();
+    int unreadReactionCount = data.value(UNREAD_REACTION_COUNT).toInt();
 
     LOG("Received updateMessageUnreadReactions" << chatId << messageId << unreadReactions.size() << unreadReactionCount);
     emit messageUnreadReactionsUpdated(chatId, messageId, unreadReactions);
     emit chatUnreadReactionCountUpdated(chatId, unreadReactionCount);
 }
 
-void TDLibReceiver::processUpdateChatUnreadPollVoteCount(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    int count = receivedInformation.value(UNREAD_POLL_VOTE_COUNT).toInt();
+void TDLibReceiver::processUpdateChatUnreadPollVoteCount(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    int count = data.value(UNREAD_POLL_VOTE_COUNT).toInt();
     LOG("Received updateChatUnreadPollVoteCount" << chatId << count);
     emit chatUnreadPollVoteCountUpdated(chatId, count);
 }
 
-void TDLibReceiver::processUpdateMessageContainsUnreadPollVotes(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
-    bool value = receivedInformation.value("contains_unread_poll_votes").toBool();
-    int unreadPollVoteCount = receivedInformation.value(UNREAD_POLL_VOTE_COUNT).toInt();
+void TDLibReceiver::processUpdateMessageContainsUnreadPollVotes(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
+    bool value = data.value("contains_unread_poll_votes").toBool();
+    int unreadPollVoteCount = data.value(UNREAD_POLL_VOTE_COUNT).toInt();
 
     LOG("Received updateMessageContainsUnreadPollVotes" << chatId << messageId << value << unreadPollVoteCount);
     emit messageContainsUnreadPollVotesUpdated(chatId, messageId, value);
     emit chatUnreadPollVoteCountUpdated(chatId, unreadPollVoteCount);
 }
 
-void TDLibReceiver::processUpdateAccentColors(const QVariantMap &receivedInformation) {
-    QVariantList colors = receivedInformation.value("colors").toList();
+void TDLibReceiver::processUpdateAccentColors(const QVariantMap &data) {
+    QVariantList colors = data.value("colors").toList();
     QList<int> availableAccentColorIds;
 
-    QVariantList availableAccentColorVariantIds = receivedInformation.value("available_accent_color_ids").toList();
+    QVariantList availableAccentColorVariantIds = data.value("available_accent_color_ids").toList();
     availableAccentColorIds.reserve(availableAccentColorVariantIds.size());
     for (const QVariant &id : availableAccentColorVariantIds)
         availableAccentColorIds.append(id.toInt());
@@ -1341,13 +1341,13 @@ void TDLibReceiver::processUpdateAccentColors(const QVariantMap &receivedInforma
     emit accentColorsUpdated(colors, availableAccentColorIds);
 }
 
-void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    int accentColorId = receivedInformation.value("accent_color_id").toInt();
-    const QString backgroundCustomEmojiId = receivedInformation.value("background_custom_emoji_id").toString();
-    const QVariantMap upgradedGiftColors = receivedInformation.value("upgraded_gift_colors").toMap();
-    int profileAccentColorId = receivedInformation.value("profile_accent_color_id").toInt();
-    const QString profileBackgroundCustomEmojiId = receivedInformation.value("profile_accent_color_id").toString();
+void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    int accentColorId = data.value("accent_color_id").toInt();
+    const QString backgroundCustomEmojiId = data.value("background_custom_emoji_id").toString();
+    const QVariantMap upgradedGiftColors = data.value("upgraded_gift_colors").toMap();
+    int profileAccentColorId = data.value("profile_accent_color_id").toInt();
+    const QString profileBackgroundCustomEmojiId = data.value("profile_accent_color_id").toString();
 
     LOG("Received updateChatAccentColors" << chatId << "accent color" << accentColorId
         << "background custom emoji" << backgroundCustomEmojiId.toLongLong()
@@ -1355,16 +1355,16 @@ void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &receivedInf
     emit chatAccentColorsUpdated(chatId, accentColorId, backgroundCustomEmojiId, upgradedGiftColors, profileAccentColorId, profileBackgroundCustomEmojiId);
 }
 
-void TDLibReceiver::processOptionValue(const QVariantMap &receivedInformation) {
-    const QString name = receivedInformation.value(_EXTRA).toString();
-    const QVariant value = receivedInformation.value(VALUE);
+void TDLibReceiver::processOptionValue(const QVariantMap &data) {
+    const QString name = data.value(_EXTRA).toString();
+    const QVariant value = data.value(VALUE);
     LOG("Received optionValue" << name << value);
     emit optionUpdated(name, value);
 }
 
-void TDLibReceiver::processUpdateMessageEphemeralContent(const QVariantMap &receivedInformation) {
-    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
-    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+void TDLibReceiver::processUpdateMessageEphemeralContent(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Ephemeral message content updated" << chatId << messageId);
-    emit messageEphemeralContentUpdated(chatId, messageId, receivedInformation.value("ephemeral_content").toMap());
+    emit messageEphemeralContentUpdated(chatId, messageId, data.value("ephemeral_content").toMap());
 }
