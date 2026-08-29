@@ -200,11 +200,11 @@ private:
     QQmlPropertyMap* options;
     QVariantMap userInformation;
     QMap<TDLibWrapper::UserPrivacySetting, TDLibWrapper::UserPrivacySettingRule> userPrivacySettingRules;
-    QMap<qlonglong, QVariantMap> usersById;
+    QHash<qlonglong, QVariantMap> usersById;
     QHash<qlonglong, ChatData*> chats;
-    QMap<qlonglong, QVariantMap> secretChats;
-    QHash<qlonglong,Group*> basicGroups;
-    QHash<qlonglong,Group*> superGroups;
+    QHash<qlonglong, QVariantMap> secretChats;
+    QHash<qlonglong, Group*> basicGroups;
+    QHash<qlonglong, Group*> superGroups;
     QStringList activeEmojiReactions;
     QStringList diceEmojis;
     QMap<TDLibWrapper::NotificationSettingsScope, QVariantMap> scopesNotificationSettings;
