@@ -401,3 +401,14 @@ void ChatFoldersModel::calculateUnreadStates() {
     for (FolderChatListModel *model : chatModels)
         model->calculateUnreadState();
 }
+
+void ChatFoldersModel::setRefreshTimerEnabled(bool enabled) {
+    if (refreshTimerEnabled != enabled) {
+        refreshTimerEnabled = enabled;
+        mainChatListModel->setRefreshTimerEnabled(enabled);
+        archiveChatListModel->setRefreshTimerEnabled(enabled);
+        for (FolderChatListModel *model : chatModels)
+            model->setRefreshTimerEnabled(enabled);
+        emit relativeRefreshTimerEnabledChanged();
+    }
+}

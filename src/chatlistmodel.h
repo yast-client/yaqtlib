@@ -33,6 +33,8 @@ public:
     virtual int getUnreadChatCount(bool asFolder = false) const;
     virtual int getUnreadMessageCount(bool asFolder = false) const;
 
+    void setRefreshTimerEnabled(bool enabled);
+
 public slots:
     Q_INVOKABLE void reset();
 
@@ -76,7 +78,8 @@ private:
 
     int updateChatOrder(const int chatIndex);
     void updateChatIsPinned(const int chatIndex, const bool isPinned);
-    void enableRefreshTimer();
+
+    void tryEnableRefreshTimer();
 
 protected:
     TDLibWrapper *tdLibWrapper;
@@ -92,6 +95,7 @@ protected:
 
 private:
     QTimer *relativeTimeRefreshTimer;
+    bool refreshTimerEnabled = false;
     QList<ListChatData*> chatList;
     QHash<qlonglong, int> chatIndexMap;
     bool archive;

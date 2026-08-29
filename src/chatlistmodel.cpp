@@ -78,14 +78,14 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Uti
             connect(tdData, &TDLibData::mainChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
             connect(tdData, &TDLibData::mainChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
             connect(tdData, &TDLibData::mainChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
-            connect(tdLibWarpper, &TDLibWrapper::mainChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
+            connect(tdLibWrapper, &TDLibWrapper::mainChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
         } else {
             connect(tdData, &TDLibData::chatAddedToArchiveList, this, &ChatListModel::handleChatAddedToList);
             connect(tdData, &TDLibData::chatRemovedFromArchiveList, this, &ChatListModel::handleChatRemovedFromList);
             connect(tdData, &TDLibData::archiveChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
             connect(tdData, &TDLibData::archiveChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
             connect(tdData, &TDLibData::archiveChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
-            connect(tdLibWarpper, &TDLibWrapper::archiveChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
+            connect(tdLibWrapper, &TDLibWrapper::archiveChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
         }
     }
 
@@ -290,11 +290,17 @@ void ChatListModel::handleChatRolesChanged(qlonglong chatId, const QVector<int> 
     }
 }
 
-void ChatListModel::enableRefreshTimer() {
+void ChatListModel::tryEnableRefreshTimer() {
     // Start timestamp refresh timer if not yet active (usually when the first visible chat is discovered)
-    if (!relativeTimeRefreshTimer->isActive()) {
-        LOG("Enabling refresh timer");
-        relativeTimeRefreshTimer->start();
+    bool active = relativeTimeRefreshTimer->isActive();
+    if (refreshTimerEnabled) {
+        if (!active) {
+            LOG("Enabling refresh timer");
+            relativeTimeRefreshTimer->start();
+        }
+    } else if (active) {
+        LOG("Disabling refresh timer");
+        relativeTimeRefreshTimer->stop();
     }
 }
 
@@ -340,7 +346,7 @@ void ChatListModel::handleChatAddedToList(ChatData *chatData, qlonglong order, b
         chatIndexMap.insert(chatList.at(i)->data->chatId, i);
     }
     endInsertRows();
-    enableRefreshTimer();
+    tryEnableRefreshTimer();
 }
 
 void ChatListModel::handleChatRemovedFromList(qlonglong chatId) {
@@ -424,4 +430,11 @@ void ChatListModel::load() {
 void ChatListModel::handleChatsLoaded() {
     LOG("Chats were loaded");
     loading = false;
+}
+
+void ChatListModel::setRefreshTimerEnabled(bool enabled) {
+    if (refreshTimerEnabled != enabled) {
+        refreshTimerEnabled = enabled;
+        tryEnableRefreshTimer();
+    }
 }

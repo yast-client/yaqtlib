@@ -12,6 +12,8 @@
 
 class ChatFoldersModel : public QAbstractListModel {
     Q_OBJECT
+
+    Q_PROPERTY(bool relativeRefreshTimerEnabled MEMBER refreshTimerEnabled WRITE setRefreshTimerEnabled NOTIFY relativeRefreshTimerEnabledChanged)
 public:
     enum Icon {
         IconAll,
@@ -82,6 +84,10 @@ public:
     Q_INVOKABLE static Icon iconForName(const QString &name);
 
     Q_INVOKABLE void calculateUnreadStates();
+    Q_INVOKABLE void setRefreshTimerEnabled(bool enabled);
+
+signals:
+    void relativeRefreshTimerEnabledChanged();
 
 public slots:
     void handleFolderChatListUnreadChatCountChanged();
@@ -126,4 +132,5 @@ private:
     QHash<int, int> chatFoldersIndexMap;
     int mainChatListIndex = 0;
     QHash<int, FolderChatListModel*> chatModels;
+    bool refreshTimerEnabled = false;
 };
