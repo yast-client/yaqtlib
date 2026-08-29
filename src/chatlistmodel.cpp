@@ -282,7 +282,7 @@ void ChatListModel::updateChatIsPinned(const int chatIndex, const bool isPinned)
 
 void ChatListModel::handleChatRolesChanged(qlonglong chatId, const QVector<int> changedRoles) {
     if (chatIndexMap.contains(chatId)) {
-        LOG("Chat roles changed for" << chatId);
+        VERBOSE("Chat roles changed for" << chatId);
         const QModelIndex modelIndex = index(chatIndexMap.value(chatId));
         emit dataChanged(modelIndex, modelIndex, changedRoles);
     }
@@ -327,8 +327,9 @@ void ChatListModel::handleChatAddedToList(ChatData *chatData, qlonglong order, b
     // Actually add the chat to list
     const int n = chatList.size();
     int pos;
-    for (pos = 0; pos < n && chat->compareTo(chatList.at(pos)) >= 0; pos++);
-    LOG("Adding chat" << chat->data->chatId << "at" << pos);
+    for (pos = 0; pos < n && chat->compareTo(chatList.at(pos)) >= 0; pos++)
+        ;
+    VERBOSE("Adding chat" << chat->data->chatId << "at" << pos);
     beginInsertRows(QModelIndex(), pos, pos);
     chatList.insert(pos, chat);
     chatIndexMap.insert(chat->data->chatId, pos);

@@ -287,7 +287,7 @@ void TDLibReceiver::processUpdateBasicGroup(const QVariantMap &data)
 {
     const QVariantMap basicGroup(data.value(BASIC_GROUP).toMap());
     const qlonglong basicGroupId = basicGroup.value(ID).toLongLong();
-    LOG("Basic group information updated for " << basicGroupId);
+    VERBOSE("Basic group information updated for " << basicGroupId);
     emit basicGroupUpdated(basicGroupId, basicGroup);
 }
 
@@ -295,7 +295,7 @@ void TDLibReceiver::processUpdateSuperGroup(const QVariantMap &data)
 {
     const QVariantMap supergroup(data.value(SUPERGROUP).toMap());
     const qlonglong superGroupId = supergroup.value(ID).toLongLong();
-    LOG("Super group information updated for " << superGroupId);
+    VERBOSE("Super group information updated for " << superGroupId);
     emit supergroupUpdated(superGroupId, supergroup);
 }
 

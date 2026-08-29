@@ -299,7 +299,7 @@ void TDLibData::handleUserUpdated(const QVariantMap &user) {
         this->userInformation = user;
         emit myUserUpdated();
     }
-    LOG("User information updated:" << user.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString() << user.value(FIRST_NAME).toString() << user.value(LAST_NAME).toString());
+    VERBOSE("User information updated:" << user.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString() << user.value(FIRST_NAME).toString() << user.value(LAST_NAME).toString());
 
     const bool isContact = user.value(IS_CONTACT).toBool();
     // this also emits the signal if the user is new and it's a contact, which is used by ContactsModel
