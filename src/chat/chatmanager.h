@@ -130,13 +130,13 @@ public:
     QString profileBackgroundCustomEmojiId() const;
 
     inline TDLibWrapper::ChatActionType chatMainActionType() {
-        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
+        return infoInitialized() ? tdLibWrapper->data()->getExistingChatData(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
     }
     inline QString chatActionsText() {
-        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getChatActionsText() : QString();
+        return infoInitialized() ? tdLibWrapper->data()->getExistingChatData(chatId)->getChatActionsText() : QString();
     }
     inline qreal chatActionsProgress() {
-        return infoInitialized() ? tdLibWrapper->data()->getChatDataForce(chatId)->getChatActionsProgress() : -1;
+        return infoInitialized() ? tdLibWrapper->data()->getExistingChatData(chatId)->getChatActionsProgress() : -1;
     }
 
 signals:

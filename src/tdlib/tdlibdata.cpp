@@ -265,14 +265,6 @@ ChatData* TDLibData::getExistingChatData(qlonglong chatId) {
     return this->chats.value(chatId);
 }
 
-ChatData* TDLibData::getChatDataForce(qlonglong chatId) {
-    VERBOSE("Forcefully returning chat data for ID" << chatId);
-    if (!this->chats.contains(chatId))
-        this->chats.insert(chatId, new ChatData(tdLibWrapper, utilities, chatId));
-
-    return this->chats.value(chatId);
-}
-
 QVariantMap TDLibData::getSecretChat(qlonglong secretChatId) {
     return this->secretChats.value(secretChatId);
 }
@@ -340,18 +332,10 @@ void TDLibData::updateUserInformation(qlonglong userId, const QVariantMap &userI
 void TDLibData::handleNewChatDiscovered(const QVariantMap &chatInformation) {
     qlonglong chatId = chatInformation.value(ID).toLongLong();
     ChatData *chat;
-    if (this->chats.contains(chatId)) {
-        // Chat can be forcefully added when other updates on it are received before updateNewChat (see getChatDataForce)
-        LOG("Chat information discovered for previously forcefully added chat");
-        chat = this->chats.value(chatId);
-        chat->updateChatData(chatInformation);
-        emit chatRolesUpdated(chatId);
-    } else {
-        LOG("New chat discovered" << chatId);
-        chat = new ChatData(tdLibWrapper, this->utilities, chatInformation);
-        this->chats.insert(chatId, chat);
-        emit newChatDiscovered(chatId, chatInformation);
-    }
+    LOG("New chat discovered" << chatId);
+    chat = new ChatData(tdLibWrapper, this->utilities, chatInformation);
+    this->chats.insert(chatId, chat);
+    emit newChatDiscovered(chatId, chatInformation);
 
     for (const QVariant &chatList : chatInformation.value(CHAT_LISTS).toList()) {
         const QString chatListType = chatList.toMap().value(_TYPE).toString();
@@ -441,16 +425,20 @@ void TDLibData::updateChatPositions(qlonglong chatId, const QVariantList &positi
 }
 
 void TDLibData::handleChatLastMessageUpdated(qlonglong chatId, const QVariantMap &lastMessage, const QVariantList &positions) {
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
     LOG("Chat last message updated" << chatId);
-    emit chatRolesUpdated(chatId, this->getChatDataForce(chatId)->updateLastMessage(lastMessage));
+    emit chatRolesUpdated(chatId, chat->updateLastMessage(lastMessage));
 
     emit someChatListUpdated();
     updateChatPositions(chatId, positions); // FIXME: this might affect performance
 }
 
 void TDLibData::handleChatDraftMessageUpdated(qlonglong chatId, const QVariantMap &draftMessage, const QVariantList &positions) {
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
     LOG("Chat draft message updated" << chatId);
-    this->getChatDataForce(chatId)->chatData.insert(DRAFT_MESSAGE, draftMessage);
+    chat->chatData.insert(DRAFT_MESSAGE, draftMessage);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleDraftMessageDate, ChatData::RoleDraftMessageText});
 
     emit someChatListUpdated();
@@ -458,77 +446,91 @@ void TDLibData::handleChatDraftMessageUpdated(qlonglong chatId, const QVariantMa
 }
 
 void TDLibData::handleChatReadInboxUpdated(qlonglong chatId, qlonglong lastReadInboxMessageId, int unreadCount) {
-    ChatData *chatData = this->getChatDataForce(chatId);
+    ChatData *chat = chats.value(chatId);
+    if (chat) return;
 
     QVector<int> changedRoles;
     changedRoles.append(ChatData::RoleDisplay);
-    if (chatData->updateUnreadCount(unreadCount))
+    if (chat->updateUnreadCount(unreadCount))
         changedRoles.append(ChatData::RoleUnreadCount);
-    if (chatData->updateLastReadInboxMessageId(lastReadInboxMessageId))
+    if (chat->updateLastReadInboxMessageId(lastReadInboxMessageId))
         changedRoles.append(ChatData::RoleLastReadInboxMessageId);
     emit chatRolesUpdated(chatId, changedRoles);
 }
 
 void TDLibData::handleChatReadOutboxUpdated(qlonglong chatId, qlonglong lastReadOutboxMessageId) {
-    if (this->getChatDataForce(chatId)->updateLastReadOutboxMessageId(lastReadOutboxMessageId))
+    ChatData *chat = chats.value(chatId);
+    if (chat && chat->updateLastReadOutboxMessageId(lastReadOutboxMessageId))
         emit chatRolesUpdated(chatId, {ChatData::RoleLastReadOutboxMessageId});
 }
 
 void TDLibData::handleChatTitleUpdated(qlonglong chatId, const QString &title) {
-    this->getChatDataForce(chatId)->chatData.insert(TITLE, title);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert(TITLE, title);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleTitle});
     emit chatTitleUpdated(chatId, title);
 }
 
 void TDLibData::handleChatPhotoUpdated(qlonglong chatId, const QVariantMap &photo) {
-    this->getChatDataForce(chatId)->chatData.insert(PHOTO, photo);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert(PHOTO, photo);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RolePhoto});
     emit chatPhotoUpdated(chatId, photo);
 }
 
 void TDLibData::handleChatNotificationSettingsUpdated(qlonglong chatId, const QVariantMap &settings) {
-    this->getChatDataForce(chatId)->chatData.insert(NOTIFICATION_SETTINGS, settings);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert(NOTIFICATION_SETTINGS, settings);
     emit chatRolesUpdated(chatId, {ChatData::RoleNotificationSettings});
 }
 
 void TDLibData::handleChatIsMarkedAsUnreadUpdated(qlonglong chatId, bool chatIsMarkedAsUnread) {
-    this->getChatDataForce(chatId)->chatData.insert(IS_MARKED_AS_UNREAD, chatIsMarkedAsUnread);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert(IS_MARKED_AS_UNREAD, chatIsMarkedAsUnread);
     emit chatRolesUpdated(chatId, {ChatData::RoleIsMarkedAsUnread});
 }
 
 void TDLibData::handleChatUnreadMentionCountUpdated(qlonglong chatId, int value) {
-    ChatData *chat = this->getChatDataForce(chatId);
-    if (chat->unreadMentionCount() != value) {
-        this->getChatDataForce(chatId)->chatData.insert(UNREAD_MENTION_COUNT, value);
+    ChatData *chat = chats.value(chatId);
+    if (chat && chat->unreadMentionCount() != value) {
+        chat->chatData.insert(UNREAD_MENTION_COUNT, value);
         emit chatRolesUpdated(chatId, {ChatData::RoleUnreadMentionCount});
     }
 }
 
 void TDLibData::handleChatUnreadReactionCountUpdated(qlonglong chatId, int value) {
-    ChatData *chat = this->getChatDataForce(chatId);
-    if (chat->unreadReactionCount() != value) {
+    ChatData *chat = chats.value(chatId);
+    if (chat && chat->unreadReactionCount() != value) {
         chat->chatData.insert(UNREAD_REACTION_COUNT, value);
         emit chatRolesUpdated(chatId, {ChatData::RoleUnreadReactionCount});
     }
 }
 
 void TDLibData::handleChatUnreadPollVoteCountUpdated(qlonglong chatId, int value) {
-    ChatData *chat = this->getChatDataForce(chatId);
-    if (chat->unreadPollVoteCount() != value) {
+    ChatData *chat = chats.value(chatId);
+    if (chat && chat->unreadPollVoteCount() != value) {
         chat->chatData.insert(UNREAD_POLL_VOTE_COUNT, value);
         emit chatRolesUpdated(chatId, {ChatData::RoleUnreadPollVoteCount});
     }
 }
 
 void TDLibData::handleChatPermissionsUpdated(qlonglong chatId, const QVariantMap &permissions) {
-    this->getChatDataForce(chatId)->chatData.insert("permissions", permissions);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert("permissions", permissions);
     emit chatRolesUpdated(chatId, {ChatData::RolePermissions});
 }
 
 void TDLibData::handleChatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId) {
-    ChatData *chat = getChatDataForce(chatId);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
     QVector<int> roles = chat->updateAccentColors(accentColorId, backgroundCustomEmojiId, upgradedGiftColors, profileAccentColorId, profileBackgroundCustomEmojiId);
-    emit chatRolesUpdated(chatId, roles);
+    if (!roles.isEmpty())
+        emit chatRolesUpdated(chatId, roles);
 }
 
 void TDLibData::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {
@@ -564,23 +566,30 @@ void TDLibData::handleUnreadChatCountUpdated(const QVariantMap &chatCountInforma
 }
 
 void TDLibData::handleChatAvailableReactionsUpdated(qlonglong chatId, const QVariantMap &availableReactions) {
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
     LOG("Updating available reactions for chat" << chatId << availableReactions);
-    this->getChatDataForce(chatId)->chatData.insert(AVAILABLE_REACTIONS, availableReactions);
+    chat->chatData.insert(AVAILABLE_REACTIONS, availableReactions);
     emit chatRolesUpdated(chatId, QVector<int>{ChatData::RoleAvailableReactions});
 }
 
 void TDLibData::handleChatPendingJoinRequestsUpdated(qlonglong chatId, const QVariantMap &pendingJoinRequests) {
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
     LOG("Chat pending join requests updated" << chatId);
-    this->getChatDataForce(chatId)->chatData.insert(PENDING_JOIN_REQUESTS, pendingJoinRequests);
+    chat->chatData.insert(PENDING_JOIN_REQUESTS, pendingJoinRequests);
     emit chatPendingJoinRequestsUpdated(chatId);
 }
 
 void TDLibData::handleChatViewAsTopicsUpdated(qlonglong chatId, bool viewAsTopics) {
-    this->getChatDataForce(chatId)->chatData.insert("view_as_topics", viewAsTopics);
+    ChatData *chat = chats.value(chatId);
+    if (!chat) return;
+    chat->chatData.insert("view_as_topics", viewAsTopics);
     emit chatRolesUpdated(chatId, {ChatData::RoleViewAsTopics});
 }
 
 void TDLibData::handleChatActionUpdated(qlonglong chatId, const QVariantMap &topicId, const QVariantMap &sender, const QVariantMap &action) {
+    if (!chats.contains(chatId)) return;
     LOG("Chat action updated" << chatId);
 
     if (topicId.isEmpty()) {
@@ -590,7 +599,7 @@ void TDLibData::handleChatActionUpdated(qlonglong chatId, const QVariantMap &top
             if (action.value(_TYPE).toString() == "chatActionCancel")
                 data->chatActions.remove(MessageSender(sender));
             else
-                getChatDataForce(chatId)->chatActions.insert(MessageSender(sender), ChatData::ChatAction(action));
+                chats.value(chatId)->chatActions.insert(MessageSender(sender), ChatData::ChatAction(action));
 
             emit chatRolesUpdated(chatId, {ChatData::RoleChatMainActionType, ChatData::RoleChatActionsText, ChatData::RoleChatActionsProgress});
         }

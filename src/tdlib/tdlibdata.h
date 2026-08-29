@@ -56,7 +56,6 @@ public:
     Q_INVOKABLE bool hasChatData(qlonglong chatId);
     ChatData* getChatData(qlonglong chatId);
     ChatData* getExistingChatData(qlonglong chatId);
-    ChatData* getChatDataForce(qlonglong chatId);
     Q_INVOKABLE QVariantMap getSecretChat(qlonglong secretChatId);
     Q_INVOKABLE QVariantMap getCommunity(qlonglong id);
     QVariant getOption(const QString &optionName);
