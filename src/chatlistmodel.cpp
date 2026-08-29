@@ -78,12 +78,14 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Uti
             connect(tdData, &TDLibData::mainChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
             connect(tdData, &TDLibData::mainChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
             connect(tdData, &TDLibData::mainChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
+            connect(tdLibWarpper, &TDLibWrapper::mainChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
         } else {
             connect(tdData, &TDLibData::chatAddedToArchiveList, this, &ChatListModel::handleChatAddedToList);
             connect(tdData, &TDLibData::chatRemovedFromArchiveList, this, &ChatListModel::handleChatRemovedFromList);
             connect(tdData, &TDLibData::archiveChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
             connect(tdData, &TDLibData::archiveChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
             connect(tdData, &TDLibData::archiveChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
+            connect(tdLibWarpper, &TDLibWrapper::archiveChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
         }
     }
 
