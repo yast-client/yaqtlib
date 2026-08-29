@@ -39,6 +39,7 @@ namespace {
     const QString UNREAD_REACTIONS("unread_reactions");
     const QString LINK_PREVIEW("link_preview");
     const QString IS_OUTGOING("is_outgoing");
+    const QString COMMUNITY_ID("community_id");
 
     const QString MESSAGE_SENDER_TYPE_USER("messageSenderUser");
     const QString MESSAGE_SENDER_TYPE_CHAT("messageSenderChat");
@@ -605,6 +606,15 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return (myself ? tr("added \"%1\" to the poll", "myself") : tr("added \"%1\" to the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
     if (contentType == "messagePollOptionDeleted")
         return (myself ? tr("removed \"%1\" from the poll", "myself") : tr("removed \"%1\" from the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
+    // TODO: update the message content if community name changes
+    if (contentType == "messageChatJoinFromCommunity")
+        return (myself ? tr("joined the chat from the \"%1\" community", "myself") : tr("joined the chat from the \"%1\" community"))
+                .arg(tdLibWrapper->data()->getCommunity(messageContent.value(COMMUNITY_ID).toLongLong()).value(NAME).toString());
+    if (contentType == "messageChatAddedToCommunity")
+        return (myself ? tr("added the chat to the \"%1\" community", "myself") : tr("added the chat to the \"%1\" community"))
+                .arg(tdLibWrapper->data()->getCommunity(messageContent.value(COMMUNITY_ID).toLongLong()).value(NAME).toString());
+    if (contentType == "messageChatRemovedFromCommunity")
+        return (myself ? tr("removed the chat from the community", "myself") : tr("removed the chat from the community"));
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
     if (contentType == MESSAGE_CONTENT_TYPE_CALL)
