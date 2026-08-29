@@ -32,9 +32,9 @@ void MediaMessagesModel::setTDLibWrapper(QObject *obj) {
 void MediaMessagesModel::setupTDLibWrapper() {
     JumpableMessagesModel::setupTDLibWrapper();
 
-    connect(this->tdLibWrapper, &TDLibWrapper::chatMessageCountReceived, this, &MediaMessagesModel::handleChatMessageCountReceived);
-    connect(this->tdLibWrapper, &TDLibWrapper::foundChatMessagesReceived, this, &MediaMessagesModel::handleMessagesReceived);
-    connect(this->tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &MediaMessagesModel::handleNewMessageReceived);
+    connect(tdLibWrapper, &TDLibWrapper::chatMessageCountReceived, this, &MediaMessagesModel::handleChatMessageCountReceived);
+    connect(tdLibWrapper, &TDLibWrapper::foundChatMessagesReceived, this, &MediaMessagesModel::handleMessagesReceived);
+    connect(tdLibWrapper, &TDLibWrapper::newMessageReceived, this, &MediaMessagesModel::handleNewMessageReceived);
 }
 
 void MediaMessagesModel::tryReload() {

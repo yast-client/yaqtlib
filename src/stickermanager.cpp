@@ -18,10 +18,10 @@ StickerManager::StickerManager(TDLibWrapper *tdLibWrapper, QObject *parent)
 {
     LOG("Initializing...");
 
-    connect(this->tdLibWrapper, &TDLibWrapper::recentStickersUpdated, this, &StickerManager::handleRecentStickersUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::favoriteStickersUpdated, this, &StickerManager::handleFavoriteStickersUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::stickerSetUpdated, this, &StickerManager::handleStickerSetUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::stickerSetReceived, this, &StickerManager::handleStickerSetReceived);
+    connect(tdLibWrapper, &TDLibWrapper::recentStickersUpdated, this, &StickerManager::handleRecentStickersUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::favoriteStickersUpdated, this, &StickerManager::handleFavoriteStickersUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::stickerSetUpdated, this, &StickerManager::handleStickerSetUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::stickerSetReceived, this, &StickerManager::handleStickerSetReceived);
 }
 
 StickerManager::~StickerManager() {

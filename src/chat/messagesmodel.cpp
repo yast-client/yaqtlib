@@ -25,19 +25,19 @@ MessagesModel::MessagesModel(TDLibWrapper *tdLibWrapper, QObject *parent) : Mess
 }
 
 void MessagesModel::setupTDLibWrapper() {
-    connect(this->tdLibWrapper, &TDLibWrapper::messageReceived, this, &MessagesModel::handleMessageReceived);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &MessagesModel::handleMessageSendSucceeded);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageContentUpdated, this, &MessagesModel::handleMessageContentUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageEditedUpdated, this, &MessagesModel::handleMessageEditedUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageInteractionInfoUpdated, this, &MessagesModel::handleMessageInteractionInfoUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messagesDeleted, this, &MessagesModel::handleMessagesDeleted);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageSuggestedPostInfoUpdated, this, &MessagesModel::handleMessageSuggestedPostInfoUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageMentionRead, this, &MessagesModel::handleMessageMentionRead);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageContentOpened, this, &MessagesModel::handleMessageContentOpened);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageFactCheckUpdated, this, &MessagesModel::handleMessageFactCheckUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageUnreadReactionsUpdated, this, &MessagesModel::handleMessageUnreadReactionsUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageContainsUnreadPollVotesUpdated, this, &MessagesModel::handleMessageContainsUnreadPollVotesUpdated);
-    connect(this->tdLibWrapper, &TDLibWrapper::messageEphemeralContentUpdated, this, &MessagesModel::handleMessageEphemeralContentUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageReceived, this, &MessagesModel::handleMessageReceived);
+    connect(tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &MessagesModel::handleMessageSendSucceeded);
+    connect(tdLibWrapper, &TDLibWrapper::messageContentUpdated, this, &MessagesModel::handleMessageContentUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageEditedUpdated, this, &MessagesModel::handleMessageEditedUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageInteractionInfoUpdated, this, &MessagesModel::handleMessageInteractionInfoUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messagesDeleted, this, &MessagesModel::handleMessagesDeleted);
+    connect(tdLibWrapper, &TDLibWrapper::messageSuggestedPostInfoUpdated, this, &MessagesModel::handleMessageSuggestedPostInfoUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageMentionRead, this, &MessagesModel::handleMessageMentionRead);
+    connect(tdLibWrapper, &TDLibWrapper::messageContentOpened, this, &MessagesModel::handleMessageContentOpened);
+    connect(tdLibWrapper, &TDLibWrapper::messageFactCheckUpdated, this, &MessagesModel::handleMessageFactCheckUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageUnreadReactionsUpdated, this, &MessagesModel::handleMessageUnreadReactionsUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageContainsUnreadPollVotesUpdated, this, &MessagesModel::handleMessageContainsUnreadPollVotesUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::messageEphemeralContentUpdated, this, &MessagesModel::handleMessageEphemeralContentUpdated);
 }
 
 MessagesModel::~MessagesModel() {
