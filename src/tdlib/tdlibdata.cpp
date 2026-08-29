@@ -160,6 +160,9 @@ TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
     // Secret chats
     connect(tdLibReceiver, &TDLibReceiver::secretChatUpdated, this, &TDLibData::handleSecretChatUpdated);
 
+    // Communities
+    connect(tdLibReceiver, &TDLibReceiver::communityUpdated, this, &TDLibData::handleCommunityUpdated);
+
     // Notifications
     connect(tdLibReceiver, &TDLibReceiver::scopeNotificationSettingsUpdated, this, &TDLibData::handleScopeNotificationSettingsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::scopeNotificationSettingsReceived, this, &TDLibData::handleScopeNotificationSettingsUpdated);
@@ -272,6 +275,10 @@ ChatData* TDLibData::getChatDataForce(qlonglong chatId) {
 
 QVariantMap TDLibData::getSecretChat(qlonglong secretChatId) {
     return this->secretChats.value(secretChatId);
+}
+
+QVariantMap TDLibData::getCommunity(qlonglong id) {
+    return communities.value(id);
 }
 
 QVariant TDLibData::getOption(const QString &optionName) {
@@ -601,8 +608,13 @@ void TDLibData::handleSupergroupUpdated(qlonglong groupId, const QVariantMap &gr
 }
 
 void TDLibData::handleSecretChatUpdated(qlonglong secretChatId, const QVariantMap &secretChat) {
-    this->secretChats.insert(secretChatId, secretChat);
+    secretChats.insert(secretChatId, secretChat);
     emit secretChatUpdated(secretChatId);
+}
+
+void TDLibData::handleCommunityUpdated(qlonglong id, const QVariantMap &community) {
+    communities.insert(id, community);
+    emit communityUpdated(id);
 }
 
 void TDLibData::handleUserPrivacySettingRules(const QVariantMap &rules) {

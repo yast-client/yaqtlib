@@ -152,6 +152,9 @@ signals:
     void accentColorsUpdated(const QVariantList &colors, QList<int> availableAccentColorIds);
     void chatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
     void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
+    void communityUpdated(qlonglong id, const QVariantMap &community);
+    void communityFullInfoUpdated(qlonglong id, const QVariantMap &communityFullInfo);
+    void communityIdReceived(qlonglong id);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -279,7 +282,10 @@ private:
         {"updateAccentColors", &TDLibReceiver::processUpdateAccentColors},
         {"updateChatAccentColors", &TDLibReceiver::processUpdateChatAccentColors},
         {"sponsoredChats", &TDLibReceiver::processSponsoredChats},
-        {"updateMessageEphemeralContent", &TDLibReceiver::processUpdateMessageEphemeralContent}
+        {"updateMessageEphemeralContent", &TDLibReceiver::processUpdateMessageEphemeralContent},
+        {"updateCommunity", &TDLibReceiver::processUpdateCommunity},
+        {"updateCommunityFullInfo", &TDLibReceiver::processUpdateCommunityFullInfo},
+        {"communityId", &TDLibReceiver::processCommunityId},
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
@@ -422,6 +428,9 @@ private:
     void processUpdateChatAccentColors(const QVariantMap &data);
     void processOptionValue(const QVariantMap &data);
     void processUpdateMessageEphemeralContent(const QVariantMap &data);
+    void processUpdateCommunity(const QVariantMap &data);
+    void processUpdateCommunityFullInfo(const QVariantMap &data);
+    void processCommunityId(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);

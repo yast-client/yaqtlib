@@ -1368,3 +1368,22 @@ void TDLibReceiver::processUpdateMessageEphemeralContent(const QVariantMap &data
     LOG("Ephemeral message content updated" << chatId << messageId);
     emit messageEphemeralContentUpdated(chatId, messageId, data.value("ephemeral_content").toMap());
 }
+
+void TDLibReceiver::processUpdateCommunity(const QVariantMap &data) {
+    const QVariantMap community = data.value("community").toMap();
+    qlonglong id = community.value(ID).toLongLong();
+    LOG("Community updated" << id << community.value(NAME).toString());
+    emit communityUpdated(id, community);
+}
+
+void TDLibReceiver::processUpdateCommunityFullInfo(const QVariantMap &data) {
+    qlonglong id = data.value("community_id").toLongLong();
+    LOG("Community full info updated" << id);
+    emit communityFullInfoUpdated(id, data.value("community_full_info").toMap());
+}
+
+void TDLibReceiver::processCommunityId(const QVariantMap &data) {
+    qlonglong id = data.value(ID).toLongLong();
+    LOG("Received communityId" << id);
+    emit communityIdReceived(id);
+}

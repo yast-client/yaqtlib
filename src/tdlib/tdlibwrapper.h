@@ -431,6 +431,9 @@ public:
     Q_INVOKABLE void viewSponsoredChat(qlonglong uniqueId);
     Q_INVOKABLE void openSponsoredChat(qlonglong uniqueId);
     Q_INVOKABLE void fetchOption(const QString &name);
+    Q_INVOKABLE void loadCommunityFullInfo(qlonglong id);
+    Q_INVOKABLE void createCommunity(const QString &name, qlonglong chatId, bool isChatHidden);
+    Q_INVOKABLE void setCommunityName(qlonglong id, const QString &name);
 
 signals:
     void authorizationStateChanged();
@@ -543,6 +546,8 @@ signals:
     void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
     void messageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
     void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
+    void communityFullInfoUpdated(qlonglong communityId, const QVariantMap &communityFullInfo);
+    void communityIdReceived(qlonglong communityId);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);

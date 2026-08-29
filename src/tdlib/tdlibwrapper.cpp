@@ -118,6 +118,7 @@ namespace {
     const QString NOTIFICATION_GROUP_ID("notification_group_id");
     const QString NOTE("note");
     const QString SPONSORED_CHAT_UNIQUE_ID("sponsored_chat_unique_id");
+    const QString COMMUNITY_ID("community_id");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -288,6 +289,8 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::messageContainsUnreadPollVotesUpdated, this, &TDLibWrapper::messageContainsUnreadPollVotesUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::messageEphemeralContentUpdated, this, &TDLibWrapper::messageEphemeralContentUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::communityFullInfoUpdated, this, &TDLibWrapper::communityFullInfoUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::communityIdReceived, this, &TDLibWrapper::communityIdReceived);
 }
 
 void TDLibWrapper::initializeTDLibData() {
@@ -2858,4 +2861,19 @@ void TDLibWrapper::openSponsoredChat(qlonglong uniqueId) {
 void TDLibWrapper::fetchOption(const QString &name) {
     LOG("Fetching latest option value" << name);
     sendRequest({{_TYPE, "getOption"}, {NAME, name}, {_EXTRA, name}});
+}
+
+void TDLibWrapper::loadCommunityFullInfo(qlonglong id) {
+    LOG("Loading community full info" << id);
+    sendRequest({{_TYPE, "loadCommunityFullInfo"}, {COMMUNITY_ID, id}});
+}
+
+void TDLibWrapper::createCommunity(const QString &name, qlonglong chatId, bool isChatHidden) {
+    LOG("Creating a community" << name << "from chat" << chatId << "hidden:" << isChatHidden);
+    sendRequest({{_TYPE, "createCommunity"}, {CHAT_ID, chatId}, {"is_chat_hidden", isChatHidden}});
+}
+
+void TDLibWrapper::setCommunityName(qlonglong id, const QString &name) {
+    LOG("Setting community name" << id << name);
+    sendRequest({{_TYPE, "setCommunityName"}, {COMMUNITY_ID, id}, {NAME, name}});
 }
