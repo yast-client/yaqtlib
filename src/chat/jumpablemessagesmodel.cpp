@@ -8,6 +8,7 @@
 
 JumpableMessagesModel::JumpableMessagesModel(QObject *parent) : MessagesModel(parent) {
     connect(this, &JumpableMessagesModel::endReachedChanged, this, &JumpableMessagesModel::loadingChanged);
+    connect(this, &JumpableMessagesModel::startReachedChanged, this, &JumpableMessagesModel::loadingChanged);
 }
 
 JumpableMessagesModel::JumpableMessagesModel(TDLibWrapper *tdLibWrapper, QObject *parent) : JumpableMessagesModel(parent) {
@@ -20,6 +21,7 @@ bool JumpableMessagesModel::clear() {
     waitingFor.clear();
     startReached = endReached = false;
     emit endReachedChanged();
+    emit startReachedChanged();
     loadingChanged();
     highlightedMessageId = 0;
     return MessagesModel::clear();
@@ -68,6 +70,7 @@ void JumpableMessagesModel::handlePrepareMessagesReceived(int totalCount, Update
 
     LOG("Updated endReached" << endReached << "startReached" << startReached);
     emit endReachedChanged();
+    emit startReachedChanged();
 }
 
 void JumpableMessagesModel::handleMessagesReceived(qlonglong chatId, int extra, const QVariantList &messages, int totalCount) {

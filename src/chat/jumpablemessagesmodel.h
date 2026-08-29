@@ -9,6 +9,7 @@ class JumpableMessagesModel : public MessagesModel {
     Q_OBJECT
 
     Q_PROPERTY(bool endReached MEMBER endReached NOTIFY endReachedChanged)
+    Q_PROPERTY(bool startReached MEMBER startReached NOTIFY startReachedChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 public:
     explicit JumpableMessagesModel(QObject *parent = nullptr);
@@ -26,6 +27,7 @@ public:
 signals:
     void messagesReceived(int totalCount, bool fromIncrementalUpdate);
     void endReachedChanged();
+    void startReachedChanged();
     void loadingChanged();
 
 protected slots:

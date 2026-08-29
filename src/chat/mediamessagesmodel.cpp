@@ -158,6 +158,7 @@ void MediaMessagesModel::handleChatMessageCountReceived(int count, qlonglong cha
             if (count == 0) {
                 LOG("No messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter));
                 startReached = true;
+                emit startReachedChanged();
             } else {
                 LOG("Found" << count << "messages in chat" << chatId << "for filter" << TDLibWrapper::getSearchMessagesFilterType(filter) << ", loading messages");
                 emit notEmptyDetected();
