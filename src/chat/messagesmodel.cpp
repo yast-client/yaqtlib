@@ -37,6 +37,7 @@ void MessagesModel::setupTDLibWrapper() {
     connect(this->tdLibWrapper, &TDLibWrapper::messageFactCheckUpdated, this, &MessagesModel::handleMessageFactCheckUpdated);
     connect(this->tdLibWrapper, &TDLibWrapper::messageUnreadReactionsUpdated, this, &MessagesModel::handleMessageUnreadReactionsUpdated);
     connect(this->tdLibWrapper, &TDLibWrapper::messageContainsUnreadPollVotesUpdated, this, &MessagesModel::handleMessageContainsUnreadPollVotesUpdated);
+    connect(this->tdLibWrapper, &TDLibWrapper::messageEphemeralContentUpdated, this, &MessagesModel::handleMessageEphemeralContentUpdated);
 }
 
 MessagesModel::~MessagesModel() {
@@ -285,6 +286,13 @@ void MessagesModel::handleMessageContainsUnreadPollVotesUpdated(qlonglong chatId
     handleMessageFieldUpdated(chatId, messageId, [messageId, value](int index, MessageData *message) {
         LOG("Message contains unread poll votes updated" << messageId << value << "at index" << index);
         return message->setContainsUnreadPollVotes(value);
+    });
+}
+
+void MessagesModel::handleMessageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent) {
+    handleMessageFieldUpdated(chatId, messageId, [messageId, ephemeralContent](int index, MessageData *message) {
+        LOG("Message ephemeral content updated" << messageId << "at index" << index);
+        return message->setEphemeralContent(ephemeralContent);
     });
 }
 

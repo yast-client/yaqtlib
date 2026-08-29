@@ -1361,3 +1361,10 @@ void TDLibReceiver::processOptionValue(const QVariantMap &receivedInformation) {
     LOG("Received optionValue" << name << value);
     emit optionUpdated(name, value);
 }
+
+void TDLibReceiver::processUpdateMessageEphemeralContent(const QVariantMap &receivedInformation) {
+    qlonglong chatId = receivedInformation.value(CHAT_ID).toLongLong();
+    const qlonglong messageId = receivedInformation.value(MESSAGE_ID).toLongLong();
+    LOG("Ephemeral message content updated" << chatId << messageId);
+    emit messageEphemeralContentUpdated(chatId, messageId, receivedInformation.value("ephemeral_content").toMap());
+}

@@ -24,6 +24,7 @@ namespace {
     const QString IS_PINNED("is_pinned");
     const QString UNREAD_REACTIONS("unread_reactions");
     const QString CONTAINS_UNREAD_POLL_VOTES("contains_unread_poll_votes");
+    const QString EPHEMERAL_CONTENT("ephemeral_content");
 
     // "interaction_info": {
     //     "@type": "messageInteractionInfo",
@@ -296,6 +297,11 @@ QVector<int> MessageData::setContainsUnreadPollVotes(bool value) {
         return {RoleDisplay};
     }
     return {};
+}
+
+QVector<int> MessageData::setEphemeralContent(const QVariantMap &ephemeralContent) {
+    messageData.insert(EPHEMERAL_CONTENT, ephemeralContent);
+    return {RoleDisplay};
 }
 
 

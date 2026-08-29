@@ -542,6 +542,7 @@ signals:
     void httpUrlReceived(const QString &url, const QString &extra);
     void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
     void messageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
+    void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);

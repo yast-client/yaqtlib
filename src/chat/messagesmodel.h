@@ -52,6 +52,7 @@ private slots:
     void handleMessageFactCheckUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &factCheck);
     void handleMessageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
     void handleMessageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
+    void handleMessageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
 
 protected slots:
     virtual MessageData *handleMessageContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &newContent);

@@ -287,6 +287,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(this->tdLibReceiver, &TDLibReceiver::messageMentionRead, this, &TDLibWrapper::messageMentionRead);
     connect(this->tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
     connect(this->tdLibReceiver, &TDLibReceiver::messageContainsUnreadPollVotesUpdated, this, &TDLibWrapper::messageContainsUnreadPollVotesUpdated);
+    connect(this->tdLibReceiver, &TDLibReceiver::messageEphemeralContentUpdated, this, &TDLibWrapper::messageEphemeralContentUpdated);
 }
 
 void TDLibWrapper::initializeTDLibData() {

@@ -79,6 +79,7 @@ public:
     QVector<int> setIsPinned(bool isPinned);
     QVector<int> setUnreadReactions(const QVariantList &unreadReactions);
     QVector<int> setContainsUnreadPollVotes(bool value);
+    QVector<int> setEphemeralContent(const QVariantMap &factCheck);
 
     int lastMessageSenderUserId() const;
     qlonglong lastMessageSenderChatId() const;
