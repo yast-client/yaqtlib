@@ -162,6 +162,7 @@ TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
 
     // Communities
     connect(tdLibReceiver, &TDLibReceiver::communityUpdated, this, &TDLibData::handleCommunityUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::communityFullInfoUpdated, this, &TDLibData::handleCommunityFullInfoUpdated);
 
     // Notifications
     connect(tdLibReceiver, &TDLibReceiver::scopeNotificationSettingsUpdated, this, &TDLibData::handleScopeNotificationSettingsUpdated);
@@ -271,6 +272,12 @@ QVariantMap TDLibData::getSecretChat(qlonglong secretChatId) {
 
 QVariantMap TDLibData::getCommunity(qlonglong id) {
     return communities.value(id);
+}
+
+QVariant TDLibData::getCommunityFullInfo(qlonglong id) {
+    if (!communitiesFullInfo.contains(id))
+        return {};
+    return communitiesFullInfo.value(id);
 }
 
 QVariant TDLibData::getOption(const QString &optionName) {
@@ -624,6 +631,16 @@ void TDLibData::handleSecretChatUpdated(qlonglong secretChatId, const QVariantMa
 void TDLibData::handleCommunityUpdated(qlonglong id, const QVariantMap &community) {
     communities.insert(id, community);
     emit communityUpdated(id);
+}
+
+void TDLibData::handleCommunityFullInfoUpdated(qlonglong id, const QVariantMap &communityFullInfo) {
+    // FIXME: this is wrong; communityFullInfo shouldn't be cached here,
+    // similarly to basicGroupFullInfo/supergroupFullInfo/userFullInfo.
+    // However, running loadCommunityFullInfo the second time doesn't re-send updateCommunityFullInfo,
+    // so it can't be used like get(user|basicGroup|supergroup)FullInfo
+    // This seems like a bug in TDLib, and is very likely to be fixed in the next version.
+    // Until then, we cache this data here.
+    communitiesFullInfo.insert(id, communityFullInfo);
 }
 
 void TDLibData::handleUserPrivacySettingRules(const QVariantMap &rules) {

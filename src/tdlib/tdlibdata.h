@@ -58,6 +58,7 @@ public:
     ChatData* getExistingChatData(qlonglong chatId);
     Q_INVOKABLE QVariantMap getSecretChat(qlonglong secretChatId);
     Q_INVOKABLE QVariantMap getCommunity(qlonglong id);
+    Q_INVOKABLE QVariant getCommunityFullInfo(qlonglong id);
     QVariant getOption(const QString &optionName);
     Q_INVOKABLE bool canSkipChatJoinDialog(qlonglong chatId);
     Q_INVOKABLE bool isDiceEmoji(const QString &text);
@@ -121,6 +122,7 @@ private slots:
 
     // Communities
     void handleCommunityUpdated(qlonglong id, const QVariantMap &community);
+    void handleCommunityFullInfoUpdated(qlonglong id, const QVariantMap &communityFullInfo);
 
     // Notifications
     void handleScopeNotificationSettingsUpdated(const QString &scopeType, const QVariantMap &settings);
@@ -212,6 +214,7 @@ private:
     QHash<qlonglong, Group*> basicGroups;
     QHash<qlonglong, Group*> superGroups;
     QHash<qlonglong, QVariantMap> communities;
+    QHash<qlonglong, QVariantMap> communitiesFullInfo;
     QStringList activeEmojiReactions;
     QStringList diceEmojis;
     QMap<TDLibWrapper::NotificationSettingsScope, QVariantMap> scopesNotificationSettings;
