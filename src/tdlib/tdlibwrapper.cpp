@@ -119,6 +119,7 @@ namespace {
     const QString NOTE("note");
     const QString SPONSORED_CHAT_UNIQUE_ID("sponsored_chat_unique_id");
     const QString COMMUNITY_ID("community_id");
+    const QString COMMENT("comment");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -2507,18 +2508,19 @@ QVariantMap TDLibWrapper::getProxyObject(const QString &server, int port, const 
     };
 }
 
-void TDLibWrapper::addProxy(const QVariantMap &proxy, const QString &extra, bool enable) {
+void TDLibWrapper::addProxy(const QVariantMap &proxy, const QString &extra, bool enable, const QString &comment) {
     LOG("Adding proxy");
-    sendRequest({{_TYPE, "addProxy"}, {PROXY, proxy}, {ENABLE, enable}, {_EXTRA, extra}});
+    sendRequest({{_TYPE, "addProxy"}, {PROXY, proxy}, {ENABLE, enable}, {COMMENT, comment}, {_EXTRA, extra}});
 }
 
-void TDLibWrapper::editProxy(int proxyId, const QString &server, int port, const QVariantMap &type, bool enable) {
+void TDLibWrapper::editProxy(int proxyId, const QString &server, int port, const QVariantMap &type, bool enable, const QString &comment) {
     LOG("Editing proxy" << proxyId);
     sendRequest({
                           {_TYPE, "editProxy"},
                           {PROXY_ID, proxyId},
                           {PROXY, getProxyObject(server, port, type)},
-                          {ENABLE, enable}
+                          {ENABLE, enable},
+                          {COMMENT, comment}
                       });
 }
 

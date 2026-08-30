@@ -388,11 +388,11 @@ public:
     Q_INVOKABLE void removeFavoriteSticker(int fileId);
     Q_INVOKABLE void getChatSimilarChats(qlonglong chatId);
     Q_INVOKABLE void getBotSimilarBots(qlonglong botUserId);
-    Q_INVOKABLE void addProxy(const QVariantMap &proxy, const QString &extra = QString(), bool enable = false);
-    Q_INVOKABLE inline void addProxy(const QString &server, int port, const QVariantMap &type, const QString &extra = QString(), bool enable = false) {
-        addProxy(getProxyObject(server, port, type), extra, enable);
+    Q_INVOKABLE void addProxy(const QVariantMap &proxy, const QString &extra = QString(), bool enable = false, const QString &comment = QString());
+    Q_INVOKABLE inline void addProxy(const QString &server, int port, const QVariantMap &type, const QString &extra = QString(), bool enable = false, const QString &comment = QString()) {
+        addProxy(getProxyObject(server, port, type), extra, enable, comment);
     }
-    Q_INVOKABLE void editProxy(int proxyId, const QString &server, int port, const QVariantMap &type, bool enable = false);
+    Q_INVOKABLE void editProxy(int proxyId, const QString &server, int port, const QVariantMap &type, bool enable = false, const QString &comment = QString());
     Q_INVOKABLE void enableProxy(int proxyId);
     Q_INVOKABLE void disableProxy();
     Q_INVOKABLE void removeProxy(int proxyId);
