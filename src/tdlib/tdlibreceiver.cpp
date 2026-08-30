@@ -99,6 +99,22 @@ namespace {
     const QString TYPE_DICE_STICKERS_SLOT_MACHINE("diceStickersSlotMachine");
     const QString TYPE_MESSAGE_VOICE_NOTE("messageVoiceNote");
     const QString TYPE_VOICE_NOTE("voiceNote");
+
+    constexpr bool isSafeInt54(qlonglong value) {
+        constexpr qlonglong INT54_MAX = static_cast<qlonglong>(1ULL << 53) - 1;
+        constexpr qlonglong INT54_MIN = -INT54_MAX;
+        return value >= INT54_MIN && value <= INT54_MAX;
+    }
+
+    QVariant getOptionValue(const QVariantMap &optionValue) {
+        QVariant result = optionValue.value(VALUE);
+        if (optionValue.value(_TYPE).toString() == QStringLiteral("optionValueInteger")) {
+            qlonglong resultLongLong = result.toLongLong();
+            if (isSafeInt54(resultLongLong))
+                result = resultLongLong;
+        }
+        return result;
+    }
 }
 
 TDLibReceiver::TDLibReceiver(int clientId, QObject *parent)
@@ -168,7 +184,7 @@ void TDLibReceiver::processReceivedDocument(const QJsonDocument &receivedJsonDoc
 
 void TDLibReceiver::processUpdateOption(const QVariantMap &data) {
     const QString name = data.value(NAME).toString();
-    const QVariant value = data.value(VALUE).toMap().value(VALUE);
+    const QVariant value = getOptionValue(data.value(VALUE).toMap());
     LOG("Option updated" << name << value);
     emit optionUpdated(name, value);
 }
@@ -1357,7 +1373,7 @@ void TDLibReceiver::processUpdateChatAccentColors(const QVariantMap &data) {
 
 void TDLibReceiver::processOptionValue(const QVariantMap &data) {
     const QString name = data.value(_EXTRA).toString();
-    const QVariant value = data.value(VALUE);
+    const QVariant value = getOptionValue(data);
     LOG("Received optionValue" << name << value);
     emit optionUpdated(name, value);
 }
