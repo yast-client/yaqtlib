@@ -454,7 +454,7 @@ void TDLibData::handleChatDraftMessageUpdated(qlonglong chatId, const QVariantMa
 
 void TDLibData::handleChatReadInboxUpdated(qlonglong chatId, qlonglong lastReadInboxMessageId, int unreadCount) {
     ChatData *chat = chats.value(chatId);
-    if (chat) return;
+    if (!chat) return;
 
     QVector<int> changedRoles;
     changedRoles.append(ChatData::RoleDisplay);
