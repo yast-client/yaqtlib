@@ -457,12 +457,15 @@ void TDLibData::handleChatReadInboxUpdated(qlonglong chatId, qlonglong lastReadI
     if (!chat) return;
 
     QVector<int> changedRoles;
-    changedRoles.append(ChatData::RoleDisplay);
     if (chat->updateUnreadCount(unreadCount))
         changedRoles.append(ChatData::RoleUnreadCount);
     if (chat->updateLastReadInboxMessageId(lastReadInboxMessageId))
         changedRoles.append(ChatData::RoleLastReadInboxMessageId);
-    emit chatRolesUpdated(chatId, changedRoles);
+
+    if (!changedRoles.isEmpty()) {
+        changedRoles.append(ChatData::RoleDisplay);
+        emit chatRolesUpdated(chatId, changedRoles);
+    }
 }
 
 void TDLibData::handleChatReadOutboxUpdated(qlonglong chatId, qlonglong lastReadOutboxMessageId) {
