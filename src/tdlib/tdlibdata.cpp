@@ -767,10 +767,6 @@ int TDLibData::getChatMuteFor(qlonglong chatId, const QVariantMap &notificationS
         return settings.value(MUTE_FOR).toInt();
 }
 
-bool TDLibData::chatIsMuted(qlonglong chatId, const QVariantMap &notificationSettings) {
-    return getChatMuteFor(chatId, notificationSettings) > 0;
-}
-
 bool TDLibData::canSkipChatJoinDialog(qlonglong chatId) {
     const QVariantMap chat = getChat(chatId);
     if (chat.isEmpty())

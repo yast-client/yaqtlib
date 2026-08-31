@@ -395,6 +395,7 @@ void ChatFoldersModel::handleFoldersUnreadCountIncludeMutedChanged() {
 }
 
 void ChatFoldersModel::calculateUnreadStates() {
+    if (!settings->onlineOnlyMode()) return;
     LOG("Calculating unread states");
     mainChatListModel->calculateUnreadState();
     archiveChatListModel->calculateUnreadState();

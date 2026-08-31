@@ -14,21 +14,23 @@
 
 class ChatListModel : public QAbstractListModel {
     Q_OBJECT
-    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+    Q_PROPERTY(int totalCount READ totalCount NOTIFY totalCountChanged) // total count of chats in the chat list, might be higher than `count`
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged) // count of loaded chats
     Q_PROPERTY(int unreadChatCount READ getUnreadChatCount NOTIFY unreadChatCountChanged)
     Q_PROPERTY(int unreadMessageCount READ getUnreadMessageCount NOTIFY unreadMessageCountChanged)
 public:
     ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, bool archive = false, bool doNotConnectChatListSignals = false);
     ~ChatListModel() override;
 
-    QHash<int,QByteArray> roleNames() const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex &index = QModelIndex()) const Q_DECL_OVERRIDE;
-    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
+    QHash<int,QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex &index = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 
     Q_INVOKABLE void redrawModel();
     Q_INVOKABLE QVariantMap get(int row) const;
 
     Q_INVOKABLE void load();
+    int totalCount() const;
 
     virtual int getUnreadChatCount(bool asFolder = false) const;
     virtual int getUnreadMessageCount(bool asFolder = false) const;
@@ -44,6 +46,7 @@ public slots:
 
 signals:
     void countChanged();
+    void totalCountChanged();
     void unreadChatCountChanged();
     void unreadMessageCountChanged();
 
@@ -60,6 +63,7 @@ private slots:
     void handleChatRolesChanged(qlonglong chatId, const QVector<int> changedRoles);
     void handleMessageSendSucceeded(qlonglong chatId, qlonglong oldMessageId, qlonglong messageId, const QVariantMap &message);
     void handleRelativeTimeRefreshTimer();
+    void handleOnlineOnlyModeChanged();
 
 protected:
     virtual void doLoad();
@@ -86,10 +90,10 @@ protected:
     Utilities *utilities;
     Settings *settings;
 
-    int unreadChatCount = 0;
-    int unreadUnmutedChatCount = 0;
-    int unreadMessageCount = 0;
-    int unreadUnmutedMessageCount = 0;
+    int totalChatCount = 0;
+    int unreadChatCount = 0, unreadUnmutedChatCount = 0,
+        markedAsUnreadChatCount = 0, markedAsUnreadUnmutedChatCount = 0;
+    int unreadMessageCount = 0, unreadUnmutedMessageCount = 0;
 
     bool loading = false;
 

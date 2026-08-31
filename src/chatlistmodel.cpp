@@ -40,6 +40,9 @@ namespace {
     const QString _TYPE("@type");
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
+    const QString TOTAL_COUNT("total_count");
+    const QString MARKED_AS_UNREAD_COUNT("marked_as_unread_count");
+    const QString MARKED_AS_UNREAD_UNMUTED_COUNT("marked_as_unread_unmuted_count");
 }
 
 ChatListModel::ListChatData::ListChatData(ChatData *data, qlonglong order, bool isPinned) : data(data), order(order), isPinned(isPinned) {
@@ -100,13 +103,17 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Uti
     relativeTimeRefreshTimer->setSingleShot(false);
     relativeTimeRefreshTimer->setInterval(30000);
     connect(relativeTimeRefreshTimer, &QTimer::timeout, this, &ChatListModel::handleRelativeTimeRefreshTimer);
+
     connect(this, &ChatListModel::rowsInserted, this, &ChatListModel::countChanged);
     connect(this, &ChatListModel::rowsRemoved, this, &ChatListModel::countChanged);
     connect(this, &ChatListModel::modelReset, this, &ChatListModel::countChanged);
+
+    // while online-only mode requires a restart currently, a connection is done for future compatibility with multiple accounts
+    connect(settings, &Settings::onlineOnlyModeChanged, this, &ChatListModel::handleOnlineOnlyModeChanged);
+    handleOnlineOnlyModeChanged();
 }
 
-ChatListModel::~ChatListModel()
-{
+ChatListModel::~ChatListModel() {
     LOG("Destroying myself...");
     qDeleteAll(chatList);
 }
@@ -304,28 +311,53 @@ void ChatListModel::tryEnableRefreshTimer() {
     }
 }
 
-void ChatListModel::calculateUnreadState() {
-    if (this->settings->onlineOnlyMode()) {
-        LOG("Online-only mode: Calculating unread state on my own...");
-        int unreadChats = 0, unreadMessages = 0;
-        for (ListChatData *chat : chatList) {
-            int unreadCount = chat->data->unreadCount();
-            if (unreadCount > 0) {
-                unreadChats++;
-                unreadMessages += unreadCount;
-            }
-        }
+void ChatListModel::handleOnlineOnlyModeChanged() {
+    disconnect(this, &ChatListModel::countChanged, this, &ChatListModel::totalCountChanged);
+    if (settings->onlineOnlyMode())
+        connect(this, &ChatListModel::countChanged, this, &ChatListModel::totalCountChanged);
 
-        LOG("Online-only mode: New unread state:" << unreadMessages << unreadChats);
-        if (this->unreadMessageCount != unreadMessages) {
-            this->unreadMessageCount = unreadMessages;
-            emit unreadMessageCountChanged();
-        }
-        if (this->unreadChatCount != unreadChats) {
-            this->unreadChatCount = unreadChats;
-            emit unreadChatCountChanged();
+    emit totalCountChanged();
+}
+
+void ChatListModel::calculateUnreadState() {
+    if (!settings->onlineOnlyMode()) return;
+    LOG("Online-only mode: Calculating unread state on my own...");
+    int unreadChatCount = 0, unreadUnmutedChatCount = 0,
+        markedAsUnreadChatCount = 0, markedAsUnreadUnmutedChatCount = 0;
+    int unreadMessageCount = 0, unreadUnmutedMessageCount = 0;
+
+    for (ListChatData *chat : chatList) {
+        bool unmuted = !tdLibWrapper->data()->chatIsMuted(chat->data->chatId, chat->data->notificationSettings());
+
+        int unreadCount = chat->data->unreadCount();
+        if (unreadCount) {
+            unreadChatCount++;
+            unreadMessageCount += unreadCount;
+            if (unmuted) {
+                unreadUnmutedChatCount++;
+                unreadUnmutedMessageCount += unreadCount;
+            }
+        } else if (chat->data->isMarkedAsUnread()) { // FIXME: is else needed here?
+            markedAsUnreadChatCount++;
+            if (unmuted) markedAsUnreadUnmutedChatCount++;
         }
     }
+
+    if (this->unreadMessageCount != unreadMessageCount || this->unreadUnmutedMessageCount != unreadUnmutedMessageCount) {
+        this->unreadMessageCount = unreadMessageCount;
+        this->unreadUnmutedMessageCount = unreadUnmutedMessageCount;
+        emit unreadMessageCountChanged();
+    }
+    if (this->unreadChatCount != unreadChatCount || this->unreadUnmutedChatCount != unreadUnmutedChatCount
+        || this->markedAsUnreadChatCount != markedAsUnreadChatCount
+        || this->markedAsUnreadUnmutedChatCount != markedAsUnreadUnmutedChatCount) {
+        this->unreadChatCount = unreadChatCount;
+        this->unreadUnmutedChatCount = unreadUnmutedChatCount;
+        this->markedAsUnreadChatCount = markedAsUnreadChatCount;
+        this->markedAsUnreadUnmutedChatCount = markedAsUnreadUnmutedChatCount;
+        emit unreadChatCountChanged();
+    }
+    LOG("Online-only mode: New unread state:" << getUnreadMessageCount() << getUnreadChatCount());
 }
 
 void ChatListModel::handleChatAddedToList(ChatData *chatData, qlonglong order, bool isPinned) {
@@ -394,20 +426,28 @@ void ChatListModel::handleRelativeTimeRefreshTimer() {
 
 
 void ChatListModel::handleUnreadChatCountUpdated(const QVariantMap &chatCountInformation) {
-    this->unreadChatCount = chatCountInformation.value(UNREAD_COUNT).toInt();
-    this->unreadUnmutedChatCount = chatCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
+    int newTotalCount = chatCountInformation.value(TOTAL_COUNT).toInt();
+    if (totalChatCount != newTotalCount) {
+        totalChatCount = newTotalCount;
+        emit totalCountChanged();
+    }
+
+    unreadChatCount = chatCountInformation.value(UNREAD_COUNT).toInt();
+    unreadUnmutedChatCount = chatCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
+    markedAsUnreadChatCount = chatCountInformation.value(MARKED_AS_UNREAD_COUNT).toInt();
+    markedAsUnreadUnmutedChatCount = chatCountInformation.value(MARKED_AS_UNREAD_UNMUTED_COUNT).toInt();
     emit unreadChatCountChanged();
 }
 
 void ChatListModel::handleUnreadMessageCountUpdated(const QVariantMap &messageCountInformation) {
-    this->unreadMessageCount = messageCountInformation.value(UNREAD_COUNT).toInt();
-    this->unreadUnmutedMessageCount = messageCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
+    unreadMessageCount = messageCountInformation.value(UNREAD_COUNT).toInt();
+    unreadUnmutedMessageCount = messageCountInformation.value(UNREAD_UNMUTED_COUNT).toInt();
     emit unreadMessageCountChanged();
 }
 
 int ChatListModel::getUnreadChatCount(bool asFolder) const {
     return archive || (asFolder ? settings->foldersUnreadCountIncludeMuted() : settings->unreadCountIncludeMuted())
-            ? unreadChatCount : unreadUnmutedChatCount;
+            ? (unreadChatCount + markedAsUnreadChatCount) : (unreadUnmutedChatCount + markedAsUnreadUnmutedChatCount);
 }
 
 int ChatListModel::getUnreadMessageCount(bool asFolder) const {
@@ -425,6 +465,12 @@ void ChatListModel::load() {
         loading = true;
         doLoad();
     }
+}
+
+int ChatListModel::totalCount() const {
+    if (settings->onlineOnlyMode())
+        return rowCount();
+    return this->totalChatCount;
 }
 
 void ChatListModel::handleChatsLoaded() {

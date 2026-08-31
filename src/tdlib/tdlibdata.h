@@ -74,7 +74,9 @@ public:
         return scopesNotificationSettings.value(getChatNotificationSettingsScope(chatId));
     }
     Q_INVOKABLE int getChatMuteFor(qlonglong chatId, const QVariantMap &notificationSettings = QVariantMap());
-    Q_INVOKABLE bool chatIsMuted(qlonglong chatId, const QVariantMap &notificationSettings = QVariantMap());
+    Q_INVOKABLE inline bool chatIsMuted(qlonglong chatId, const QVariantMap &notificationSettings = QVariantMap()) {
+        return getChatMuteFor(chatId, notificationSettings) > 0;
+    }
 
 private slots:
     // Misc
