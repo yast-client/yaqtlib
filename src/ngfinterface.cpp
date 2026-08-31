@@ -87,7 +87,7 @@ void NgfInterface::stop(const QString &event) {
 void NgfInterface::handleEventStatusChanged(quint32 serverEventId, quint32 status) {
     const QString event = playingEvents.key(serverEventId);
     if (event.isEmpty()) {
-        LOG("Event status changed for an unknown ID" << serverEventId << status);
+        VERBOSE("Event status changed for an unknown ID" << serverEventId << status);
         return;
     }
 
