@@ -9,36 +9,8 @@
 #include "debuglog.h"
 
 namespace {
-    const QString ID("id");
-    const QString DATE("date");
-    const QString TEXT("text");
-    const QString TYPE("type");
-    const QString TITLE("title");
-    const QString PHOTO("photo");
-    const QString SMALL("small");
-    const QString ORDER("order");
-    const QString CHAT_ID("chat_id");
-    const QString CONTENT("content");
-    const QString LAST_MESSAGE("last_message");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString SENDER_ID("sender_id");
-    const QString USER_ID("user_id");
-    const QString BASIC_GROUP_ID("basic_group_id");
-    const QString SUPERGROUP_ID("supergroup_id");
-    const QString UNREAD_COUNT("unread_count");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString AVAILABLE_REACTIONS("available_reactions");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-    const QString SENDING_STATE("sending_state");
-    const QString IS_CHANNEL("is_channel");
-    const QString VERIFICATION_STATUS("verification_status");
-    const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
-    const QString PINNED_MESSAGE_ID("pinned_message_id");
     const QString _TYPE("@type");
-    const QString SECRET_CHAT_ID("secret_chat_id");
+    const QString UNREAD_COUNT("unread_count");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
     const QString TOTAL_COUNT("total_count");
     const QString MARKED_AS_UNREAD_COUNT("marked_as_unread_count");
