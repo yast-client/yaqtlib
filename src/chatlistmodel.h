@@ -76,7 +76,6 @@ private:
         qlonglong order;
         bool isPinned;
 
-        bool setOrder(const QVariant &order);
         int compareTo(const ListChatData *other) const;
     };
 

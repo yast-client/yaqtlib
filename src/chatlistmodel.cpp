@@ -45,18 +45,9 @@ namespace {
     const QString MARKED_AS_UNREAD_UNMUTED_COUNT("marked_as_unread_unmuted_count");
 }
 
-ChatListModel::ListChatData::ListChatData(ChatData *data, qlonglong order, bool isPinned) : data(data), order(order), isPinned(isPinned) {
-
-}
-
-bool ChatListModel::ListChatData::setOrder(const QVariant &newOrder) {
-    if (newOrder.isValid()) {
-        //chatData.insert(ORDER, newOrder); // is this really needed?
-        order = newOrder.toLongLong();
-        return true;
-    }
-    return false;
-}
+ChatListModel::ListChatData::ListChatData(ChatData *data, qlonglong order, bool isPinned)
+    : data(data), order(order), isPinned(isPinned)
+{}
 
 int ChatListModel::ListChatData::compareTo(const ListChatData *other) const {
     if (order == other->order)
