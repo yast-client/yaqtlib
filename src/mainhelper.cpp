@@ -44,7 +44,7 @@ MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view, TDLibWrapper
 #endif
         view.data())),
     waveformManager(view.data()),
-    chatFoldersModel(tdLibWrapper, settings, utilities, view.data()),
+    chatFoldersModel(tdLibWrapper, settings, view.data()),
     stickerManager(tdLibWrapper),
     knownUsersModel(tdLibWrapper, view.data()),
     knownUsersProxyModel(view.data()),

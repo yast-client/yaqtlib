@@ -5,11 +5,13 @@
 #include "chatdata.h"
 
 #include "chatlistmodel.h"
+#include "utilities.h"
 
 #define DEBUG_MODULE ChatData
 #include "debuglog.h"
 
 namespace {
+    const QString _TYPE("@type");
     const QString ID("id");
     const QString TYPE("type");
     const QString TITLE("title");
@@ -33,7 +35,6 @@ namespace {
     const QString VERIFICATION_STATUS("verification_status");
     const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
     const QString PINNED_MESSAGE_ID("pinned_message_id");
-    const QString _TYPE("@type");
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
     const QString VIEW_AS_TOPICS("view_as_topics");

@@ -26,9 +26,8 @@ int ChatListModel::ListChatData::compareTo(const ListChatData *other) const {
         return (order < other->order) ? 1 : -1;
 }
 
-ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, bool archive, bool doNotConnectChatListSignals) :
+ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, bool archive, bool doNotConnectChatListSignals) :
     tdLibWrapper(tdLibWrapper),
-    utilities(utilities),
     settings(settings),
     archive(archive)
 {

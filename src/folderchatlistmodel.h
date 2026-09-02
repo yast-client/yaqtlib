@@ -11,7 +11,7 @@ class ChatFoldersModel;
 class FolderChatListModel : public ChatListModel {
     Q_OBJECT
 public:
-    FolderChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, ChatFoldersModel* chatFoldersModel, int folderId);
+    FolderChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, ChatFoldersModel* chatFoldersModel, int folderId);
 
     inline int getFolderId() { return folderId; }
 

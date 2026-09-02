@@ -7,7 +7,6 @@
 #include <QObject>
 
 #include "tdlib/tdlibwrapper.h"
-#include "utilities.h"
 #include "folderchatlistmodel.h"
 
 class ChatFoldersModel : public QAbstractListModel {
@@ -71,7 +70,7 @@ public:
     };
     Q_ENUM(FolderType);
 
-    explicit ChatFoldersModel(TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities, QObject *parent = nullptr);
+    explicit ChatFoldersModel(TDLibWrapper *tdLibWrapper, Settings *settings, QObject *parent = nullptr);
     ~ChatFoldersModel() override;
 
     ChatListModel* getMainChatListModel();
@@ -123,7 +122,6 @@ private:
 
     TDLibWrapper *tdLibWrapper;
     Settings *settings;
-    Utilities *utilities;
 
     ChatListModel *mainChatListModel;
     ChatListModel *archiveChatListModel;
