@@ -26,32 +26,11 @@ int ChatListModel::ListChatData::compareTo(const ListChatData *other) const {
         return (order < other->order) ? 1 : -1;
 }
 
-ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, bool archive, bool doNotConnectChatListSignals) :
+ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings) :
     tdLibWrapper(tdLibWrapper),
-    settings(settings),
-    archive(archive)
+    settings(settings)
 {
-    TDLibData *tdData = tdLibWrapper->data();
-
-    if (!doNotConnectChatListSignals) {
-        if (!archive) {
-            connect(tdData, &TDLibData::chatAddedToMainList, this, &ChatListModel::handleChatAddedToList);
-            connect(tdData, &TDLibData::chatRemovedFromMainList, this, &ChatListModel::handleChatRemovedFromList);
-            connect(tdData, &TDLibData::mainChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
-            connect(tdData, &TDLibData::mainChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
-            connect(tdData, &TDLibData::mainChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
-            connect(tdLibWrapper, &TDLibWrapper::mainChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
-        } else {
-            connect(tdData, &TDLibData::chatAddedToArchiveList, this, &ChatListModel::handleChatAddedToList);
-            connect(tdData, &TDLibData::chatRemovedFromArchiveList, this, &ChatListModel::handleChatRemovedFromList);
-            connect(tdData, &TDLibData::archiveChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
-            connect(tdData, &TDLibData::archiveChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
-            connect(tdData, &TDLibData::archiveChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
-            connect(tdLibWrapper, &TDLibWrapper::archiveChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
-        }
-    }
-
-    connect(tdData, &TDLibData::chatRolesUpdated, this, &ChatListModel::handleChatRolesChanged);
+    connect(tdLibWrapper->data(), &TDLibData::chatRolesUpdated, this, &ChatListModel::handleChatRolesChanged);
     //connect(tdLibWrapper, &TDLibWrapper::messageSendSucceeded, this, &ChatListModel::handleMessageSendSucceeded); // disabled for now, let's see if it will fix (or break) anything
 
     connect(settings, &Settings::unreadCountIncludeMutedChanged, this, &ChatListModel::unreadChatCountChanged);
@@ -66,6 +45,29 @@ ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, boo
     connect(this, &ChatListModel::rowsInserted, this, &ChatListModel::countChanged);
     connect(this, &ChatListModel::rowsRemoved, this, &ChatListModel::countChanged);
     connect(this, &ChatListModel::modelReset, this, &ChatListModel::countChanged);
+}
+
+ChatListModel::ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, bool archive)
+    : ChatListModel(tdLibWrapper, settings)
+{
+    this->archive = archive;
+    TDLibData *tdData = tdLibWrapper->data();
+
+    if (!archive) {
+        connect(tdData, &TDLibData::chatAddedToMainList, this, &ChatListModel::handleChatAddedToList);
+        connect(tdData, &TDLibData::chatRemovedFromMainList, this, &ChatListModel::handleChatRemovedFromList);
+        connect(tdData, &TDLibData::mainChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
+        connect(tdData, &TDLibData::mainChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
+        connect(tdData, &TDLibData::mainChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
+        connect(tdLibWrapper, &TDLibWrapper::mainChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
+    } else {
+        connect(tdData, &TDLibData::chatAddedToArchiveList, this, &ChatListModel::handleChatAddedToList);
+        connect(tdData, &TDLibData::chatRemovedFromArchiveList, this, &ChatListModel::handleChatRemovedFromList);
+        connect(tdData, &TDLibData::archiveChatListChatPositionUpdated, this, &ChatListModel::handleChatPositionUpdated);
+        connect(tdData, &TDLibData::archiveChatListUnreadChatCountUpdated, this, &ChatListModel::handleUnreadChatCountUpdated);
+        connect(tdData, &TDLibData::archiveChatListUnreadMessageCountUpdated, this, &ChatListModel::handleUnreadMessageCountUpdated);
+        connect(tdLibWrapper, &TDLibWrapper::archiveChatListChatsLoaded, this, &ChatListModel::handleChatsLoaded);
+    }
 }
 
 ChatListModel::~ChatListModel() {
@@ -239,9 +241,8 @@ void ChatListModel::updateChatIsPinned(const int chatIndex, const bool isPinned)
     LOG("Updating chat is pinned at" << chatIndex << isPinned);
     chatList.at(chatIndex)->isPinned = isPinned;
 
-    const QVector<int> changedRoles{ChatData::RoleIsPinned};
-    const QModelIndex modelIndex(index(chatIndex));
-    emit dataChanged(modelIndex, modelIndex, changedRoles);
+    const QModelIndex modelIndex = index(chatIndex);
+    emit dataChanged(modelIndex, modelIndex, {ChatData::RoleIsPinned});
 }
 
 void ChatListModel::handleChatRolesChanged(qlonglong chatId, const QVector<int> changedRoles) {

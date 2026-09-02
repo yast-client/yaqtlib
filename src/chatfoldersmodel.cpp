@@ -91,7 +91,7 @@ ChatFoldersModel::ChatFoldersModel(TDLibWrapper *tdLibWrapper, Settings *setting
     QAbstractListModel(parent),
     tdLibWrapper(tdLibWrapper),
     settings(settings),
-    mainChatListModel(new ChatListModel(tdLibWrapper, settings)),
+    mainChatListModel(new ChatListModel(tdLibWrapper, settings, false)),
     archiveChatListModel(new ChatListModel(tdLibWrapper, settings, true))
 {
     connect(tdLibWrapper->data(), &TDLibData::chatAddedToFolderList, this, &ChatFoldersModel::handleChatAddedToFolderList);

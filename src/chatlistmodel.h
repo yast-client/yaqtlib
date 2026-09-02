@@ -16,8 +16,9 @@ class ChatListModel : public QAbstractListModel {
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(int unreadChatCount READ getUnreadChatCount NOTIFY unreadChatCountChanged)
     Q_PROPERTY(int unreadMessageCount READ getUnreadMessageCount NOTIFY unreadMessageCountChanged)
+
 public:
-    ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, bool archive = false, bool doNotConnectChatListSignals = false);
+    ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings, bool archive);
     ~ChatListModel() override;
 
     QHash<int, QByteArray> roleNames() const override;
@@ -33,6 +34,9 @@ public:
     virtual int getUnreadMessageCount(bool asFolder = false) const;
 
     void setRefreshTimerEnabled(bool enabled);
+
+protected:
+    ChatListModel(TDLibWrapper *tdLibWrapper, Settings *settings);
 
 public slots:
     Q_INVOKABLE void reset();
@@ -94,5 +98,5 @@ private:
     bool refreshTimerEnabled = false;
     QList<ListChatData*> chatList;
     QHash<qlonglong, int> chatIndexMap;
-    bool archive;
+    bool archive = false;
 };
