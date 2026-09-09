@@ -92,7 +92,7 @@ void LottieItem::setSource(QUrl source) {
     reset();
     this->source = source;
     emit sourceChanged();
-    LOG("Source set");
+    LOG_("Source set");
 
     if (!source.isValid())
         return;
@@ -139,7 +139,7 @@ void LottieItem::setupHandler() {
 
 void LottieItem::setAutoLoad(bool value) {
     if (autoLoad != value) {
-        LOG("Set auto load" << value);
+        LOG_("Set auto load" << value);
         autoLoad = value;
         emit autoLoadChanged();
     }
