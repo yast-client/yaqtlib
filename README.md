@@ -35,4 +35,4 @@ See YAST for a complete example of including yaqtlib in your project.
 
 ## TODO
 
-- Move LottieItem to a separate project
+- Move debuglog.h to a separate project since it's shared between yaqtlib and LottieQt now

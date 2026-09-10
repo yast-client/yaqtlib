@@ -18,8 +18,6 @@ public:
     explicit Utilities(TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
     ~Utilities();
 
-    static const QByteArray GZ_MAGIC;
-
     enum MessageText {
         MessageTextDefault,
         MessageTextSimpleWithThumbnails,
@@ -75,9 +73,6 @@ public:
 
     Q_INVOKABLE void handleLink(const QString &link);
     Q_INVOKABLE void handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId);
-
-    static std::string uncompress(const QByteArray &data);
-    Q_INVOKABLE static QString uncompressLocalFile(const QString &path);
 
     static bool compareQlonglongVariant(const QVariant& a, const QVariant& b);
 

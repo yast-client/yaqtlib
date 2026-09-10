@@ -11,8 +11,6 @@
 #include "dbusadaptor.h"
 #include "textfiltermodel.h"
 #include "boolfiltermodel.h"
-#include "tgsplugin.h"
-#include "lottieitem.h"
 #include "chat/forumtopicmessagesmodel.h"
 #include "chat/mediamessagesmodel.h"
 #include "chat/invertedmediamessagesmodel.h"
@@ -26,8 +24,6 @@
 #ifdef QT_QML_DEBUG
 #include <QtQuick>
 #endif
-
-Q_IMPORT_PLUGIN(TgsIOPlugin)
 
 const QString MainHelper::defaultIface("io.yaqtlib.default");
 
@@ -59,7 +55,6 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     qmlRegisterType<BoolFilterModel>(uri, 1, 0, "BoolFilterModel");
     qmlRegisterType<ChatPermissionFilterModel>(uri, 1, 0, "ChatPermissionFilterModel");
     qmlRegisterType<ChatManager>(uri, 1, 0, "ChatManager");
-    qmlRegisterType<LottieItem>(uri, 1, 0, "LottieItem");
     qmlRegisterType<ForumTopicMessagesModel>(uri, 1, 0, "ForumTopicMessagesModel");
     qmlRegisterType<MediaMessagesModel>(uri, 1, 0, "MediaMessagesModel");
     qmlRegisterType<InvertedMediaMessagesModel>(uri, 1, 0, "InvertedMediaMessagesModel");
