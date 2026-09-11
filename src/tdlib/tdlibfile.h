@@ -95,7 +95,7 @@ private slots:
     void handleFileUpdated(int fileId, const QVariantMap &fileInfo);
 
 protected:
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     void init();

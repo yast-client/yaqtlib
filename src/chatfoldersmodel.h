@@ -76,9 +76,9 @@ public:
     ChatListModel* getMainChatListModel();
     ChatListModel* getArchiveChatListModel();
 
-    QHash<int,QByteArray> roleNames() const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex &index = QModelIndex()) const Q_DECL_OVERRIDE;
-    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
+    QHash<int,QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex &index = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 
     Q_INVOKABLE static Icon iconForName(const QString &name);
 

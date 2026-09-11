@@ -28,7 +28,7 @@ public:
     void setTDLibWrapper(QObject* obj);
 
     void setSource(QObject* model);
-    void setSourceModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    void setSourceModel(QAbstractItemModel *model) override;
 
     void setRequirePermissions(QStringList permissions);
     void setAdditionalFilter(AdditionalFilter value);
@@ -40,7 +40,7 @@ signals:
     void additionalFilterChanged();
 
 protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
     TDLibWrapper *tdLibWrapper;

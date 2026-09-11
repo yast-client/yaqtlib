@@ -14,7 +14,7 @@
 
 class TDLibReceiver : public QThread {
     Q_OBJECT
-    void run() Q_DECL_OVERRIDE {
+    void run() override {
         receiverLoop();
     }
 public:

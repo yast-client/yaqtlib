@@ -16,7 +16,7 @@ public:
     BoolFilterModel(QObject *parent = Q_NULLPTR);
 
     void setSource(QObject* model);
-    void setSourceModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    void setSourceModel(QAbstractItemModel *model) override;
 
     void setFilterRoleName(QString role);
     void setFilterValue(bool value);
