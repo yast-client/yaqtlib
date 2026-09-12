@@ -61,6 +61,7 @@ namespace {
     const QString MESSAGE_CONTENT_TYPE_CHAT_DELETE_PHOTO("messageChatDeletePhoto");
     const QString MESSAGE_CONTENT_TYPE_CALL("messageCall");
     const QString MESSAGE_CONTENT_TYPE_GROUP_CALL("messageGroupCall");
+    const QString MESSAGE_CONTENT_TYPE_CONTACT("messageContact");
 
     const QString ENTITIES("entities");
     const QString TYPE_PLAIN_TEXT("plainText");
@@ -476,6 +477,11 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
         return !shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game");
     }
+    if (contentType == MESSAGE_CONTENT_TYPE_CONTACT) {
+        if (!simple) return "";
+        const QString name = messageContent.value("contact").toMap().value(FIRST_NAME).toString();
+        return name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name);
+    }
 
     // Service notifications
     if (contentType == "messageContactRegistered")
@@ -721,7 +727,8 @@ bool Utilities::messageContentIsService(const QString &contentType) {
         MESSAGE_CONTENT_TYPE_VOICE_NOTE,
         MESSAGE_CONTENT_TYPE_DICE,
         MESSAGE_CONTENT_TYPE_CALL,
-        MESSAGE_CONTENT_TYPE_GROUP_CALL
+        MESSAGE_CONTENT_TYPE_GROUP_CALL,
+        MESSAGE_CONTENT_TYPE_CONTACT
     };
 
     return !nonServiceContentTypes.contains(contentType);
