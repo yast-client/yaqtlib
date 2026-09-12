@@ -43,8 +43,6 @@ namespace {
     const QString SECRET_CHAT("secret_chat");
     const QString INTERACTION_INFO("interaction_info");
     const QString ANIMATED_EMOJI("animated_emoji");
-    const QString FITZPATRICK_TYPE("fitzpatrick_type");
-    const QString SOUND("sound");
     const QString STICKER("sticker");
     const QString STICKERS("stickers");
     const QString COVERS("covers");
@@ -735,8 +733,6 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
             QVariantMap animatedEmoji(map);
             animatedEmoji.remove(STICKER);
             animatedEmoji.insert(STICKER, sticker);
-            animatedEmoji.remove(FITZPATRICK_TYPE);
-            animatedEmoji.remove(SOUND);
             animatedEmoji.remove(_TYPE);
             animatedEmoji.insert(_TYPE, TYPE_ANIMATED_EMOJI); // Replace with a shared value
             if (updated) *updated = true;
