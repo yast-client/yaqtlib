@@ -194,6 +194,16 @@ void NotificationManager::setActiveChatId(qlonglong chatId) {
     if (this->activeChatId != chatId) {
         this->activeChatId = chatId;
         emit activeChatIdChanged();
+        if (!activeTopicId.isEmpty())
+            setActiveTopicId(QVariantMap());
+    }
+}
+
+void NotificationManager::setActiveTopicId(const QVariantMap &topicId) {
+    LOG("Set active topic ID to" << topicId);
+    if (this->activeTopicId != topicId) {
+        this->activeTopicId = topicId;
+        emit activeTopicIdChanged();
     }
 }
 
@@ -438,6 +448,17 @@ QVariant NotificationManager::remoteAction(const QString &name, const QString &d
                                       method, arguments);
 }
 
+bool NotificationManager::messageFromActiveChat(qlonglong chatId, const QVariantMap &message) const {
+    if (activeChatId == chatId && QGuiApplication::applicationState() == Qt::ApplicationActive) {
+        if (activeTopicId.isEmpty()) return true;
+
+        const QVariantMap topicId = message.value(TOPIC_ID).toMap();
+        if (topicId.isEmpty() || topicId == activeTopicId)
+            return true;
+    }
+    return false;
+}
+
 void NotificationManager::publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound, const QString &soundFilePath, bool updateChatPhoto) {
     const QVariantMap lastNotification = notificationGroup->lastNotification();
     const QVariantMap notificationType = lastNotification.value(TYPE).toMap();
@@ -506,6 +527,10 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
                                                   "reactToMessage", remoteActionArguments));
         }
 
+        // Don't show popup for currently open chat
+        if (messageFromActiveChat(notificationGroup->chatId, message))
+            needFeedback = false;
+
         break;
     }
     case NotificationGroupTypeCalls:
@@ -530,10 +555,6 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
     // Ignore useSignalActions here
     remoteActions.append(remoteAction(DEFAULT, QString(), "openMessage", remoteActionArguments, true));
     nemoNotification->setRemoteActions(remoteActions);
-
-    // Don't show popup for currently open chat
-    if (activeChatId == notificationGroup->chatId && QGuiApplication::applicationState() == Qt::ApplicationActive)
-        needFeedback = false;
 
     if (needFeedback) {
         nemoNotification->setHintValue(HINT_VIBRA, true);
@@ -766,7 +787,7 @@ inline void NotificationManager::playInChatSound(bool incoming, const QVariantMa
 void NotificationManager::handleNewMessageReceived(qlonglong chatId, const QVariantMap &message) {
     if (useInChatNgf() && !incomingSoundPath.isEmpty()
             && !message.value("is_outgoing").toBool() && !message.contains("sending_state")
-            && activeChatId == chatId && !tdLibWrapper->data()->chatIsMuted(chatId)) {
+            && messageFromActiveChat(chatId, message) && !tdLibWrapper->data()->chatIsMuted(chatId)) {
         LOG("Playing incoming message NGF");
         playInChatSound(true, message);
     }

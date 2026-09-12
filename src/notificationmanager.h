@@ -22,6 +22,7 @@ class NotificationManager : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(qlonglong activeChatId MEMBER activeChatId WRITE setActiveChatId NOTIFY activeChatIdChanged)
+    Q_PROPERTY(QVariantMap activeTopicId MEMBER activeTopicId WRITE setActiveTopicId NOTIFY activeTopicIdChanged)
     Q_PROPERTY(bool enableNgfCallsRingtone MEMBER enableNgfCallsRingtone WRITE setEnableNgfCallsRingtone NOTIFY enableNgfCallsRingtoneChanged)
     Q_PROPERTY(bool forceInChatOutgoingNgf MEMBER forceInChatOutgoingNgf WRITE setForceInChatOutgoingNgf NOTIFY forceInChatOutgoingNgfChanged)
 
@@ -36,12 +37,14 @@ public:
     ~NotificationManager() override;
 
     void setActiveChatId(qlonglong chatId);
+    void setActiveTopicId(const QVariantMap &topicId);
     void setUseSignalActions(bool value, bool force = false);
     void setEnableNgfCallsRingtone(bool value);
     void setForceInChatOutgoingNgf(bool value);
 
 signals:
     void activeChatIdChanged();
+    void activeTopicIdChanged();
     void enableNgfCallsRingtoneChanged();
     void forceInChatOutgoingNgfChanged();
 
@@ -97,6 +100,7 @@ private:
 #endif
     QVariant remoteAction(const QString &name, const QString &displayName, const QString &method, const QVariantList &arguments, bool forceDbus = false);
 
+    bool messageFromActiveChat(qlonglong chatId, const QVariantMap &message) const;
     void publishNotification(const QSharedPointer<NotificationGroup> notificationGroup, bool needFeedback, bool suppressSound = false, const QString &soundFilePath = QString(), bool updateChatPhoto = true);
     void controlLedNotification(bool enabled) const;
     void controlCallState(bool enabled);
@@ -130,6 +134,7 @@ protected:
     QHash<int, QSharedPointer<NotificationGroup>> notificationGroups;
     QString appIconFile;
     qlonglong activeChatId = 0;
+    QVariantMap activeTopicId;
     QHash<int, qlonglong> pendingChatPhotoChats;
     bool enableNgfCallsRingtone = false;
     bool forceInChatOutgoingNgf = false;
