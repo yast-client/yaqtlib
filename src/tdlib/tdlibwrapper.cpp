@@ -39,7 +39,6 @@ namespace {
     const QString USERNAME("username");
     const QString USERNAMES("usernames");
     const QString VALUE("value");
-    const QString REPLY_TO_MESSAGE_ID("reply_to_message_id");
     const QString REPLY_TO("reply_to");
     const QString _TYPE("@type");
     const QString _EXTRA("@extra");
@@ -1277,16 +1276,24 @@ void TDLibWrapper::getInlineQueryResults(qlonglong botUserId, qlonglong chatId, 
     this->sendRequest(requestObject);
 }
 
-void TDLibWrapper::sendInlineQueryResultMessage(qlonglong chatId, qlonglong threadId, qlonglong replyToMessageId, const QString &queryId, const QString &resultId) {
-    LOG("Send Inline Query Result Message" << chatId);
-    this->sendRequest(QVariantMap{
+void TDLibWrapper::sendInlineQueryResultMessage(qlonglong chatId, const QVariantMap &topicId, qlonglong replyToMessageId, const QString &queryId, const QString &resultId) {
+    LOG("Sending inline query result message" << chatId << queryId << resultId);
+    QVariantMap request{
         {_TYPE, "sendInlineQueryResultMessage"},
         {CHAT_ID, chatId},
-        {"message_thread_id", threadId},
-        {"reply_to_message_id", replyToMessageId},
         {"query_id", queryId},
         {"result_id", resultId}
-    });
+    };
+
+    if (!topicId.isEmpty())
+        request.insert(TOPIC_ID, topicId);
+    if (replyToMessageId != 0)
+        request.insert(REPLY_TO, QVariantMap{
+            {_TYPE, TYPE_INPUT_MESSAGE_REPLY_TO_MESSAGE},
+            {MESSAGE_ID, replyToMessageId}
+        });
+    
+    sendRequest(request);
 }
 
 void TDLibWrapper::sendBotStartMessage(qlonglong botUserId, qlonglong chatId, const QString &parameter, const QString &extra)
