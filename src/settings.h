@@ -23,6 +23,13 @@ class Settings : public QObject {
     Q_OBJECT
 
 public:
+    enum LogStream {
+        LogStreamDefault,
+        LogStreamEmpty,
+        LogStreamDocumentsFile
+    };
+    Q_ENUM(LogStream)
+
     enum SponsoredMess {
         SponsoredMessHandle,
         SponsoredMessIgnore = 1000,
@@ -76,6 +83,8 @@ public:
     SETTING(bool, storageOptimizer, true)
 
     SETTING_(bool, onlineOnlyMode)
+    SETTING(int, tdLogVerbosity, 2)
+    ENUM_SETTING(LogStream, logStream, LogStreamDefault)
 
     ENUM_SETTING(SponsoredMess, sponsoredMess, SponsoredMessHandle)
     SETTING_(int, sponsoredMessagesMessagesBetween)

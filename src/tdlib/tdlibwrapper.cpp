@@ -171,6 +171,8 @@ TDLibWrapper::TDLibWrapper(Settings *settings, QObject *parent)
 
     connect(settings, &Settings::storageOptimizerChanged, this, &TDLibWrapper::handleStorageOptimizerChanged);
     connect(settings, &Settings::sendMarkdownChanged, this, &TDLibWrapper::handleSendMarkdownChanged);
+    connect(settings, &Settings::tdLogVerbosityChanged, this, &TDLibWrapper::handleSettingsLogVerbosityLevelChanged);
+    connect(settings, &Settings::logStreamChanged, this, &TDLibWrapper::handleLogStreamChanged);
 
     connect(networkConfigurationManager, &QNetworkConfigurationManager::configurationChanged, this, &TDLibWrapper::handleNetworkConfigurationChanged);
 
@@ -301,7 +303,8 @@ void TDLibWrapper::initializeTDLibData() {
 }
 
 void TDLibWrapper::setInitialOptions() {
-    this->setLogVerbosityLevel();
+    this->handleSettingsLogVerbosityLevelChanged();
+    this->handleLogStreamChanged();
     this->setOptionInteger("notification_group_count_max", 5);
     // set initial option states
     this->handleStorageOptimizerChanged();
@@ -1875,7 +1878,46 @@ void TDLibWrapper::setTdlibParameters() {
 
 void TDLibWrapper::setLogVerbosityLevel(int level) {
     LOG("Setting log verbosity level" << level);
-    this->sendRequest({{_TYPE, "setLogVerbosityLevel"}, {"new_verbosity_level", level}});
+    sendRequest({{_TYPE, "setLogVerbosityLevel"}, {"new_verbosity_level", level}});
+}
+
+void TDLibWrapper::handleSettingsLogVerbosityLevelChanged() {
+    setLogVerbosityLevel(settings->tdLogVerbosity());
+}
+
+void TDLibWrapper::handleLogStreamChanged() {
+    QVariantMap newLogStream;
+    switch (settings->logStream()) {
+    case Settings::LogStreamDefault:
+        LOG("Switching to the default TDLib log stream");
+        newLogStream.insert(_TYPE, "logStreamDefault");
+        break;
+    case Settings::LogStreamEmpty:
+        LOG("Switching to the empty TDLib log stream");
+        newLogStream.insert(_TYPE, "logStreamEmpty");
+        break;
+    case Settings::LogStreamDocumentsFile:
+        newLogStream.insert(_TYPE, "logStreamFile");
+        constexpr qlonglong maxFileSize = 1024*1024*50; // 50mb
+        newLogStream.insert("max_file_size", maxFileSize);
+        //newLogStream.insert("redirect_stderr", true);
+
+        QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                + QString("/yast-td-log-%1%2.txt").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss"));
+        if (QFileInfo::exists(path.arg(QString()))) {
+            int i = 2;
+            while (QFileInfo::exists(path.arg("-" + QString::number(i))))
+                i++;
+            path = path.arg("-" + QString::number(i));
+        } else
+            path = path.arg(QString());
+
+        LOG("Switching to the file TDLib log stream" << path);
+        newLogStream.insert(PATH, path);
+        break;
+    }
+
+    sendRequest({{_TYPE, "setLogStream"}, {"log_stream", newLogStream}});
 }
 
 TDLibWrapper::ChatType TDLibWrapper::chatTypeFromString(const QString &type) {
