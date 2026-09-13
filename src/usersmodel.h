@@ -23,6 +23,8 @@ public:
         RolePhoto,
         RoleTitle,
         RoleUserId,
+        RoleFirstName,
+        RoleLastName,
         RoleUsername,
         RolePhoneNumber,
         RoleUserStatus,

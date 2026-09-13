@@ -43,6 +43,8 @@ QHash<int, QByteArray> UsersModel::roleNames() const {
         {RoleDisplay, "display"},
         {RoleTitle, "title"},
         {RoleUserId, "user_id"},
+        {RoleFirstName, "first_name"},
+        {RoleLastName, "last_name"},
         {RoleUsername, "username"},
         {RolePhoneNumber, "phone_number"},
         {RolePhoto, "photo_data"},
@@ -64,6 +66,8 @@ QVariant UsersModel::data(const QModelIndex &index, int role) const {
         case RoleDisplay: return user;
         case RoleTitle: return Utilities::getUserName(user);
         case RoleUserId: return user.value("id").toLongLong();
+        case RoleFirstName: return user.value("first_name").toString();
+        case RoleLastName: return user.value("last_name").toString();
         case RoleUsername: return user.value("usernames").toMap().value("editable_username").toString();
         case RolePhoneNumber: return user.value("phone_number");
         case RolePhoto: return user.value("profile_photo");
