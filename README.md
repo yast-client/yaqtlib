@@ -15,13 +15,12 @@ All Fernschreiber developers, including but not limited to:
 - [Johannes Bachmann](https://github.com/dscheinah)
 - [Mikhail Barashkov](https://github.com/mbarashkov)
 
-This project uses
+This project uses:
 
-- The Telegram Database Library (TDLib) - available on [GitHub.com](https://github.com/tdlib/td). Thanks for making it available under the conditions of the Boost Software License 1.0! Details about the license of TDLib in [its license file](https://github.com/tdlib/td/blob/master/LICENSE_1_0.txt).
-- Animated sticker parsing and animation by [rlottie](https://github.com/Samsung/rlottie), copyright 2020 Samsung Electronics Co., Ltd. and [other contributors](https://github.com/Samsung/rlottie/blob/master/AUTHORS), Code licensed under the [MIT License](https://github.com/Samsung/rlottie/blob/master/licenses/COPYING.MIT), some rlottie components [licensed under other licenses](https://github.com/Samsung/rlottie/blob/master/COPYING).
-- Reverse geocoding for location attachments by [OpenStreetMap Nominatim](https://wiki.openstreetmap.org/wiki/Nominatim).
-- Calls work through [tgcalls](https://github.com/TelegramMessenger/tgcalls) - the Telegram Calls Library. Thanks for making it available under the [GNU LGPL V3 license](https://github.com/TelegramMessenger/tgcalls/tree/master/LICENSE)!
-- [tg_owt](https://github.com/desktop-app/tg_owt) (WebRTC). Thanks for making it available under the [BSD 3-Clause license](https://github.com/desktop-app/tg_owt/blob/master/LICENSE)!
+- [TDLib](https://github.com/tdlib/td) (Telegram Database library), cross-platform library for building Telegram clients. Licensed under [Boost Software License 1.0](https://github.com/tdlib/td/blob/master/LICENSE_1_0.txt)
+- Reverse geocoding for location attachments is done using [OpenStreetMap Nominatim](https://wiki.openstreetmap.org/wiki/Nominatim)
+- Calls work using [tgcalls](https://github.com/TelegramMessenger/tgcalls), the Telegram Calls Library. Licensed under [GNU LGPL V3 license](https://github.com/TelegramMessenger/tgcalls/tree/master/LICENSE)
+- [tg_owt](https://github.com/desktop-app/tg_owt) (WebRTC). Licensed under [BSD 3-Clause license](https://github.com/desktop-app/tg_owt/blob/master/LICENSE)
 
 ## Usage
 
