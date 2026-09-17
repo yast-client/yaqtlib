@@ -434,6 +434,8 @@ public:
     Q_INVOKABLE void loadCommunityFullInfo(qlonglong id);
     Q_INVOKABLE void createCommunity(const QString &name, qlonglong chatId, bool isChatHidden);
     Q_INVOKABLE void setCommunityName(qlonglong id, const QString &name);
+    Q_INVOKABLE void deleteSavedOrderInfo();
+    Q_INVOKABLE void deleteSavedCredentials();
 
 signals:
     void authorizationStateChanged();

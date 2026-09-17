@@ -2928,3 +2928,13 @@ void TDLibWrapper::setCommunityName(qlonglong id, const QString &name) {
     LOG("Setting community name" << id << name);
     sendRequest({{_TYPE, "setCommunityName"}, {COMMUNITY_ID, id}, {NAME, name}});
 }
+
+void TDLibWrapper::deleteSavedOrderInfo() {
+    LOG("Deleting saved order info");
+    sendRequest({{_TYPE, "deleteSavedOrderInfo"}});
+}
+
+void TDLibWrapper::deleteSavedCredentials() {
+    LOG("Deleting saved payment providers credentials");
+    sendRequest({{_TYPE, "deleteSavedCredentials"}});
+}
