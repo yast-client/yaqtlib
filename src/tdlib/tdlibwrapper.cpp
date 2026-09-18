@@ -2420,6 +2420,8 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
         this->getMessageLinkInfo(linkType.value(URL).toString());
     else if (type == "internalLinkTypeChatInvite")
         this->checkChatInviteLink(linkType.value(INVITE_LINK).toString());
+    else if (type == "internalLinkTypeSavedMessages")
+        this->createPrivateChat(tdData->myUserId(), EXTRA_OPEN_DIRECTLY);
     else if (type == "internalLinkTypeUnknownDeepLink")
         this->getDeepLinkInfo(linkType.value(LINK).toString());
     else
