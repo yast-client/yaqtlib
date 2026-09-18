@@ -243,6 +243,7 @@ ChatManager::ChatManager(QObject *parent)
 
 ChatManager::~ChatManager() {
     LOG("Destroying myself...");
+    if (chatId) tdLibWrapper->closeChat(chatId);
 }
 
 void ChatManager::setTDLibWrapper(QObject *obj) {
