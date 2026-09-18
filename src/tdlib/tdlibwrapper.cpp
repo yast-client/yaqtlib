@@ -1303,9 +1303,7 @@ void TDLibWrapper::sendInlineQueryResultMessage(qlonglong chatId, const QVariant
     sendRequest(request);
 }
 
-void TDLibWrapper::sendBotStartMessage(qlonglong botUserId, qlonglong chatId, const QString &parameter, const QString &extra)
-{
-
+void TDLibWrapper::sendBotStartMessage(qlonglong botUserId, qlonglong chatId, const QString &parameter, const QString &extra) {
     LOG("Send Bot Start Message" << botUserId << chatId << parameter << extra);
     this->sendRequest(QVariantMap{
         {_TYPE, "sendBotStartMessage"},
@@ -2953,4 +2951,14 @@ void TDLibWrapper::deleteSavedCredentials() {
 void TDLibWrapper::toggleSupergroupIsBroadcastGroup(qlonglong supergroupId) {
     LOG("Converting supergroup to a broadcast group" << supergroupId);
     sendRequest({{_TYPE, "toggleSupergroupIsBroadcastGroup"}, {SUPERGROUP_ID, supergroupId}});
+}
+
+void TDLibWrapper::openChatSimilarChat(qlonglong chatId, qlonglong openedChatId) {
+    LOG("Opening a similar chat" << chatId << openedChatId);
+    sendRequest({{_TYPE, "openChatSimilarChat"}, {CHAT_ID, chatId}, {"opened_chat_id", openedChatId}});
+}
+
+void TDLibWrapper::openBotSimilarBot(qlonglong botId, qlonglong openedBotId) {
+    LOG("Opening a similar bot" << botId << openedBotId);
+    sendRequest({{_TYPE, "openBotSimilarBot"}, {BOT_USER_ID, botId}, {"opened_bot_user_id", openedBotId}});
 }
