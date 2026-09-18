@@ -16,7 +16,6 @@ namespace {
     const QString TYPE("type");
     const QString CHAT_ID("chat_id");
     const QString USER_ID("user_id");
-    const QString MY_ID("my_id");
 
     const QString USERNAMES("usernames");
     const QString EDITABLE_USERNAME("editable_username");
@@ -190,6 +189,7 @@ void TDLibData::reset() {
     LOG("Resetting");
     delete options;
     initializePropertyMaps();
+    this->myId = 0;
     userInformation.clear();
     userPrivacySettingRules.clear();
     usersById.clear();
@@ -287,21 +287,17 @@ QVariant TDLibData::getOption(const QString &optionName) {
 void TDLibData::handleOptionUpdated(const QString &optionName, const QVariant &optionValue) {
     this->options->insert(optionName, optionValue);
     emit optionUpdated(optionName, optionValue);
-    if (optionName == MY_ID) {
-        qlonglong id = optionValue.toLongLong();
-        this->userInformation = this->getUserInformation(id);
+    if (optionName == "my_id") {
+        this->myId = optionValue.toLongLong();
+        this->userInformation = this->getUserInformation(myId);
         emit myUserIdUpdated();
         emit myUserUpdated();
     }
 }
 
-qlonglong TDLibData::myUserId() const {
-    return options->value(MY_ID).toLongLong();
-}
-
 void TDLibData::handleUserUpdated(const QVariantMap &user) {
     qlonglong userId = user.value(ID).toLongLong();
-    if (userId == this->options->value(MY_ID).toLongLong()) {
+    if (userId == this->myId) {
         LOG("Current user information updated");
         this->userInformation = user;
         emit myUserUpdated();
@@ -319,7 +315,7 @@ void TDLibData::handleUserUpdated(const QVariantMap &user) {
 }
 
 void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &userStatusInformation) {
-    if (userId == this->options->value(MY_ID).toLongLong()) {
+    if (userId == this->myId) {
         LOG("Current user status information updated");
         this->userInformation.insert(STATUS, userStatusInformation);
     }

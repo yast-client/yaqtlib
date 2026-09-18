@@ -15,7 +15,7 @@ class TDLibData : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQmlPropertyMap* options MEMBER options CONSTANT)
     Q_PROPERTY(QVariantMap userInformation READ getUserInformation NOTIFY myUserUpdated)
-    Q_PROPERTY(qlonglong myUserId READ myUserId NOTIFY myUserIdUpdated)
+    Q_PROPERTY(qlonglong myUserId MEMBER myId NOTIFY myUserIdUpdated)
     Q_PROPERTY(QVariantMap defaultReactionType MEMBER defaultReactionType NOTIFY defaultReactionTypeChanged)
     Q_PROPERTY(QStringList activeEmojiReactions MEMBER activeEmojiReactions NOTIFY activeEmojiReactionsChanged)
     Q_PROPERTY(QVariantList availableAccentColors READ availableAccentColors NOTIFY accentColorsUpdated)
@@ -45,7 +45,7 @@ public:
 
     void reset();
     Q_INVOKABLE TDLibWrapper::UserPrivacySettingRule getUserPrivacySettingRule(TDLibWrapper::UserPrivacySetting userPrivacySetting);
-    qlonglong myUserId() const;
+    inline qlonglong myUserId() const { return myId; }
     Q_INVOKABLE QVariantMap getUserInformation();
     Q_INVOKABLE QVariantMap getUserInformation(qlonglong userId);
     Q_INVOKABLE bool hasUserInformation(qlonglong userId);
@@ -208,6 +208,7 @@ private:
     TDLibReceiver *tdLibReceiver;
     Utilities *utilities;
     QQmlPropertyMap* options;
+    qlonglong myId = 0; // cache this option additionally
     QVariantMap userInformation;
     QMap<TDLibWrapper::UserPrivacySetting, TDLibWrapper::UserPrivacySettingRule> userPrivacySettingRules;
     QHash<qlonglong, QVariantMap> usersById;
