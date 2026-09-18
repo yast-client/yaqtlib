@@ -304,6 +304,7 @@ public:
     Q_INVOKABLE void searchPublicChat(const QString &userName, const QVariantMap &extra = {});
     Q_INVOKABLE void searchPublicChatOpenDirectly(const QString &userName);
     Q_INVOKABLE void searchUserByPhoneNumber(const QString &phoneNumber, bool doOpenOnFound = false);
+    Q_INVOKABLE void searchUserByToken(const QString &token, bool doOpenOnFound = false);
     Q_INVOKABLE void joinChatByInviteLink(const QString &inviteLink, bool isChannel = false);
     Q_INVOKABLE void getDeepLinkInfo(const QString &link);
     Q_INVOKABLE void getContacts();

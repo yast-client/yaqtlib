@@ -120,6 +120,7 @@ namespace {
     const QString SPONSORED_CHAT_UNIQUE_ID("sponsored_chat_unique_id");
     const QString COMMUNITY_ID("community_id");
     const QString COMMENT("comment");
+    const QString TOKEN("token");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -1053,12 +1054,16 @@ void TDLibWrapper::searchPublicChatOpenDirectly(const QString &userName) {
 
 void TDLibWrapper::searchUserByPhoneNumber(const QString &phoneNumber, bool doOpenOnFound) {
     LOG("Search user by phone number" << phoneNumber);
+    sendRequest({
+        {_TYPE, "searchUserByPhoneNumber"},
+        {PHONE_NUMBER, phoneNumber},
+        {_EXTRA, doOpenOnFound}
+    });
+}
 
-    this->sendRequest({
-                          {_TYPE, "searchUserByPhoneNumber"},
-                          {PHONE_NUMBER, phoneNumber},
-                          {_EXTRA, doOpenOnFound}
-                      });
+void TDLibWrapper::searchUserByToken(const QString &token, bool doOpenOnFound) {
+    LOG("Searching user by token" << token);
+    sendRequest({{_TYPE, "searchUserByToken"}, {TOKEN, token}, {_EXTRA, doOpenOnFound}});
 }
 
 void TDLibWrapper::joinChatByInviteLink(const QString &inviteLink, bool isChannel) {
@@ -2408,6 +2413,8 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
     else if (type == "internalLinkTypeUserPhoneNumber")
         // TODO: handle draft_text and open_profile
         this->searchUserByPhoneNumber(linkType.value(PHONE_NUMBER).toString(), true);
+    else if (type == "internalLinkTypeUserToken")
+        this->searchUserByToken(linkType.value(TOKEN).toString(), true);
     else if (type == "internalLinkTypeMessage")
         // TODO: handle topic, media timestamp, for album, etc.
         this->getMessageLinkInfo(linkType.value(URL).toString());
