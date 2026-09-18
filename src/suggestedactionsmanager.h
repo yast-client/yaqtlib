@@ -21,7 +21,7 @@ class SuggestedActionsManager : public QObject {
 public:
     explicit SuggestedActionsManager(TDLibWrapper *tdLibWrapper, QObject *parent = nullptr);
 
-    Q_INVOKABLE bool isConversionToBroadcastGroupSuggested(qlonglong supergroupId);
+    Q_INVOKABLE bool isConversionToBroadcastGroupSuggested(qlonglong supergroupId) const;
 
     QString customActionName() const;
     QVariantMap customActionTitle() const;
@@ -29,7 +29,7 @@ public:
     QString customActionUrl() const;
 
 signals:
-    void conversionToBroadcastGroupSuggested(qlonglong supergroupId);
+    void conversionToBroadcastGroupSuggestedChanged(qlonglong supergroupId);
     void customActionChanged();
 
     void checkPhoneNumberChanged();
@@ -37,8 +37,12 @@ signals:
     void setProfilePhotoChanged();
     void setBirthdateChanged();
 
-private:
+private slots:
     void handleSuggestedActionsUpdated(const QVariantList &added, const QVariantList &removed);
+    void reset();
+
+private:
+    void tryUpdateBasicAction(const QString &type, bool added);
 
 private:
     struct CustomSuggestedAction {
@@ -52,11 +56,11 @@ private:
 
     TDLibWrapper* tdLibWrapper;
     QSet<qlonglong> conversionToBroadcastGroupsSuggestions;
-    QHash<QString, CustomSuggestedAction> customActionsByName;
+    QMap<QString, CustomSuggestedAction> customActionsByName;
     QStringList customActions;
 
-    bool checkPhoneNumber;
-    bool checkPassword;
-    bool setProfilePhoto;
-    bool setBirthdate;
+    bool checkPhoneNumber = false;
+    bool checkPassword = false;
+    bool setProfilePhoto = false;
+    bool setBirthdate = false;
 };

@@ -16,6 +16,7 @@
 #include "chat/invertedmediamessagesmodel.h"
 #include "userprofilepicturesmodel.h"
 #include "chat/chatphotosmodel.h"
+#include "suggestedactionsmanager.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -43,8 +44,7 @@ MainHelper::AppContext::AppContext(QSharedPointer<QQuickView> view, TDLibWrapper
     chatFoldersModel(tdLibWrapper, settings, view.data()),
     stickerManager(tdLibWrapper),
     knownUsersModel(tdLibWrapper, view.data()),
-    knownUsersProxyModel(view.data()),
-    suggestedActionsManager(tdLibWrapper, view.data())
+    knownUsersProxyModel(view.data())
 {}
 
 MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QSharedPointer<QQuickView> view) {
@@ -112,7 +112,7 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     context->setContextProperty("dBusAdaptor", appContext->dbusAdaptor);
     context->setContextProperty("waveformManager", &appContext->waveformManager);
     context->setContextProperty("stickerManager", &appContext->stickerManager);
-    context->setContextProperty("suggestedActionsManager", &appContext->suggestedActionsManager);
+    context->setContextProperty("suggestedActionsManager", tdLibWrapper->suggestedActionsManager());
 
     return appContext;
 }

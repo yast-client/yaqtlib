@@ -7,6 +7,7 @@
 #include "tdlibsecrets.h"
 #include "utilities.h"
 #include "chatdata.h"
+#include "suggestedactionsmanager.h"
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -156,12 +157,13 @@ namespace {
     }
 }
 
-TDLibWrapper::TDLibWrapper(Settings *settings, QObject *parent)
-    : QObject(parent)
-    , clientId(td_create_client_id())
-    , networkConfigurationManager(new QNetworkConfigurationManager(this))
-    , settings(settings)
-    , utilities(new Utilities(this))
+TDLibWrapper::TDLibWrapper(Settings *settings, QObject *parent) :
+    QObject(parent),
+    clientId(td_create_client_id()),
+    networkConfigurationManager(new QNetworkConfigurationManager(this)),
+    settings(settings),
+    utilities(new Utilities(this)),
+    suggestedActions(new SuggestedActionsManager(this))
 {
     LOG("Initializing");
 
@@ -2937,4 +2939,9 @@ void TDLibWrapper::deleteSavedOrderInfo() {
 void TDLibWrapper::deleteSavedCredentials() {
     LOG("Deleting saved payment providers credentials");
     sendRequest({{_TYPE, "deleteSavedCredentials"}});
+}
+
+void TDLibWrapper::toggleSupergroupIsBroadcastGroup(qlonglong supergroupId) {
+    LOG("Converting supergroup to a broadcast group" << supergroupId);
+    sendRequest({{_TYPE, "toggleSupergroupIsBroadcastGroup"}, {SUPERGROUP_ID, supergroupId}});
 }

@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "chatmanager.h"
+#include "suggestedactionsmanager.h"
 
 #define DEBUG_MODULE ChatManagerAndModel
 #include "debuglog.h"
@@ -399,9 +400,7 @@ void ChatManager::handleChatRolesUpdated(qlonglong chatId, const QVector<int> ch
             LOG("View as topics value updated" << chatId << viewAsTopics());
             emit viewAsTopicsChanged();
 
-            // Reinitialize models
-            if (chatMessagesModel || topicsModel)
-                this->initializeMainModels();
+            tryReinitializeMainModels();
         }
 
         if (changedRoles.contains(ChatData::RoleAccentColorId))
@@ -483,6 +482,13 @@ void ChatManager::finishInitialization() {
         LOG("Retreiving sponsored message for a bot");
         tdLibWrapper->getChatSponsoredMessages(chatId);
     }
+
+    tryReinitializeMainModels();
+}
+
+void ChatManager::tryReinitializeMainModels() {
+    if (chatMessagesModel || topicsModel)
+        this->initializeMainModels();
 }
 
 void ChatManager::initializeMainModels(qlonglong fromMessageId) {
@@ -544,4 +550,13 @@ int ChatManager::profileAccentColorId() const {
 QString ChatManager::profileBackgroundCustomEmojiId() const {
     ChatData *data = getChatData();
     return data ? data->profileBackgroundCustomEmojiId() : QString();
+}
+
+bool ChatManager::conversionToBroadcastGroupSuggested() const {
+    return chatType() == TDLibWrapper::ChatTypeSupergroup
+        && tdLibWrapper->suggestedActionsManager()->isConversionToBroadcastGroupSuggested(groupId());
+}
+void ChatManager::handleConversionToBroadcastGroupSuggestedChanged(qlonglong supergroupId) {
+    if (chatType() == TDLibWrapper::ChatTypeSupergroup && this->groupId() == supergroupId)
+        emit conversionToBroadcastGroupSuggestedChanged();
 }

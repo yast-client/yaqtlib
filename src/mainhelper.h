@@ -19,7 +19,6 @@
 #include "contactsmodel.h"
 #include "chatfoldersmodel.h"
 #include "waveformmanager.h"
-#include "suggestedactionsmanager.h"
 #include "dbusadaptor.h"
 
 #ifdef USE_CALLS
@@ -44,7 +43,6 @@ namespace MainHelper {
         KnownUsersModel knownUsersModel;
         QSortFilterProxyModel knownUsersProxyModel;
         ContactsModel contactsModel;
-        SuggestedActionsManager suggestedActionsManager;
 
         AppContext(QSharedPointer<QQuickView> view, TDLibWrapper *tdLibWrapper, Settings *settings, Utilities *utilities);
     };

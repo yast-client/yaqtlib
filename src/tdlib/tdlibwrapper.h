@@ -19,6 +19,7 @@
 
 class TDLibData;
 class Utilities;
+class SuggestedActionsManager;
 
 class TDLibWrapper : public QObject {
     Q_OBJECT
@@ -211,6 +212,7 @@ public:
 
     inline TDLibData *data() const { return tdData; }
     inline Utilities *getUtilities() const { return utilities; }
+    inline SuggestedActionsManager *suggestedActionsManager() const { return suggestedActions; }
 
     // TDLib communication
     using ResponseSlot = std::function<void(const QString&, const QVariantMap&)>;
@@ -436,6 +438,7 @@ public:
     Q_INVOKABLE void setCommunityName(qlonglong id, const QString &name);
     Q_INVOKABLE void deleteSavedOrderInfo();
     Q_INVOKABLE void deleteSavedCredentials();
+    Q_INVOKABLE void toggleSupergroupIsBroadcastGroup(qlonglong supergroupId);
 
 signals:
     void authorizationStateChanged();
@@ -610,6 +613,7 @@ private:
     QVariantMap authorizationStateData;
     TDLibWrapper::ConnectionState connectionState;
     TDLibData *tdData;
+    SuggestedActionsManager *suggestedActions;
 
     bool isClosing = false;
     qlonglong nextRequestId = 0;

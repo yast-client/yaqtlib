@@ -135,8 +135,7 @@ Utilities::Utilities(TDLibWrapper *tdLibWrapper, QObject *parent) :
 }
 
 Utilities::~Utilities() {
-    if (this->geoPositionInfoSource)
-        this->geoPositionInfoSource->stopUpdates();
+    stopGeoLocationUpdates();
 }
 
 QString Utilities::fixReservedHtmlCharacters(const QString &text) {

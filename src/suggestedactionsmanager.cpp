@@ -3,15 +3,13 @@
 
 #include "suggestedactionsmanager.h"
 
+#define DEBUG_MODULE SuggestedActions
+#include "debuglog.h"
+
 namespace {
     const QString _TYPE("@type");
     const QString TYPE_SUGGESTED_ACTION_CONVERT_TO_BROADCAST_GROUP("suggestedActionConvertToBroadcastGroup");
     const QString SUPERGROUP_ID("supergroup_id");
-
-    const QString TYPE_SUGGESTED_ACTION_CHECK_PHONE_NUMBER("suggestedActionCheckPhoneNumber");
-    const QString TYPE_SUGGESTED_ACTION_CHECK_PASSWORD("suggestedActionCheckPassword");
-    const QString TYPE_SUGGESTED_ACTION_SET_PROFILE_PHOTO("suggestedActionSetProfilePhoto");
-    const QString TYPE_SUGGESTED_ACTION_SET_BIRTHDATE("suggestedActionSetBirthdate");
 
     const QString TYPE_SUGGESTED_ACTION_CUSTOM("suggestedActionCustom");
     const QString NAME("name");
@@ -27,14 +25,34 @@ SuggestedActionsManager::CustomSuggestedAction::CustomSuggestedAction(QVariantMa
 {}
 
 SuggestedActionsManager::SuggestedActionsManager(TDLibWrapper *tdLibWrapper, QObject *parent) :
-    QObject(parent),
-    tdLibWrapper(tdLibWrapper),
-    checkPhoneNumber(false),
-    checkPassword(false),
-    setProfilePhoto(false),
-    setBirthdate(false)
+    QObject(parent), tdLibWrapper(tdLibWrapper)
 {
     connect(tdLibWrapper, &TDLibWrapper::suggestedActionsUpdated, this, &SuggestedActionsManager::handleSuggestedActionsUpdated);
+    connect(tdLibWrapper, &TDLibWrapper::clearContent, this, &SuggestedActionsManager::reset);
+}
+
+void SuggestedActionsManager::tryUpdateBasicAction(const QString &type, bool added) {
+    if (type == "suggestedActionCheckPhoneNumber") {
+        if (checkPhoneNumber != added) {
+            checkPhoneNumber = added;
+            emit checkPhoneNumberChanged();
+        }
+    } else if (type == "suggestedActionCheckPassword") {
+        if (checkPassword != added) {
+            checkPassword = added;
+            emit checkPasswordChanged();
+        }
+    } else if (type == "suggestedActionSetProfilePhoto") {
+        if (setProfilePhoto != added) {
+            setProfilePhoto = added;
+            emit setProfilePhotoChanged();
+        }
+    } else if (type == "suggestedActionSetBirthdate") {
+        if (setBirthdate != added) {
+            setBirthdate = added;
+            emit setBirthdateChanged();
+        }
+    }
 }
 
 void SuggestedActionsManager::handleSuggestedActionsUpdated(const QVariantList &added, const QVariantList &removed) {
@@ -53,53 +71,55 @@ void SuggestedActionsManager::handleSuggestedActionsUpdated(const QVariantList &
                 emit customActionChanged();
 
             customActionsByName.remove(name);
-        }
-
-        else if (actionType == TYPE_SUGGESTED_ACTION_CHECK_PHONE_NUMBER && checkPhoneNumber) {
-            checkPhoneNumber = false;
-            emit checkPhoneNumberChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_CHECK_PASSWORD && checkPassword) {
-            checkPassword = false;
-            emit checkPasswordChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_SET_PROFILE_PHOTO && setProfilePhoto) {
-            setProfilePhoto = false;
-            emit setProfilePhotoChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_SET_BIRTHDATE && setBirthdate) {
-            setBirthdate = false;
-            emit setBirthdateChanged();
-        }
+        } else
+            tryUpdateBasicAction(actionType, false);
     }
 
     for (const QVariant &addedVariant : added) {
         const QVariantMap action = addedVariant.toMap();
         const QString actionType = action.value(_TYPE).toString();
 
-        if (actionType == TYPE_SUGGESTED_ACTION_CONVERT_TO_BROADCAST_GROUP)
+        if (actionType == TYPE_SUGGESTED_ACTION_CONVERT_TO_BROADCAST_GROUP) {
             this->conversionToBroadcastGroupsSuggestions.insert(action.value(SUPERGROUP_ID).toLongLong());
-        else if (actionType == TYPE_SUGGESTED_ACTION_CUSTOM) {
+        } else if (actionType == TYPE_SUGGESTED_ACTION_CUSTOM) {
             const QString name = action.value(NAME).toString();
             customActionsByName.insert(name, CustomSuggestedAction(action.value(TITLE).toMap(), action.value(DESCRIPTION).toMap(), action.value(URL).toString()));
             customActions.append(name);
             emit customActionChanged();
-        }
-
-        else if (actionType == TYPE_SUGGESTED_ACTION_CHECK_PHONE_NUMBER && !checkPhoneNumber) {
-            checkPhoneNumber = true;
-            emit checkPhoneNumberChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_CHECK_PASSWORD && !checkPassword) {
-            checkPassword = true;
-            emit checkPasswordChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_SET_PROFILE_PHOTO && !setProfilePhoto) {
-            setProfilePhoto = true;
-            emit setProfilePhotoChanged();
-        } else if (actionType == TYPE_SUGGESTED_ACTION_SET_BIRTHDATE && !setBirthdate) {
-            setBirthdate = true;
-            emit setBirthdateChanged();
-        }
+        } else
+            tryUpdateBasicAction(actionType, true);
     }
 }
 
-bool SuggestedActionsManager::isConversionToBroadcastGroupSuggested(qlonglong supergroupId) {
+void SuggestedActionsManager::reset() {
+    LOG("Resetting");
+    if (!customActions.isEmpty()) {
+        customActions.clear();
+        emit customActionChanged();
+    }
+    customActionsByName.clear();
+
+    conversionToBroadcastGroupsSuggestions.clear();
+
+    if (checkPhoneNumber) {
+        checkPhoneNumber = false;
+        emit checkPhoneNumberChanged();
+    }
+    if (checkPassword) {
+        checkPassword = false;
+        emit checkPasswordChanged();
+    }
+    if (setProfilePhoto) {
+        setProfilePhoto = false;
+        emit setProfilePhotoChanged();
+    }
+    if (setBirthdate) {
+        setBirthdate = false;
+        emit setBirthdateChanged();
+    }
+}
+
+bool SuggestedActionsManager::isConversionToBroadcastGroupSuggested(qlonglong supergroupId) const {
     return this->conversionToBroadcastGroupsSuggestions.contains(supergroupId);
 }
 

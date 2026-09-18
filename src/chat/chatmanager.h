@@ -83,8 +83,9 @@ class ChatManager : public QObject {
 
     Q_PROPERTY(QVariantMap botSponsoredMessage MEMBER botSponsoredMessage NOTIFY botSponsoredMessageChanged)
 
-    Q_PROPERTY(ChatMessagesModel* model MEMBER chatMessagesModel NOTIFY messagesModelChanged)
+    Q_PROPERTY(bool conversionToBroadcastGroupSuggested READ conversionToBroadcastGroupSuggested NOTIFY conversionToBroadcastGroupSuggestedChanged)
 
+    Q_PROPERTY(ChatMessagesModel* model MEMBER chatMessagesModel NOTIFY messagesModelChanged)
     Q_PROPERTY(ForumTopicsModel* topicsModel MEMBER topicsModel NOTIFY topicsModelChanged)
 
     Q_PROPERTY(TDLibWrapper::ChatActionType chatMainActionType READ chatMainActionType NOTIFY chatActionsChanged)
@@ -129,6 +130,8 @@ public:
     int profileAccentColorId() const;
     QString profileBackgroundCustomEmojiId() const;
 
+    bool conversionToBroadcastGroupSuggested() const;
+
     inline TDLibWrapper::ChatActionType chatMainActionType() {
         return infoInitialized() ? tdLibWrapper->data()->getExistingChatData(chatId)->getMainChatActionType() : TDLibWrapper::ChatActionType::Cancel;
     }
@@ -164,6 +167,8 @@ signals:
 
     void botSponsoredMessageChanged();
 
+    void conversionToBroadcastGroupSuggestedChanged();
+
 private slots:
     void handleNewChatDiscovered(qlonglong chatId);
     void handleChatRolesUpdated(qlonglong chatId, const QVector<int> changedRoles = QVector<int>());
@@ -173,6 +178,7 @@ private slots:
     void handleBasicGroupUpdated(qlonglong groupId);
     void handleSupergroupUpdated(qlonglong groupId);
     void handleSponsoredMessagesReceived(qlonglong chatId, const QVariantList &sponsoredMessages, int messagesBetween);
+    void handleConversionToBroadcastGroupSuggestedChanged(qlonglong supergroupId);
 
 private:
     qlonglong userId() const;
@@ -184,6 +190,7 @@ private:
     }
 
     void finishInitialization();
+    void tryReinitializeMainModels();
 
 private:
     TDLibWrapper *tdLibWrapper;
