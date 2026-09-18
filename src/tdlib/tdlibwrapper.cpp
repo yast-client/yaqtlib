@@ -892,7 +892,7 @@ void TDLibWrapper::getChatTd(qlonglong chatId, const QVariant &extra) {
     });
 }
 
-void TDLibWrapper::createPrivateChat(const QString &userId, const QVariant &extra) {
+void TDLibWrapper::createPrivateChat(qlonglong userId, const QVariant &extra) {
     LOG("Creating a private chat" << userId);
     this->sendRequest(QVariantMap{
         {_TYPE, "createPrivateChat"},
@@ -901,7 +901,7 @@ void TDLibWrapper::createPrivateChat(const QString &userId, const QVariant &extr
     });
 }
 
-void TDLibWrapper::createNewSecretChat(const QString &userId, const QVariant &extra) {
+void TDLibWrapper::createNewSecretChat(qlonglong userId, const QVariant &extra) {
     LOG("Creating new secret chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createNewSecretChat"},
@@ -910,7 +910,7 @@ void TDLibWrapper::createNewSecretChat(const QString &userId, const QVariant &ex
     });
 }
 
-void TDLibWrapper::createSupergroupChat(const QString &supergroupId, const QVariant &extra) {
+void TDLibWrapper::createSupergroupChat(qlonglong supergroupId, const QVariant &extra) {
     LOG("Creating Supergroup Chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createSupergroupChat"},
@@ -919,7 +919,7 @@ void TDLibWrapper::createSupergroupChat(const QString &supergroupId, const QVari
     });
 }
 
-void TDLibWrapper::createBasicGroupChat(const QString &basicGroupId, const QVariant &extra) {
+void TDLibWrapper::createBasicGroupChat(qlonglong basicGroupId, const QVariant &extra) {
     LOG("Creating Basic Group Chat");
     this->sendRequest(QVariantMap{
         {_TYPE, "createBasicGroupChat"},
@@ -2427,7 +2427,7 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
 }
 
 void TDLibWrapper::handleUserReceived(const QVariantMap &user, bool doOpenOnFound) {
-    const QString id = user.value(ID).toString();
+    qlonglong id = user.value(ID).toLongLong();
     LOG("User received" << id << doOpenOnFound);
 
     if (doOpenOnFound) {

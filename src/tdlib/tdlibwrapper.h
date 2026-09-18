@@ -286,10 +286,10 @@ public:
     Q_INVOKABLE void getGroupFullInfo(qlonglong groupId, bool isSupergroup);
     Q_INVOKABLE void getUserFullInfo(qlonglong userId);
     Q_INVOKABLE void getChatTd(qlonglong chatId, const QVariant &extra);
-    Q_INVOKABLE void createPrivateChat(const QString &userId, const QVariant &extra);
-    Q_INVOKABLE void createNewSecretChat(const QString &userId, const QVariant &extra);
-    Q_INVOKABLE void createSupergroupChat(const QString &supergroupId, const QVariant &extra);
-    Q_INVOKABLE void createBasicGroupChat(const QString &basicGroupId, const QVariant &extra);
+    Q_INVOKABLE void createPrivateChat(qlonglong userId, const QVariant &extra);
+    Q_INVOKABLE void createNewSecretChat(qlonglong userId, const QVariant &extra);
+    Q_INVOKABLE void createSupergroupChat(qlonglong supergroupId, const QVariant &extra);
+    Q_INVOKABLE void createBasicGroupChat(qlonglong basicGroupId, const QVariant &extra);
     Q_INVOKABLE void getGroupsInCommon(qlonglong userId, int limit, int offset = 0);
     Q_INVOKABLE void getUserProfilePhotos(qlonglong userId, int limit, int offset);
     Q_INVOKABLE void setChatPermissions(qlonglong chatId, const QVariantMap &chatPermissions);

@@ -975,7 +975,7 @@ void Utilities::handleLink(const QString &link) {
     if (link.startsWith("user://"))
         tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
     else if (link.indexOf("userId://") == 0)
-        tdLibWrapper->createPrivateChat(link.mid(9), EXTRA_OPEN_DIRECTLY);
+        tdLibWrapper->createPrivateChat(link.mid(9).toLongLong(), EXTRA_OPEN_DIRECTLY);
     else
         tdLibWrapper->getInternalLinkType(link);
 }
