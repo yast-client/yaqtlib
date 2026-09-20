@@ -76,12 +76,18 @@ ChatListModel::~ChatListModel() {
 }
 
 void ChatListModel::reset() {
-    if (!chatList.isEmpty()) {
+    if (!chatList.isEmpty() || !chatIndexMap.isEmpty()) {
         beginResetModel();
         qDeleteAll(chatList);
         chatList.clear();
+        chatIndexMap.clear();
         endResetModel();
+        emit countChanged();
     }
+    loading = false;
+    unreadChatCount = unreadUnmutedChatCount = unreadMessageCount = unreadUnmutedMessageCount = 0;
+    emit unreadChatCountChanged();
+    emit unreadMessageCountChanged();
 }
 
 QHash<int,QByteArray> ChatListModel::roleNames() const {
