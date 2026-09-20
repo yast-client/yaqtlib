@@ -266,7 +266,6 @@ public:
     Q_INVOKABLE void getMessage(qlonglong chatId, qlonglong messageId);
     void getMessage(qlonglong chatId, qlonglong messageId, QObject *receiver, ResponseSlot slot);
     Q_INVOKABLE void getMessageLinkInfo(const QString &url);
-    Q_INVOKABLE void getExternalLinkInfo(const QString &url, const QString &extra = "");
     Q_INVOKABLE void getCallbackQueryAnswer(qlonglong chatId, qlonglong messageId, const QVariantMap &payload);
     Q_INVOKABLE void getChatSponsoredMessages(qlonglong chatId);
     Q_INVOKABLE void setOptionInteger(const QString &optionName, qlonglong optionValue);
@@ -380,7 +379,12 @@ public:
     Q_INVOKABLE void processChatJoinRequest(qlonglong chatId, qlonglong userId, bool approve);
     Q_INVOKABLE void processChatJoinRequests(qlonglong chatId, bool approve, const QString &inviteLink = QString());
     Q_INVOKABLE void getInternalLinkType(const QString &link, const QString &extra);
-    Q_INVOKABLE void getInternalLinkType(const QString &link);
+    Q_INVOKABLE void getInternalLinkType(const QString &link, bool skipConfirmation = false, bool checkExternalOnError = true);
+    Q_INVOKABLE void getExternalLinkInfo(const QString &link, bool skipConfirmation = false);
+    Q_INVOKABLE void getExternalLink(const QString &link, bool allowWriteAccess);
+    Q_INVOKABLE void getLoginUrlInfo(qlonglong chatId, qlonglong messageId, qlonglong buttonId, const QString &fallbackUrl);
+    Q_INVOKABLE void getLoginUrl(qlonglong chatId, qlonglong messageId, qlonglong buttonId, bool allowWriteAccess, const QString &fallbackUrl);
+    Q_INVOKABLE void getLinkWebBrowserType(const QString &link, bool skipConfirmation = false);
     Q_INVOKABLE void checkChatInviteLink(const QString &link);
     Q_INVOKABLE void clickChatSponsoredMessage(qlonglong chatId, qlonglong messageId, bool isMediaClick = false, bool fromFullscreen = false);
     Q_INVOKABLE void toggleChatViewAsTopics(qlonglong chatId, bool viewAsTopics);
@@ -565,6 +569,10 @@ signals:
     // For non-default extra value
     void internalLinkTypeReceived(const QVariantMap &type, const QString &extra);
 
+    // Non-internal links
+    void openUrl(const QString &url, bool inApp = false, bool skipConfirmation = false);
+    void loginUrlConfirmationRequested(const QString &url, const QString &domain, qlonglong botUserId, bool requestWriteAccess, qlonglong chatId = 0, qlonglong messageId = 0, qlonglong buttonId = 0);
+
 private slots:
     // settings
     void handleSettingsLogVerbosityLevelChanged();
@@ -585,12 +593,16 @@ private slots:
     void handleNetworkConfigurationChanged(const QNetworkConfiguration &config);
     void handleFoundChatMessagesReceived(qlonglong chatId, int extra, int extra2, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
     void handleCountReceived(int count, const QString &extra);
-    void handleInternalLinkTypeReceived(const QVariantMap &linkType, const QString &extra);
     void handleUserReceived(const QVariantMap &user, bool doOpenOnFound);
     void handleStickersReceived(const QVariantList &stickers, const QVariant &extra);
     void handleOkReceived(const QVariant &extra);
     void handleTextReceived(const QString &text, const QString &extra);
     void handleAvailableReactionsReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &reactions, const QVariantMap &unavailabilityReason);
+
+    // Links stuff
+    void handleLoginUrlInfoOpenReceived(const QString &url, bool requestConfirmation, const QVariant &extra);
+    void handleLoginUrlConfirmationRequested(const QString &url, const QString &domain, qlonglong botUserId, bool requestWriteAccess, const QVariant &extra);
+    void handleHttpUrlReceived(const QString &url, const QString &extra);
 
 private:
     void setOption(const QString &name, const QString &type, const QVariant &value);
@@ -605,6 +617,9 @@ private:
     static QVariantMap getProxyObject(const QString &server, int port, const QVariantMap &type);
     static QVariantMap getNotificationSettingsScope(NotificationSettingsScope scope);
     QVariantMap prepareRequestWithIdObject(const QVariantMap &requestObject);
+
+    // Links stuff
+    void handleInternalLinkTypeReceived(const QString &type, const QVariantMap &linkType);
 
 private:
     int clientId;

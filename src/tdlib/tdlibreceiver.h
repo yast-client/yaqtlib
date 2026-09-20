@@ -155,6 +155,9 @@ signals:
     void communityUpdated(qlonglong id, const QVariantMap &community);
     void communityFullInfoUpdated(qlonglong id, const QVariantMap &communityFullInfo);
     void communityIdReceived(qlonglong id);
+    void loginUrlInfoOpenReceived(const QString &url, bool skipConfirmation, const QVariant &extra);
+    void loginUrlConfirmationRequested(const QString &url, const QString &domain, qlonglong botUserId, bool requestWriteAccess, const QVariant &extra);
+    void webBrowserTypeReceived(const QString &url, bool inApp, bool skipConfirmation);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -286,12 +289,17 @@ private:
         {"updateCommunity", &TDLibReceiver::processUpdateCommunity},
         {"updateCommunityFullInfo", &TDLibReceiver::processUpdateCommunityFullInfo},
         {"communityId", &TDLibReceiver::processCommunityId},
+
+        // Abstract handlers defined as normal ones
+        {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
+        {"loginUrlInfoRequestConfirmation", &TDLibReceiver::processLoginUrlInfoRequestConfirmation},
     };
     const QMap<QString, Handler> abstractHandlers = {
         {"internalLinkType", &TDLibReceiver::processInternalLinkType},
         {"messageReadDate", &TDLibReceiver::processMessageReadDate},
         {"chatJoinResult", &TDLibReceiver::processChatJoinResult},
-        {"optionValue", &TDLibReceiver::processOptionValue}
+        {"optionValue", &TDLibReceiver::processOptionValue},
+        {"webBrowserType", &TDLibReceiver::processWebBrowserType}
     };
     int clientId;
     bool isActive = true;
@@ -431,6 +439,9 @@ private:
     void processUpdateCommunity(const QVariantMap &data);
     void processUpdateCommunityFullInfo(const QVariantMap &data);
     void processCommunityId(const QVariantMap &data);
+    void processLoginUrlInfoOpen(const QVariantMap &data);
+    void processLoginUrlInfoRequestConfirmation(const QVariantMap &data);
+    void processWebBrowserType(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);

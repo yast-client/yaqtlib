@@ -971,19 +971,20 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
     }
 }
 
-void Utilities::handleLink(const QString &link) {
+void Utilities::handleLink(const QString &link, bool skipConfirmation, bool checkExternalOnError) {
+    // Checks for links from enhanceMessageText, and calls getInternalLinkType otherwise
     if (link.startsWith("user://"))
         tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
     else if (link.indexOf("userId://") == 0)
         tdLibWrapper->createPrivateChat(link.mid(9).toLongLong(), EXTRA_OPEN_DIRECTLY);
     else
-        tdLibWrapper->getInternalLinkType(link);
+        tdLibWrapper->getInternalLinkType(link, skipConfirmation, checkExternalOnError);
 }
 
-void Utilities::handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId) {
+void Utilities::handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId, bool skipConfirmation, bool checkExternalOnError) {
     if (link.startsWith("botCommand://"))
         tdLibWrapper->sendTextMessage(botCommandChatId, link.mid(13), 0, botCommandTopicId);
-    else handleLink(link);
+    else handleLink(link, skipConfirmation, checkExternalOnError);
 }
 
 bool Utilities::compareQlonglongVariant(const QVariant& a, const QVariant& b) {

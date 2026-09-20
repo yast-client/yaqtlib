@@ -78,6 +78,9 @@ namespace {
     const QString TYPE("type");
     const QString TOPIC_ID("topic_id");
     const QString STATE("state");
+    const QString URL("url");
+    const QString DOMAIN("domain");
+    const QString BOT_USER_ID("bot_user_id");
 
     const QString _TYPE("@type");
     const QString _EXTRA("@extra");
@@ -644,7 +647,7 @@ void TDLibReceiver::processInlineQueryResults(const QVariantMap &data) {
 void TDLibReceiver::processCallbackQueryAnswer(const QVariantMap &data)
 {
     LOG("Callback Query answer");
-    emit callbackQueryAnswer(data.value(TEXT).toString(), data.value("alert").toBool(), data.value("url").toString());
+    emit callbackQueryAnswer(data.value(TEXT).toString(), data.value("alert").toBool(), data.value(URL).toString());
 }
 
 void TDLibReceiver::processUserPrivacySettingRules(const QVariantMap &data)
@@ -1305,7 +1308,7 @@ void TDLibReceiver::processUpdateChatJoinResult(const QVariantMap &data) {
 }
 
 void TDLibReceiver::processHttpUrl(const QVariantMap &data) {
-    const QString url = data.value("url").toString();
+    const QString url = data.value(URL).toString();
     const QString extra = data.value(_EXTRA).toString();
     LOG("Received httpUrl" << url << extra);
     emit httpUrlReceived(url, extra);
@@ -1398,4 +1401,29 @@ void TDLibReceiver::processCommunityId(const QVariantMap &data) {
     qlonglong id = data.value(ID).toLongLong();
     LOG("Received communityId" << id);
     emit communityIdReceived(id);
+}
+
+void TDLibReceiver::processLoginUrlInfoOpen(const QVariantMap &data) {
+    const QString url = data.value(URL).toString();
+    bool skipConfirmation = data.value("skip_confirmation").toBool();
+    LOG("Received loginUrlInfoOpen" << url << "skip confirmation" << skipConfirmation);
+    emit loginUrlInfoOpenReceived(url, skipConfirmation, data.value(_EXTRA));
+}
+
+void TDLibReceiver::processLoginUrlInfoRequestConfirmation(const QVariantMap &data) {
+    const QString url = data.value(URL).toString();
+    const QString domain = data.value(DOMAIN).toString();
+    qlonglong botUserId = data.value(BOT_USER_ID).toLongLong();
+    bool requestWriteAccess = data.value("request_write_access").toBool();
+    LOG("Received loginUrlInfoRequestConfirmation" << url << domain << "bot user id:" << botUserId << "request write access:" << requestWriteAccess);
+    emit loginUrlConfirmationRequested(url, domain, botUserId, requestWriteAccess, data.value(_EXTRA));
+}
+
+void TDLibReceiver::processWebBrowserType(const QVariantMap &data) {
+    bool inApp = data.value(_TYPE).toString() == "webBrowserTypeInApp";
+    const QStringList parts = data.value(_EXTRA).toString().split(':');
+    bool skipConfirmation = !parts.at(1).isEmpty();
+    const QString url = parts.mid(2).join(':');
+    LOG("Received web browser type in app:" << inApp << url << "skip confirmation" << skipConfirmation);
+    emit webBrowserTypeReceived(url, inApp, skipConfirmation);
 }

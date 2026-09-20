@@ -71,8 +71,8 @@ public:
     Q_INVOKABLE static bool messageContentTypeMatchesSearchFilter(const QString &contentType, TDLibWrapper::SearchMessagesFilter filter);
     Q_INVOKABLE static bool messageMatchesSearchFilter(const QVariantMap &message, TDLibWrapper::SearchMessagesFilter filter);
 
-    Q_INVOKABLE void handleLink(const QString &link);
-    Q_INVOKABLE void handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId);
+    Q_INVOKABLE void handleLink(const QString &link, bool skipConfirmation = false, bool checkExternalOnError = true);
+    Q_INVOKABLE void handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId, bool skipConfirmation, bool checkExternalOnError);
 
     static bool compareQlonglongVariant(const QVariant& a, const QVariant& b);
 

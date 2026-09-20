@@ -121,6 +121,14 @@ namespace {
     const QString COMMUNITY_ID("community_id");
     const QString COMMENT("comment");
     const QString TOKEN("token");
+    const QString ALLOW_WRITE_ACCESS("allow_write_access");
+    const QString TYPE_GET_INTERNAL_LINK_TYPE("getInternalLinkType");
+    const QString TYPE_ERROR("error");
+    const QString BUTTON_ID("button_id");
+    const QString TYPE_GET_LOGIN_URL_INFO("getLoginUrlInfo");
+    const QString TYPE_GET_LOGIN_URL("getLoginUrl");
+    const QString TYPE_GET_EXTERNAL_LINK_INFO("getExternalLinkInfo");
+    const QString EXTRA_LOGIN_URL("openLoginUrl");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -261,7 +269,10 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::responseForRequestIdReceived, this, &TDLibWrapper::responseForRequestIdReceived);
     connect(tdLibReceiver, &TDLibReceiver::forumTopicsReceived, this, &TDLibWrapper::forumTopicsReceived);
     connect(tdLibReceiver, &TDLibReceiver::chatJoinRequestsReceived, this, &TDLibWrapper::chatJoinRequestsReceived);
-    connect(tdLibReceiver, &TDLibReceiver::internalLinkTypeReceived, this, &TDLibWrapper::handleInternalLinkTypeReceived);
+    connect(tdLibReceiver, &TDLibReceiver::internalLinkTypeReceived, this, &TDLibWrapper::internalLinkTypeReceived);
+    connect(tdLibReceiver, &TDLibReceiver::loginUrlInfoOpenReceived, this, &TDLibWrapper::handleLoginUrlInfoOpenReceived);
+    connect(tdLibReceiver, &TDLibReceiver::loginUrlConfirmationRequested, this, &TDLibWrapper::handleLoginUrlConfirmationRequested);
+    connect(tdLibReceiver, &TDLibReceiver::webBrowserTypeReceived, this, &TDLibWrapper::openUrl);
     connect(tdLibReceiver, &TDLibReceiver::deepLinkInfoReceived, this, &TDLibWrapper::deepLinkInfoReceived);
     connect(tdLibReceiver, &TDLibReceiver::userReceived, this, &TDLibWrapper::handleUserReceived);
     connect(tdLibReceiver, &TDLibReceiver::chatInviteLinkInfoReceived, this, &TDLibWrapper::chatInviteLinkInfoReceived);
@@ -289,7 +300,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::messageReadDateReceived, this, &TDLibWrapper::messageReadDateReceived);
     connect(tdLibReceiver, &TDLibReceiver::chatJoinResultReceived, this, &TDLibWrapper::chatJoinResultReceived);
     connect(tdLibReceiver, &TDLibReceiver::chatJoinRequestResultReceived, this, &TDLibWrapper::chatJoinRequestResultReceived);
-    connect(tdLibReceiver, &TDLibReceiver::httpUrlReceived, this, &TDLibWrapper::httpUrlReceived);
+    connect(tdLibReceiver, &TDLibReceiver::httpUrlReceived, this, &TDLibWrapper::handleHttpUrlReceived);
     connect(tdLibReceiver, &TDLibReceiver::messageMentionRead, this, &TDLibWrapper::messageMentionRead);
     connect(tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::messageContainsUnreadPollVotesUpdated, this, &TDLibWrapper::messageContainsUnreadPollVotesUpdated);
@@ -657,15 +668,6 @@ void TDLibWrapper::getMessageLinkInfo(const QString &url) {
     this->sendRequest(QVariantMap{
         {_TYPE, "getMessageLinkInfo"},
         {URL, url}
-    });
-}
-
-void TDLibWrapper::getExternalLinkInfo(const QString &url, const QString &extra) {
-    LOG("Retrieving external link info" << url << extra);
-    this->sendRequest(QVariantMap{
-        {_TYPE, "getExternalLinkInfo"},
-        {URL, url},
-        {_EXTRA, extra == "" ? url : (url + "|" + extra)}
     });
 }
 
@@ -1730,14 +1732,17 @@ void TDLibWrapper::handleErrorReceived(int code, const QString &message, const Q
         QStringList parts(extraString.split(':'));
         if (parts.size() == 3 && parts.at(0) == QStringLiteral("getMessage")) {
             emit messageNotFound(parts.at(1).toLongLong(), parts.at(2).toLongLong());
-        } else if (extraString.startsWith("getInternalLinkType:") && code == 404) {
-            LOG("Opening non-internal URL externally");
-            QString url = extraString.mid(20);
-            if (!url.contains("://"))
-                url.prepend("https://");
-
-            QDesktopServices::openUrl(url);
-            return;
+        } else if (parts.size() >= 3 && parts.at(0) == TYPE_GET_EXTERNAL_LINK_INFO) {
+            LOG("Couldn't get external link info, opening as-is");
+            bool skipConfirmation = !parts.at(1).isEmpty();
+            getLinkWebBrowserType(parts.mid(2).join(':'), skipConfirmation);
+        } else if (parts.size() >= 2 && parts.at(0) == EXTRA_LOGIN_URL) {
+            LOG("Couldn't get external link, opening as-is");
+            getLinkWebBrowserType(parts.mid(2).join(':'), true);
+        } else if (parts.size() >= 3 && parts.at(0) == "getLinkWebBrowserType") {
+            LOG("Couldn't get link web browser type, assuming external");
+            bool skipConfirmation = !parts.at(1).isEmpty();
+            emit openUrl(parts.at(3), false, skipConfirmation);
         } else if (parts.size() == 3 && parts.at(0) == TYPE_GET_FORUM_TOPIC) {
             qlonglong chatId = parts.at(1).toLongLong();
             int forumTopicId = parts.at(2).toInt();
@@ -1750,7 +1755,7 @@ void TDLibWrapper::handleErrorReceived(int code, const QString &message, const Q
             emit savedNotificationSoundErrorReceived(soundId);
             return;
         } else if (code == 404 && parts.size() == 2 && (parts.at(0) == TYPE_LOAD_CHATS || parts.at(0) == EXTRA_LOAD_CHATS_FOR_FOLDER)) {
-            LOG("All chats were loaded in a list; ignoring" << parts.at(1)); // Chats model will simply be kept in cooldown
+            LOG("All chats were loaded in a list; ignoring" << parts.at(1)); // Chats model will simply be kept in cooldown (forever)
             return;
         } else {
             QRegularExpressionMatch match = RE_EXTRA_CHAT_MESSAGE_COUNT.match(extraString);
@@ -1770,6 +1775,8 @@ void TDLibWrapper::handleErrorReceived(int code, const QString &message, const Q
             LOG("Proxy ping error");
             emit proxyPingErrorReceived(map.value(SERVER).toString(), map.value(PORT).toInt(), map.value(TYPE).toMap());
             return;
+        } else if (type == TYPE_GET_LOGIN_URL_INFO) {
+            LOG("Couldn't get login URL info");
         }
     }
 
@@ -2262,7 +2269,7 @@ void TDLibWrapper::getChatMessageCount(qlonglong chatId, SearchMessagesFilter fi
                           {CHAT_ID, chatId},
                           {FILTER, QVariantMap{{_TYPE, filterType}}},
                           {RETURN_LOCAL, returnLocal},
-                          {_EXTRA, filterType+(returnLocal?"!":"")+":"+QString::number(chatId)}
+                          {_EXTRA, filterType+(returnLocal ? "!" : "") + ":" + QString::number(chatId)}
                       });
 }
 
@@ -2366,22 +2373,78 @@ QString TDLibWrapper::connectionStateText() {
 
 void TDLibWrapper::getInternalLinkType(const QString &link, const QString &extra) {
     LOG("Getting internal link type for" << link << "extra:" << extra);
-    this->sendRequest({{_TYPE, "getInternalLinkType"}, {LINK, link}, {_EXTRA, extra}});
+    sendRequest({{_TYPE, TYPE_GET_INTERNAL_LINK_TYPE}, {LINK, link}, {_EXTRA, extra}});
 }
 
-void TDLibWrapper::getInternalLinkType(const QString &link) {
-    getInternalLinkType(link, "getInternalLinkType:"+link);
+void TDLibWrapper::getInternalLinkType(const QString &link, bool skipConfirmation, bool checkExternalOnError) {
+    LOG("Getting internal link type" << link << "skip confirmation:" << skipConfirmation << "check external on error:" << checkExternalOnError);
+    sendRequestWithId({{_TYPE, TYPE_GET_INTERNAL_LINK_TYPE}, {LINK, link}},
+                      this, [this, link, skipConfirmation, checkExternalOnError](const QString &type, const QVariantMap &linkType) {
+        if (type == TYPE_ERROR) {
+            LOG("Couldn't get internal link type");
+            if (checkExternalOnError)
+                getExternalLinkInfo(link, skipConfirmation);
+            else
+                getLinkWebBrowserType(link, skipConfirmation);
+        } else
+            handleInternalLinkTypeReceived(type, linkType);
+    });
 }
 
-void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, const QString &extra) {
-    const QString type = linkType.value(_TYPE).toString();
-
-    if (!extra.startsWith("getInternalLinkType:")) {
-        LOG("Internal link type with non-default extra value received" << linkType << extra);
-        emit internalLinkTypeReceived(linkType, extra);
+void TDLibWrapper::getExternalLinkInfo(const QString &link, bool skipConfirmation) {
+    if (authorizationState != TDLibWrapper::AuthorizationReady) {
+        LOG("Unauthorized, not getting external link info" << link << "skip confirmation:" << skipConfirmation);
+        emit openUrl(link, false, skipConfirmation);
         return;
     }
 
+    LOG("Getting external link info" << link << "skip confirmation:" << skipConfirmation);
+    sendRequest({{_TYPE, TYPE_GET_EXTERNAL_LINK_INFO}, {LINK, link}, {_EXTRA, QString("getExternalLinkInfo:") + (skipConfirmation ? "!:" : ":") + link}});
+}
+
+void TDLibWrapper::getExternalLink(const QString &link, bool allowWriteAccess) {
+    LOG("Getting external link" << link << "allow write access:" << allowWriteAccess);
+    sendRequest({
+        {_TYPE, "getExternalLink"},
+        {LINK, link},
+        {ALLOW_WRITE_ACCESS, allowWriteAccess},
+        {_EXTRA, EXTRA_LOGIN_URL + ":" + link}
+    });
+}
+
+void TDLibWrapper::getLoginUrlInfo(qlonglong chatId, qlonglong messageId, qlonglong buttonId, const QString &fallbackUrl) {
+    LOG("Getting login URL info" << chatId << messageId << buttonId << "url" << fallbackUrl);
+    QVariantMap extra = {{_TYPE, TYPE_GET_LOGIN_URL_INFO}, {CHAT_ID, chatId}, {MESSAGE_ID, messageId}, {BUTTON_ID, buttonId}};
+    QVariantMap request(extra);
+    extra.insert(URL, fallbackUrl);
+    request.insert(_EXTRA, extra);
+    sendRequest(request);
+}
+
+void TDLibWrapper::getLoginUrl(qlonglong chatId, qlonglong messageId, qlonglong buttonId, bool allowWriteAccess, const QString &fallbackUrl) {
+    LOG("Getting login URL" << chatId << messageId << buttonId << "write access" << allowWriteAccess << "url" << fallbackUrl);
+    sendRequest({
+        {_TYPE, TYPE_GET_LOGIN_URL},
+        {CHAT_ID, chatId},
+        {MESSAGE_ID, messageId},
+        {BUTTON_ID, buttonId},
+        {ALLOW_WRITE_ACCESS, allowWriteAccess},
+        {_EXTRA, EXTRA_LOGIN_URL + ":" + fallbackUrl}
+    });
+}
+
+void TDLibWrapper::getLinkWebBrowserType(const QString &link, bool skipConfirmation) {
+    if (authorizationState != TDLibWrapper::AuthorizationReady) {
+        LOG("Unauthorized, not getting link web browser type" << link << "skip confirmation:" << skipConfirmation);
+        emit openUrl(link, false, skipConfirmation);
+        return;
+    }
+
+    LOG("Getting link web browser type" << link << "skip confirmation:" << skipConfirmation);
+    sendRequest({{_TYPE, "getLinkWebBrowserType"}, {LINK, link}, {_EXTRA, QString("getLinkWebBrowserType:") + (skipConfirmation ? "!:" : ":") + link}});
+}
+
+void TDLibWrapper::handleInternalLinkTypeReceived(const QString &type, const QVariantMap &linkType) {
     LOG("Internal link type received" << type);
 
     if (type == "internalLinkTypeProxy") {
@@ -2424,6 +2487,31 @@ void TDLibWrapper::handleInternalLinkTypeReceived(const QVariantMap &linkType, c
         this->getDeepLinkInfo(linkType.value(LINK).toString());
     else
         emit linkUnsupportedByApp(type.mid(16));
+}
+
+void TDLibWrapper::handleLoginUrlInfoOpenReceived(const QString &url, bool skipConfirmation, const QVariant &extra) {
+    bool forceSkipConfirmation = !extra.toString().split(':').value(1).isEmpty();
+    getLinkWebBrowserType(url, skipConfirmation || forceSkipConfirmation);
+}
+
+void TDLibWrapper::handleLoginUrlConfirmationRequested(const QString &url, const QString &domain, qlonglong botUserId, bool requestWriteAccess, const QVariant &extra) {
+    qlonglong chatId = 0, messageId = 0, buttonId = 0;
+    if (extra.userType() == QMetaType::QVariantMap) {
+        QVariantMap extraMap = extra.toMap();
+        chatId = extraMap.value(CHAT_ID).toLongLong();
+        messageId = extraMap.value(MESSAGE_ID).toLongLong();
+        buttonId = extraMap.value(BUTTON_ID).toLongLong();
+    }
+
+    loginUrlConfirmationRequested(url, domain, botUserId, requestWriteAccess, chatId, messageId, buttonId);
+}
+
+void TDLibWrapper::handleHttpUrlReceived(const QString &url, const QString &extra) {
+    if (extra.startsWith(EXTRA_LOGIN_URL + ":")) {
+        LOG("Received external link to open" << url);
+        getLinkWebBrowserType(url, true);
+    } else
+        emit httpUrlReceived(url, extra);
 }
 
 void TDLibWrapper::handleUserReceived(const QVariantMap &user, bool doOpenOnFound) {
@@ -2865,7 +2953,7 @@ void TDLibWrapper::getAndOpenSupportUser() {
 }
 
 void TDLibWrapper::processError(const QVariantMap &error) {
-    if (error.value(_TYPE).toString() == "error") {
+    if (error.value(_TYPE).toString() == TYPE_ERROR) {
         LOG("Processing provided error");
         tdLibReceiver->processError(error);
     }
