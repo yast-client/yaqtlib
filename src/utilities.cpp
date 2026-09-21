@@ -408,8 +408,39 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         const QString emoji = messageContent.value(STICKER).toMap().value(EMOJI).toString();
         return emoji.isEmpty() ? tr("Sticker") : emoji;
     }
-    if (contentType == MESSAGE_CONTENT_TYPE_DICE)
-        return simple ? messageContent.value(EMOJI).toString() : "";
+    if (contentType == MESSAGE_CONTENT_TYPE_DICE) {
+        if (!simple) return "";
+        QString emoji = messageContent.value(EMOJI).toString();
+        int value = messageContent.value("value").toInt();
+        if (emoji == "🎯") {
+            // Dart
+            emoji += " ";
+            switch (value) {
+            case 0:
+                return emoji + tr("Dart: throwing…", "0");
+            case 1:
+                return emoji + tr("Dart: missed!", "1");
+            case 2:
+                return emoji + tr("Dart thrown", "2");
+            case 3:
+                return emoji + tr("Dart thrown", "3");
+            case 4:
+                return emoji + tr("Dart thrown", "4");
+            case 6:
+                return emoji + tr("Dart: bullseye!", "6");
+            case 5:
+            default:
+                return emoji + tr("Dart: almost there!", "5");
+            }
+        } else if (emoji == "🎲") {
+            // Regular dice
+            emoji += " ";
+            if (value >= 1 && value <= 6)
+                return emoji + tr("Dice: %n", "", value);
+            return emoji + tr("Dice: rolling…");
+        }
+        return emoji;
+    }
     if (contentType == MESSAGE_CONTENT_TYPE_ANIMATED_EMOJI)
         return simple ? messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString() : "";
     if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
@@ -442,7 +473,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     }
     if (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT) {
         const QString fileName = messageContent.value(DOCUMENT).toMap().value(FILE_NAME).toString();
-        const QString caption = getCaption(tr("%1: %2", "A message with a file attached. %1 is the audio file name, %2 is the caption").arg(fileName));
+        const QString caption = getCaption(tr("%1: %2", "A message with a file attached. %1 is the file name, %2 is the caption").arg(fileName));
         return !caption.isEmpty() ? caption : (simple ? (!fileName.isEmpty() ? fileName : tr("File")) : "");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_VOICE_NOTE) {
@@ -482,7 +513,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name);
     }
 
-    // Service notifications
+    // Service messages
     if (contentType == "messageContactRegistered")
         return myself ? tr("joined Telegram", "myself") : tr("joined Telegram");
     if (contentType == "messageChatJoinByLink")
@@ -518,8 +549,10 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return myself ? tr("changed the chat photo", "myself") : tr("changed the chat photo");
     if (contentType == "messageChatDeletePhoto")
         return myself ? tr("deleted the chat photo", "myself") : tr("deleted the chat photo");
-    if (contentType == "messageChatSetTtl" || contentType == "messageChatSetMessageAutoDeleteTime")
-        // TODO: removed & actual auto delete time/period/duration...
+    if (contentType == "messageChatSetMessageAutoDeleteTime") {
+
+        return myself ? tr("disabled the self-destruct timer", "myself") : tr("disabled the self-destruct timer");
+    }
         return myself ? tr("changed the secret chat TTL setting", "myself; TTL = Time To Live") : tr("changed the secret chat TTL setting", "TTL = Time To Live");
     if (contentType == "messageChatUpgradeFrom" || contentType == "messageChatUpgradeTo")
         return myself ? tr("upgraded this group to a supergroup", "myself") : tr("upgraded this group to a supergroup");
