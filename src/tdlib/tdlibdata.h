@@ -19,6 +19,9 @@ class TDLibData : public QObject {
     Q_PROPERTY(QVariantMap defaultReactionType MEMBER defaultReactionType NOTIFY defaultReactionTypeChanged)
     Q_PROPERTY(QStringList activeEmojiReactions MEMBER activeEmojiReactions NOTIFY activeEmojiReactionsChanged)
     Q_PROPERTY(QVariantList availableAccentColors READ availableAccentColors NOTIFY accentColorsUpdated)
+    Q_PROPERTY(qlonglong ownedStars MEMBER ownedStars NOTIFY ownedStarsChanged)
+    Q_PROPERTY(int ownedNanostars MEMBER ownedNanostars NOTIFY ownedStarsChanged)
+    Q_PROPERTY(qlonglong ownedGrams MEMBER ownedGrams NOTIFY ownedGramsChanged)
 
 public:
     explicit TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver);
@@ -129,6 +132,10 @@ private slots:
     // Notifications
     void handleScopeNotificationSettingsUpdated(const QString &scopeType, const QVariantMap &settings);
 
+    // Stars, ton, grams, etc.
+    void handleOwnedStarCountUpdated(qlonglong stars, int nanostars);
+    void handleOwnedGramCountUpdated(qlonglong grams);
+
     // Misc
     void handleActiveEmojiReactionsUpdated(const QStringList& emojis);
     void handleDiceEmojisUpdated(const QStringList &emojis);
@@ -192,6 +199,10 @@ signals:
     // Notifications
     void scopeNotificationSettingsChanged(TDLibWrapper::NotificationSettingsScope scope);
 
+    // Stars, ton, grams, etc.
+    void ownedStarsChanged();
+    void ownedGramsChanged();
+
     // Misc
     void activeEmojiReactionsChanged();
     void defaultReactionTypeChanged();
@@ -224,6 +235,9 @@ private:
     QVariantMap defaultReactionType;
     QHash<int, QVariantMap> accentColors;
     QList<int> availableAccentColorIds;
+    qlonglong ownedStars;
+    int ownedNanostars;
+    qlonglong ownedGrams;
 };
 
 uint qHash(const TDLibData::MessageSender &key, uint seed = 0) noexcept;

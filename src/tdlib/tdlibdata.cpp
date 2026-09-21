@@ -172,6 +172,8 @@ TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
     connect(tdLibReceiver, &TDLibReceiver::diceEmojisUpdated, this, &TDLibData::handleDiceEmojisUpdated);
     connect(tdLibReceiver, &TDLibReceiver::defaultReactionTypeUpdated, this, &TDLibData::handleDefaultReactionTypeUpdated);
     connect(tdLibReceiver, &TDLibReceiver::accentColorsUpdated, this, &TDLibData::handleAccentColorsUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::ownedStarCountUpdated, this, &TDLibData::handleOwnedStarCountUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::ownedGramCountUpdated, this, &TDLibData::handleOwnedGramCountUpdated);
 }
 
 TDLibData::~TDLibData() {
@@ -823,4 +825,15 @@ QVariantList TDLibData::availableAccentColors() const {
     for (int id : availableAccentColorIds)
         colors.append(accentColors.value(id));
     return colors;
+}
+
+void TDLibData::handleOwnedStarCountUpdated(qlonglong stars, int nanostars) {
+    this->ownedStars = stars;
+    this->ownedNanostars = nanostars;
+    emit ownedStarsChanged();
+}
+
+void TDLibData::handleOwnedGramCountUpdated(qlonglong grams) {
+    this->ownedGrams = grams;
+    emit ownedGramsChanged();
 }

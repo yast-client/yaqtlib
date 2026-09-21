@@ -1427,3 +1427,17 @@ void TDLibReceiver::processWebBrowserType(const QVariantMap &data) {
     LOG("Received web browser type in app:" << inApp << url << "skip confirmation" << skipConfirmation);
     emit webBrowserTypeReceived(url, inApp, skipConfirmation);
 }
+
+void TDLibReceiver::processUpdateOwnedStarCount(const QVariantMap &data) {
+    const QVariantMap starAmount = data.value("star_amount").toMap();
+    qlonglong stars = starAmount.value("star_count").toLongLong();
+    int nanostars = starAmount.value("nanostar_count").toInt();
+    LOG("Owned star count updated" << stars << nanostars);
+    emit ownedStarCountUpdated(stars, nanostars);
+}
+
+void TDLibReceiver::processUpdateOwnedGramCount(const QVariantMap &data) {
+    qlonglong grams = data.value("gram_amount").toLongLong();
+    LOG("Owned gram count updated" << grams);
+    emit ownedGramCountUpdated(grams);
+}
