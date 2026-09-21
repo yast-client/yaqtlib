@@ -650,31 +650,28 @@ void TDLibReceiver::processCallbackQueryAnswer(const QVariantMap &data)
     emit callbackQueryAnswer(data.value(TEXT).toString(), data.value("alert").toBool(), data.value(URL).toString());
 }
 
-void TDLibReceiver::processUserPrivacySettingRules(const QVariantMap &data)
-{
+void TDLibReceiver::processUserPrivacySettingRules(const QVariantMap &data) {
     LOG("User privacy setting rules");
     emit userPrivacySettingRules(data);
 }
 
-void TDLibReceiver::processUpdateUserPrivacySettingRules(const QVariantMap &data)
-{
+void TDLibReceiver::processUpdateUserPrivacySettingRules(const QVariantMap &data) {
     LOG("User privacy setting rules updated");
     emit userPrivacySettingRulesUpdated(data);
 }
 
-void TDLibReceiver::processUpdateMessageInteractionInfo(const QVariantMap &data)
-{
+void TDLibReceiver::processUpdateMessageInteractionInfo(const QVariantMap &data) {
     const qlonglong chatId = data.value(CHAT_ID).toLongLong();
     const qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
     LOG("Message interaction info updated" << chatId << messageId);
     emit messageInteractionInfoUpdated(chatId, messageId, data.value(INTERACTION_INFO).toMap());
 }
 
-void TDLibReceiver::processSessions(const QVariantMap &data)
-{
-    int inactiveSessionTTLDays = data.value("inactive_session_ttl_days").toInt();
+void TDLibReceiver::processSessions(const QVariantMap &data) {
+    int inactiveSessionTtlDays = data.value("inactive_session_ttl_days").toInt();
     QVariantList sessions = data.value("sessions").toList();
-    emit sessionsReceived(inactiveSessionTTLDays, sessions);
+    LOG("Received sessions" << sessions.size() << "inactive days" << inactiveSessionTtlDays);
+    emit sessionsReceived(inactiveSessionTtlDays, sessions);
 }
 
 void TDLibReceiver::processAvailableReactions(const QVariantMap &data) {

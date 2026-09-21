@@ -506,7 +506,7 @@ signals:
     void callbackQueryAnswer(const QString &text, bool alert, const QString &url);
     void messageInteractionInfoUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &updatedInfo);
     void okReceived(const QVariant &extra);
-    void sessionsReceived(int inactive_session_ttl_days, const QVariantList &sessions);
+    void sessionsReceived(int inactiveSessionTtlDays, const QVariantList &sessions);
     void availableReactionsReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &reactions, ReactionUnavailabilityReason unavailabilityReason);
     void messageMentionRead(qlonglong chatId, qlonglong messageId);
     void messagePropertiesReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &messageProperties);
