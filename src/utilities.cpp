@@ -316,7 +316,7 @@ QString Utilities::enhanceMessageTextInternal(const QVariantMap &formattedText, 
             start = "<a href=\"botCommand://" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
             end = "</a>";
         } else if (entityType == "textEntityTypeCustomEmoji") {
-            // TODO: remove % here and add a space instead after testing!!!!!
+            // TODO: this doesn't work currently and needs to be reworked
             if (customInsertions)
                 messageInsertions.append({entity.value(OFFSET).toInt(), "%", entity.value(LENGTH).toInt(), entity.value(TYPE).toMap().value("custom_emoji_id").toLongLong()});
             continue;
@@ -327,8 +327,7 @@ QString Utilities::enhanceMessageTextInternal(const QVariantMap &formattedText, 
         messageInsertions.append({entity.value(OFFSET).toInt() + entity.value(LENGTH).toInt(), end /* , endRemove */}); // end
     }
 
-    if(messageInsertions.isEmpty())
-        return getPlainText();
+    if (messageInsertions.isEmpty()) return getPlainText();
 
     if (escapeReserved) {
         addInsertionsFor(messageText, messageInsertions, LT, HTML_LT);
@@ -411,7 +410,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return emoji.isEmpty() ? tr("Sticker") : emoji;
     }
     if (contentType == MESSAGE_CONTENT_TYPE_DICE) {
-        if (!simple) return "";
+        if (!simple) return {};
         QString emoji = messageContent.value(EMOJI).toString();
         int value = messageContent.value("value").toInt();
         if (emoji == "🎯") {
@@ -444,9 +443,9 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return emoji;
     }
     if (contentType == MESSAGE_CONTENT_TYPE_STAKE_DICE)
-        return simple ? "🎲" : "";
+        return simple ? "🎲" : QString();
     if (contentType == MESSAGE_CONTENT_TYPE_ANIMATED_EMOJI)
-        return simple ? messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString() : "";
+        return simple ? messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString() : QString();
     if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
         QString caption;
         if (simpleWithThumbnails && messageContent.value(PHOTO).toMap().contains(MINITHUMBNAIL))
@@ -462,7 +461,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return !caption.isEmpty() ? caption : (simple ? tr("Video") : "");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_VIDEO_NOTE)
-        return simple ? tr("Video message") : "";
+        return simple ? tr("Video message") : QString();
     if (contentType == MESSAGE_CONTENT_TYPE_ANIMATION) {
         QString caption;
         if (simpleWithThumbnails && messageContent.value(ANIMATION).toMap().contains(MINITHUMBNAIL))
@@ -485,14 +484,14 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return !caption.isEmpty() ? caption : (simple ? tr("Voice message") : "");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_LOCATION)
-        return simple ? tr("Location") : "";
+        return simple ? tr("Location") : QString();
     if (contentType == MESSAGE_CONTENT_TYPE_VENUE) {
         const QVariantMap venue = messageContent.value(VENUE).toMap();
         const QString title = venue.value(TITLE).toString();
         return simple ? (!title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue")) : ("<b>" + title + "</b>, " + venue.value(ADDRESS).toString());
     }
     if (contentType == MESSAGE_CONTENT_TYPE_POLL) {
-        if (!simple) return "";
+        if (!simple) return {};
 
         const QVariantMap poll = messageContent.value("poll").toMap();
         const bool anonymnous = poll.value("is_anonymous").toBool();
@@ -507,12 +506,12 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return !question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_GAME) {
-        if (!simple) return "";
+        if (!simple) return {};
         const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
         return !shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_CONTACT) {
-        if (!simple) return "";
+        if (!simple) return {};
         const QString name = messageContent.value("contact").toMap().value(FIRST_NAME).toString();
         return name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name);
     }
@@ -658,9 +657,9 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
     if (contentType == MESSAGE_CONTENT_TYPE_CALL)
-        return simple ? getMessageCallText(messageContent, outgoing) : "";
+        return simple ? getMessageCallText(messageContent, outgoing) : QString();
     if (contentType == MESSAGE_CONTENT_TYPE_GROUP_CALL)
-        return simple ? getMessageGroupCallText(messageContent, outgoing) : "";
+        return simple ? getMessageGroupCallText(messageContent, outgoing) : QString();
 
     return myself
             ? tr("sent an unsupported message: %1", "myself; %1 is message type").arg(contentType.mid(7))
