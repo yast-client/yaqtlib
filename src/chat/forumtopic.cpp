@@ -36,7 +36,7 @@ namespace {
 }
 
 ForumTopic::ForumTopic(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &forumTopic) :
-    BaseMessagableData(tdLibWrapper, utilities),
+    BaseMessageableData(tdLibWrapper, utilities),
     data(forumTopic),
     id(info().value(FORUM_TOPIC_ID).toLongLong())
 {}

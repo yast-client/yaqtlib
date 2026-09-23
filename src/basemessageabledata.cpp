@@ -2,11 +2,11 @@
 //@ SPDX-FileCopyrightText: 2020 Sebastian J. Wolf and other contributors
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "basemessagabledata.h"
+#include "basemessageabledata.h"
 
 #include "utilities.h"
 
-#define DEBUG_MODULE BaseMessagableData
+#define DEBUG_MODULE BaseMessageableData
 #include "debuglog.h"
 
 namespace {
@@ -22,57 +22,57 @@ namespace {
     const QString IS_OUTGOING("is_outgoing");
 }
 
-BaseMessagableData::BaseMessagableData(TDLibWrapper *tdLibWrapper, Utilities *utilities) :
+BaseMessageableData::BaseMessageableData(TDLibWrapper *tdLibWrapper, Utilities *utilities) :
     tdLibWrapper(tdLibWrapper),
     utilities(utilities)
 {}
 
-const QVariant BaseMessagableData::lastMessage(const QString &key) const {
+const QVariant BaseMessageableData::lastMessage(const QString &key) const {
     return lastMessage().value(key);
 }
 
-qlonglong BaseMessagableData::lastMessageId() const {
+qlonglong BaseMessageableData::lastMessageId() const {
     return lastMessage(ID).toLongLong();
 }
 
-qlonglong BaseMessagableData::lastMessageSenderUserId() const {
+qlonglong BaseMessageableData::lastMessageSenderUserId() const {
     return lastMessage(SENDER_ID).toMap().value(USER_ID).toLongLong();
 }
 
-qlonglong BaseMessagableData::lastMessageSenderChatId() const {
+qlonglong BaseMessageableData::lastMessageSenderChatId() const {
     return lastMessage(SENDER_ID).toMap().value(CHAT_ID).toLongLong();
 }
 
-bool BaseMessagableData::lastMessageSenderIsChat() const {
+bool BaseMessageableData::lastMessageSenderIsChat() const {
     return lastMessage(SENDER_ID).toMap().value(_TYPE).toString() == "messageSenderChat";
 }
 
-qlonglong BaseMessagableData::lastMessageDate() const {
+qlonglong BaseMessageableData::lastMessageDate() const {
     return lastMessage(DATE).toLongLong();
 }
 
-QString BaseMessagableData::lastMessageText() const {
+QString BaseMessageableData::lastMessageText() const {
     return utilities->getMessageText(lastMessage(), Utilities::MessageTextSimpleWithThumbnails);
 }
 
-QVariant BaseMessagableData::lastMessageMinithumbnail() const {
+QVariant BaseMessageableData::lastMessageMinithumbnail() const {
     return utilities->getMessageMinithumbnail(lastMessage(CONTENT).toMap());
 }
 
-bool BaseMessagableData::lastMessageIsService() const {
+bool BaseMessageableData::lastMessageIsService() const {
     return Utilities::messageContentIsService(lastMessage(CONTENT).toMap().value(_TYPE).toString());
 }
 
-QVariant BaseMessagableData::lastMessageSendingState() const {
+QVariant BaseMessageableData::lastMessageSendingState() const {
     return lastMessage(SENDING_STATE);
 }
 
-bool BaseMessagableData::lastMessageIsOutgoing() const {
+bool BaseMessageableData::lastMessageIsOutgoing() const {
     return lastMessage(IS_OUTGOING).toBool();
 }
 
 
-qlonglong BaseMessagableData::draftMessageDate() const {
+qlonglong BaseMessageableData::draftMessageDate() const {
     QVariantMap draft = draftMessage();
     if(draft.isEmpty())
         return qlonglong(0);
@@ -80,7 +80,7 @@ qlonglong BaseMessagableData::draftMessageDate() const {
     return draft.value(DATE).toLongLong();
 }
 
-QString BaseMessagableData::draftMessageText() const {
+QString BaseMessageableData::draftMessageText() const {
     QVariantMap draft = draftMessage();
     if (draft.isEmpty())
         return QString();

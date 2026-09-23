@@ -4,11 +4,11 @@
 #pragma once
 
 #include "tdlib/tdlibwrapper.h"
-#include "basemessagabledata.h"
+#include "basemessageabledata.h"
 
 #include <QColor>
 
-struct ForumTopic : public BaseMessagableData {
+struct ForumTopic : public BaseMessageableData {
     enum Role {
         RoleDisplay = Qt::DisplayRole,
         RoleId,

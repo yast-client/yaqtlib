@@ -7,9 +7,9 @@
 #include <QObject>
 #include "tdlib/tdlibwrapper.h"
 #include "tdlib/tdlibdata.h"
-#include "basemessagabledata.h"
+#include "basemessageabledata.h"
 
-class ChatData : public BaseMessagableData {
+class ChatData : public BaseMessageableData {
     Q_GADGET
 public:
     enum Role {

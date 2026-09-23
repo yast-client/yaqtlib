@@ -47,7 +47,7 @@ namespace {
 }
 
 ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data) :
-    BaseMessagableData(tdLibWrapper, utilities),
+    BaseMessageableData(tdLibWrapper, utilities),
     chatId(data.value(ID).toLongLong()),
     groupId(0),
     memberStatus(TDLibWrapper::ChatMemberStatusUnknown)
@@ -56,7 +56,7 @@ ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVari
 }
 
 ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, qlonglong chatId) :
-    BaseMessagableData(tdLibWrapper, utilities),
+    BaseMessageableData(tdLibWrapper, utilities),
     chatData(),
     chatId(chatId),
     groupId(0),

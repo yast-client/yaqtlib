@@ -88,7 +88,7 @@ target_sources(yaqtlib PRIVATE
     src/tdlib/tdlibresponse.cpp
     src/textfiltermodel.cpp
     src/waveformmanager.cpp
-    src/basemessagabledata.cpp
+    src/basemessageabledata.cpp
     src/chat/forumtopicmessagesmodel.cpp
     src/chat/forumtopic.cpp
     src/mainhelper.cpp
@@ -130,7 +130,7 @@ target_sources(yaqtlib PRIVATE
     src/tdlib/tdlibresponse.h
     src/textfiltermodel.h
     src/waveformmanager.h
-    src/basemessagabledata.h
+    src/basemessageabledata.h
     src/chat/forumtopicmessagesmodel.h
     src/chat/forumtopic.h
     src/mainhelper.h

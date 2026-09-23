@@ -7,9 +7,9 @@
 #include <QObject>
 #include "tdlib/tdlibwrapper.h"
 
-class BaseMessagableData {
+class BaseMessageableData {
 public:
-    BaseMessagableData(TDLibWrapper *tdLibWrapper, Utilities *utilities);
+    BaseMessageableData(TDLibWrapper *tdLibWrapper, Utilities *utilities);
 
     virtual qlonglong lastReadInboxMessageId() const = 0;
     virtual qlonglong lastReadOutboxMessageId() const = 0;
