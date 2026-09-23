@@ -22,6 +22,7 @@ class TDLibData : public QObject {
     Q_PROPERTY(qlonglong ownedStars MEMBER ownedStars NOTIFY ownedStarsChanged)
     Q_PROPERTY(int ownedNanostars MEMBER ownedNanostars NOTIFY ownedStarsChanged)
     Q_PROPERTY(qlonglong ownedGrams MEMBER ownedGrams NOTIFY ownedGramsChanged)
+    Q_PROPERTY(QVariantMap stakeDiceState MEMBER stakeDiceState NOTIFY stakeDiceStateUpdated)
 
 public:
     explicit TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver);
@@ -135,6 +136,7 @@ private slots:
     // Stars, ton, grams, etc.
     void handleOwnedStarCountUpdated(qlonglong stars, int nanostars);
     void handleOwnedGramCountUpdated(qlonglong grams);
+    void handleStakeDiceStateUpdated(const QVariantMap &state);
 
     // Misc
     void handleActiveEmojiReactionsUpdated(const QStringList& emojis);
@@ -202,6 +204,7 @@ signals:
     // Stars, ton, grams, etc.
     void ownedStarsChanged();
     void ownedGramsChanged();
+    void stakeDiceStateUpdated();
 
     // Misc
     void activeEmojiReactionsChanged();
@@ -210,7 +213,7 @@ signals:
 
 private:
     void initializePropertyMaps();
-    const Group *updateGroup(qlonglong groupId, const QVariantMap &groupInfo, QHash<qlonglong,Group*> *groups);
+    const Group *updateGroup(qlonglong groupId, const QVariantMap &groupInfo, QHash<qlonglong, Group*> *groups);
     void updateUserInformation(qlonglong userId, const QVariantMap &userInformation);
     void updateChatPositions(qlonglong chatId, const QVariantList &positions);
 
@@ -238,6 +241,7 @@ private:
     qlonglong ownedStars;
     int ownedNanostars;
     qlonglong ownedGrams;
+    QVariantMap stakeDiceState;
 };
 
 uint qHash(const TDLibData::MessageSender &key, uint seed = 0) noexcept;

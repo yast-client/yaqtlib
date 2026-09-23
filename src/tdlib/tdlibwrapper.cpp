@@ -3050,3 +3050,8 @@ void TDLibWrapper::openBotSimilarBot(qlonglong botId, qlonglong openedBotId) {
     LOG("Opening a similar bot" << botId << openedBotId);
     sendRequest({{_TYPE, "openBotSimilarBot"}, {BOT_USER_ID, botId}, {"opened_bot_user_id", openedBotId}});
 }
+
+void TDLibWrapper::getStakeDiceState() {
+    LOG("Getting stake dice state");
+    sendRequest({{_TYPE, "getStakeDiceState"}});
+}

@@ -1438,3 +1438,13 @@ void TDLibReceiver::processUpdateOwnedGramCount(const QVariantMap &data) {
     LOG("Owned gram count updated" << grams);
     emit ownedGramCountUpdated(grams);
 }
+
+void TDLibReceiver::processUpdateStakeDiceState(const QVariantMap &data) {
+    LOG("Stake dice state updated");
+    emit stakeDiceStateUpdated(data.value(STATE).toMap());
+}
+
+void TDLibReceiver::processStakeDiceState(const QVariantMap &data) {
+    LOG("Received stake dice state");
+    emit stakeDiceStateUpdated(data);
+}

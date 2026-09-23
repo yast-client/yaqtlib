@@ -446,6 +446,7 @@ public:
     Q_INVOKABLE void toggleSupergroupIsBroadcastGroup(qlonglong supergroupId);
     Q_INVOKABLE void openChatSimilarChat(qlonglong chatId, qlonglong openedChatId);
     Q_INVOKABLE void openBotSimilarBot(qlonglong botId, qlonglong openedBotId);
+    Q_INVOKABLE void getStakeDiceState();
 
 signals:
     void authorizationStateChanged();

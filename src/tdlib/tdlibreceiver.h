@@ -160,6 +160,7 @@ signals:
     void webBrowserTypeReceived(const QString &url, bool inApp, bool skipConfirmation);
     void ownedStarCountUpdated(qlonglong stars, int nanostars);
     void ownedGramCountUpdated(qlonglong grams);
+    void stakeDiceStateUpdated(const QVariantMap &state);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -293,6 +294,8 @@ private:
         {"communityId", &TDLibReceiver::processCommunityId},
         {"updateOwnedStarCount", &TDLibReceiver::processUpdateOwnedStarCount},
         {"updateOwnedGramCount", &TDLibReceiver::processUpdateOwnedGramCount},
+        {"updateStakeDiceState", &TDLibReceiver::processUpdateStakeDiceState},
+        {"stakeDiceState", &TDLibReceiver::processStakeDiceState},
 
         // Abstract handlers defined as normal ones
         {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
@@ -448,6 +451,8 @@ private:
     void processWebBrowserType(const QVariantMap &data);
     void processUpdateOwnedStarCount(const QVariantMap &data);
     void processUpdateOwnedGramCount(const QVariantMap &data);
+    void processUpdateStakeDiceState(const QVariantMap &data);
+    void processStakeDiceState(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);
