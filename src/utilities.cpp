@@ -153,6 +153,16 @@ struct Utilities::FormattedTextInsertion {
         : offset(offset), insertion(insertion), removeLength(removeLength), data(data) {}
 };
 
+struct Utilities::FormattedTextReplacement {
+    int startIndex;
+    int length;
+    QVariantMap type;
+    QString plainText;
+
+    FormattedTextReplacement(int startIndex, int length, const QVariantMap &type, const QString &plainText)
+        : startIndex(startIndex), length(length), type(type), plainText(plainText) {}
+};
+
 void Utilities::addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QString &original, const QString &replacement) {
     int nextIndex = -1;
     while ((nextIndex = messageText.indexOf(original, nextIndex + 1)) > -1) {
@@ -189,48 +199,39 @@ QVariantMap Utilities::newFormattedText(const QString &text, const QVariantList 
     return formattedText;
 }
 
-static bool compareReplacements(const QVariant &replacement1, const QVariant &replacement2) {
-    return replacement1.toMap().value("startIndex").toInt() < replacement2.toMap().value("startIndex").toInt();
+bool Utilities::replacementsSorter(const FormattedTextReplacement &a, const FormattedTextReplacement &b) {
+    return a.startIndex < b.startIndex;
 }
 
-QList<QVariantMap> Utilities::findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter) {
-    QList<QVariantMap> replacements;
+QList<Utilities::FormattedTextReplacement> Utilities::findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter) {
+    QList<FormattedTextReplacement> replacements;
 
     QRegularExpressionMatchIterator iterator = re.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
-        LOG("Found match for formatted text replacements");
         QVariantMap type{{_TYPE, entityType}};
         if (!typeParameter.isEmpty()) {
             const QString typeParameterValue = match.captured(TYPE);
             if (!typeParameterValue.isEmpty()) type.insert(typeParameter, typeParameterValue);
         }
-        replacements.append(QVariantMap{
-                                {"startIndex", match.capturedStart(0)},
-                                {"length", match.capturedLength(0)},
-                                {TYPE, type},
-                                {TYPE_PLAIN_TEXT, match.captured(TEXT)}
-                            });
+        replacements.append({match.capturedStart(0), match.capturedLength(0), type, match.captured(TEXT)});
     }
     return replacements;
 }
 
-QVariantList Utilities::formattedTextEntitiesFromReplacements(QList<QVariantMap> &replacements, QString &text) {
+QVariantList Utilities::formattedTextEntitiesFromReplacements(QList<FormattedTextReplacement> &replacements, QString &text) {
     QVariantList entities;
     if (!replacements.isEmpty()) {
-        std::sort(replacements.begin(), replacements.end(), compareReplacements);
+        std::sort(replacements.begin(), replacements.end(), replacementsSorter);
         int offsetCorrection = 0;
-        for (const QVariantMap &replacement : replacements) {
-            int replacementStartOffset = replacement.value("startIndex").toInt();
-            int replacementLength = replacement.value("length").toInt();
-            const QString replacementPlainText = replacement.value(TYPE_PLAIN_TEXT).toString();
-            text.replace(replacementStartOffset - offsetCorrection, replacementLength, replacementPlainText);
+        for (const FormattedTextReplacement &replacement : replacements) {
+            text.replace(replacement.startIndex - offsetCorrection, replacement.length, replacement.plainText);
             entities.append(QVariantMap{
-                {"offset", replacementStartOffset - offsetCorrection},
-                {"length", replacementPlainText.length()},
-                {TYPE, replacement.value(TYPE).toMap()}
+                {"offset", replacement.startIndex - offsetCorrection},
+                {"length", replacement.plainText.length()},
+                {TYPE, replacement.type}
             });
-            offsetCorrection += replacementLength - replacementPlainText.length();
+            offsetCorrection += replacement.length - replacement.plainText.length();
         }
     }
     return entities;
@@ -240,7 +241,7 @@ QVariantMap Utilities::enhanceInputText(const QString &originalText) {
     // Postprocess message (e.g. for @-mentioning)
     QString text = originalText;
 
-    QList<QVariantMap> replacements;
+    QList<FormattedTextReplacement> replacements;
     replacements += findFormattedTextReplacements(AT_METION_ID_RE, text, "textEntityTypeMentionName", USER_ID);
 
     const QVariantList entities = Utilities::formattedTextEntitiesFromReplacements(replacements, text);

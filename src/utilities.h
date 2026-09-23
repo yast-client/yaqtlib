@@ -54,8 +54,6 @@ public:
     Q_INVOKABLE static QString getMessageGroupCallText(const QVariantMap &messageGroupCall, bool outgoing);
 
     Q_INVOKABLE static QVariantMap newFormattedText(const QString &text, const QVariantList &entities = QVariantList());
-    Q_INVOKABLE static QVariantList formattedTextEntitiesFromReplacements(QList<QVariantMap> &replacements, QString &text);
-    Q_INVOKABLE static QList<QVariantMap> findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter);
     Q_INVOKABLE static QVariantMap enhanceInputText(const QString &text);
 
 
@@ -90,13 +88,18 @@ public:
 
 private:
     struct FormattedTextInsertion;
+    struct FormattedTextReplacement;
 
     static bool messageInsertionSorter(const FormattedTextInsertion &a, const FormattedTextInsertion &b);
+    static bool replacementsSorter(const FormattedTextReplacement &a, const FormattedTextReplacement &b);
 
     // FIXME: use templates here ideally
     static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QString &original, const QString &replacement);
     static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QChar &original, const QString &replacement);
     static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QRegularExpression &original, const QString &replacement);
+
+    static QList<FormattedTextReplacement> findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter);
+    static QVariantList formattedTextEntitiesFromReplacements(QList<FormattedTextReplacement> &replacements, QString &text);
 
     QString getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities = nullptr, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
