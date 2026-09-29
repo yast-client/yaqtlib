@@ -447,6 +447,7 @@ public:
     Q_INVOKABLE void openChatSimilarChat(qlonglong chatId, qlonglong openedChatId);
     Q_INVOKABLE void openBotSimilarBot(qlonglong botId, qlonglong openedBotId);
     Q_INVOKABLE void getStakeDiceState();
+    Q_INVOKABLE bool searchStringByPrefix(const QString &string, const QString &query);
 
 signals:
     void authorizationStateChanged();

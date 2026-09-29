@@ -3055,3 +3055,14 @@ void TDLibWrapper::getStakeDiceState() {
     LOG("Getting stake dice state");
     sendRequest({{_TYPE, "getStakeDiceState"}});
 }
+
+bool TDLibWrapper::searchStringByPrefix(const QString &string, const QString &query) {
+    QVariantMap result = executeRequest({
+        {_TYPE, "searchStringByPrefix"},
+        {"strings", QStringList{string}},
+        {LIMIT, 1},
+        {"return_none_for_empty_query", true}
+    });
+    QVariantList positions = result.value("positions").toList();
+    return positions.size() && positions.at(0) >= 0;
+}
