@@ -98,8 +98,16 @@ void ForumTopicMessagesModel::setForumTopicData(const QVariantMap &data) {
     }
 }
 
+void ForumTopicMessagesModel::setLoadFromMessageId(qlonglong messageId) {
+    if (loadFromMessageId != messageId) {
+        loadFromMessageId = messageId;
+        emit loadFromMessageIdChanged();
+        initialize();
+    }
+}
+
 void ForumTopicMessagesModel::initialize() {
-    if (!initialized && tdLibWrapper && chatId && !pendingForumTopicData.isEmpty()) {
+    if (!initialized && tdLibWrapper && chatId && !pendingForumTopicData.isEmpty() && loadFromMessageId >= 0) {
         LOG("Initializing");
         initialized = true;
 
@@ -110,7 +118,7 @@ void ForumTopicMessagesModel::initialize() {
         emit isGeneralChanged();
         emit iconColorChanged();
         emit iconCustomEmojiIdChanged();
-        this->loadMessages(UpdateInitial, lastReadInboxMessageId());
+        this->loadMessages(UpdateInitial, loadFromMessageId || lastReadInboxMessageId());
     }
 }
 

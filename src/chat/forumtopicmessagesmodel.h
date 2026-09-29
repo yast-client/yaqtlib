@@ -18,6 +18,7 @@ class ForumTopicMessagesModel : public ReadableMessagesModel {
     Q_PROPERTY(QColor iconColor READ iconColor NOTIFY iconColorChanged)
     Q_PROPERTY(QString iconCustomEmojiId READ iconCustomEmojiId NOTIFY iconCustomEmojiIdChanged)
 
+    Q_PROPERTY(qlonglong loadFromMessageId MEMBER loadFromMessageId WRITE setLoadFromMessageId NOTIFY loadFromMessageIdChanged)
     Q_PROPERTY(QString searchQuery MEMBER searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged)
 
 public:
@@ -36,12 +37,12 @@ public:
     QString iconCustomEmojiId() const;
 
     Q_INVOKABLE virtual bool clear() override;
+    void setLoadFromMessageId(qlonglong messageId);
     Q_INVOKABLE void setSearchQuery(const QString &newSearchQuery);
 
     Q_INVOKABLE virtual int calculateScrollPosition() const override;
 
 signals:
-void searchQueryChanged();
     void tdlibChanged();
     void forumTopicsModelChanged();
     void chatIdChanged();
@@ -52,6 +53,9 @@ void searchQueryChanged();
     void isGeneralChanged();
     void iconColorChanged();
     void iconCustomEmojiIdChanged();
+
+    void loadFromMessageIdChanged();
+    void searchQueryChanged();
 
 protected:
     virtual void setupTDLibWrapper() override;
@@ -78,5 +82,6 @@ private:
     bool initialized = false;
     ForumTopic *forumTopic = nullptr;
     QVariantMap pendingForumTopicData;
+    qlonglong loadFromMessageId = -1; // FIXME ?
     QString searchQuery;
 };
