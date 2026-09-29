@@ -45,7 +45,7 @@ signals:
     void chatOnlineMemberCountUpdated(qlonglong chatId, int onlineMemberCount);
     void messagesReceived(qlonglong chatId, int extra, const QVariantList &messages, int totalCount);
     void foundChatMessagesReceived(qlonglong chatId, int extra, int extra2, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
-    void messageLinkInfoReceived(qlonglong chatId, qlonglong messageId);
+    void messageLinkInfoReceived(bool isPublic, qlonglong chatId, const QVariantMap &topicId, qlonglong messageId, int mediaTimestamp, bool forAlbum);
     void sponsoredMessagesReceived(qlonglong chatId, const QVariantList &messages, int messagesBetween);
     void newMessageReceived(qlonglong chatId, const QVariantMap &message);
     void messageReceived(qlonglong chatId, qlonglong messageId, const QVariantMap &message, const QString &extra);

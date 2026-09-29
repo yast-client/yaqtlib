@@ -379,10 +379,12 @@ void TDLibReceiver::processMessage(const QVariantMap &data) {
 }
 
 void TDLibReceiver::processMessageLinkInfo(const QVariantMap &data) {
+    bool isPublic = data.value("is_public").toBool();
     qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    const QVariantMap topicId = data.value(TOPIC_ID).toMap();
     qlonglong messageId = data.value(MESSAGE).toMap().value(ID).toLongLong();
-    LOG("Received message link info" << chatId << messageId);
-    emit messageLinkInfoReceived(chatId, messageId);
+    LOG("Received message link info" << chatId << messageId << "public:" << isPublic);
+    emit messageLinkInfoReceived(isPublic, chatId, topicId, messageId, data.value("media_timestamp").toInt(), data.value("for_album").toBool());
 }
 
 void TDLibReceiver::processMessageSendSucceeded(const QVariantMap &data) {

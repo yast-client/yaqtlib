@@ -465,7 +465,7 @@ signals:
     void messagesReceived(qlonglong chatId, int extra, const QVariantList &messages, int totalCount);
     void foundChatMessagesReceived(qlonglong chatId, SearchMessagesFilter filter, int extra, const QVariantList &messages, int totalCount, qlonglong nextFromMessageId);
     void sponsoredMessagesReceived(qlonglong chatId, const QVariantList &messages, int messagesBetween);
-    void messageLinkInfoReceived(qlonglong chatId, qlonglong messageId);
+    void messageLinkInfoReceived(bool isPublic, qlonglong chatId, const QVariantMap &topicId, qlonglong messageId, int mediaTimestamp, bool forAlbum);
     void newMessageReceived(qlonglong chatId, const QVariantMap &message);
     void copyToDownloadsSuccessful(const QString &fileName, const QString &filePath);
     void copyToDownloadsError();
