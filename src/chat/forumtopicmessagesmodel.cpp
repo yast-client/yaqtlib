@@ -24,7 +24,6 @@ void ForumTopicMessagesModel::setTDLibWrapper(QObject *obj) {
 
         if (tdLibWrapper) {
             setupTDLibWrapper();
-
             initialize();
         }
     }
@@ -97,8 +96,6 @@ void ForumTopicMessagesModel::setForumTopicData(const QVariantMap &data) {
         pendingForumTopicData = data;
         initialize();
     }
-
-    emit forumTopicDataChanged();
 }
 
 void ForumTopicMessagesModel::initialize() {
@@ -111,7 +108,7 @@ void ForumTopicMessagesModel::initialize() {
         emit forumTopicDataChanged();
         emit nameChanged();
         emit isGeneralChanged();
-        emit iconColor();
+        emit iconColorChanged();
         emit iconCustomEmojiIdChanged();
         this->loadMessages(UpdateInitial, lastReadInboxMessageId());
     }
