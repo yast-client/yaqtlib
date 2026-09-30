@@ -118,7 +118,7 @@ void ForumTopicMessagesModel::initialize() {
         emit isGeneralChanged();
         emit iconColorChanged();
         emit iconCustomEmojiIdChanged();
-        this->loadMessages(UpdateInitial, loadFromMessageId || lastReadInboxMessageId());
+        this->loadMessages(UpdateInitial, loadFromMessageId != 0 ? loadFromMessageId : lastReadInboxMessageId());
     }
 }
 
