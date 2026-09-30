@@ -553,6 +553,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     if (contentType == "messageChatDeletePhoto")
         return myself ? tr("deleted the chat photo", "myself") : tr("deleted the chat photo");
     if (contentType == "messageChatSetMessageAutoDeleteTime")
+        // TODO
         return myself ? tr("disabled the self-destruct timer", "myself") : tr("disabled the self-destruct timer");
     if (contentType == "messageChatUpgradeFrom" || contentType == "messageChatUpgradeTo")
         return myself ? tr("upgraded this group to a supergroup", "myself") : tr("upgraded this group to a supergroup");
