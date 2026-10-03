@@ -10,6 +10,7 @@
 #include <QNetworkAccessManager>
 #include "tdlib/tdlibwrapper.h"
 #include "chatdata.h"
+#include "formattedtext.h"
 
 class Utilities : public QObject {
     Q_OBJECT
@@ -37,15 +38,12 @@ public:
     }
     static QString formatDuration(int seconds);
 
-    Q_INVOKABLE static QString fixReservedHtmlCharacters(const QString &text);
-    // TODO proper name for this (don't make it private since it might be used from other cpp classes):
-    static QString enhanceMessageTextInternal(const QVariantMap &formattedText, QList<QVariantMap> *customInsertions = nullptr, bool ignoreEntities = false, bool escapeReserved = true);
+    Q_INVOKABLE FormattedText *createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis = false, QObject *parent = nullptr) const;
+    Q_INVOKABLE inline static QString escapeHtml(const QString &text) { return FormattedText::getPlainEscapedFor(text); }
     Q_INVOKABLE static QString enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities = false, bool escapeReserved = true);
-    Q_INVOKABLE static QVariantMap enhanceMessageTextWithCustomInsertions(const QVariantMap &formattedText, bool ignoreEntities = false, bool escapeReserved = true);
 
     Q_INVOKABLE QString getMessageText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QString getMessageContentText(const QVariantMap &messageContent, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
-    Q_INVOKABLE QVariantMap getMessageTextWithCustomEntities(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QString getAlbumMessagesText(const QVariantList &messages, bool ignoreDocumentsAudios = true, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
     Q_INVOKABLE static bool messageContentIsService(const QString &contentType);
@@ -87,21 +85,14 @@ public:
     }
 
 private:
-    struct FormattedTextInsertion;
     struct FormattedTextReplacement;
 
-    static bool messageInsertionSorter(const FormattedTextInsertion &a, const FormattedTextInsertion &b);
     static bool replacementsSorter(const FormattedTextReplacement &a, const FormattedTextReplacement &b);
-
-    // FIXME: use templates here ideally
-    static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QString &original, const QString &replacement);
-    static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QChar &original, const QString &replacement);
-    static void addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QRegularExpression &original, const QString &replacement);
 
     static QList<FormattedTextReplacement> findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter);
     static QVariantList formattedTextEntitiesFromReplacements(QList<FormattedTextReplacement> &replacements, QString &text);
 
-    QString getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities = nullptr, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
+    QString getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, TDLibData::MessageSender messageSender, bool isSponsored, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
     static QString getUnknownUserName(const QVariantMap &user);
 

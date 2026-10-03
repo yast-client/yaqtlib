@@ -139,20 +139,6 @@ Utilities::~Utilities() {
     stopGeoLocationUpdates();
 }
 
-QString Utilities::fixReservedHtmlCharacters(const QString &text) {
-    return QString(text).toHtmlEscaped().replace(RAW_NEW_LINE_RE, HTML_BR_TAG);
-}
-
-struct Utilities::FormattedTextInsertion {
-    int offset;
-    QString insertion;
-    int removeLength;
-    QVariant data; // custom additional data for custom insertions
-
-    FormattedTextInsertion(int offset, QString insertion, int removeLength = 0, QVariant data = QVariant())
-        : offset(offset), insertion(insertion), removeLength(removeLength), data(data) {}
-};
-
 struct Utilities::FormattedTextReplacement {
     int startIndex;
     int length;
@@ -163,39 +149,10 @@ struct Utilities::FormattedTextReplacement {
         : startIndex(startIndex), length(length), type(type), plainText(plainText) {}
 };
 
-void Utilities::addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QString &original, const QString &replacement) {
-    int nextIndex = -1;
-    while ((nextIndex = messageText.indexOf(original, nextIndex + 1)) > -1) {
-        insertions.append(FormattedTextInsertion(nextIndex, replacement, original.length()));
-    }
-}
-
-void Utilities::addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QChar &original, const QString &replacement) {
-    int nextIndex = -1;
-    while ((nextIndex = messageText.indexOf(original, nextIndex + 1)) > -1) {
-        insertions.append(FormattedTextInsertion(nextIndex, replacement, 1));
-    }
-}
-
-void Utilities::addInsertionsFor(const QString &messageText, QList<FormattedTextInsertion> &insertions, const QRegularExpression &original, const QString &replacement) {
-    QRegularExpressionMatchIterator it = original.globalMatch(messageText);
-    while (it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-        insertions.append(FormattedTextInsertion(match.capturedStart(), replacement, match.capturedLength()));
-    }
-}
-
-bool Utilities::messageInsertionSorter(const FormattedTextInsertion &a, const FormattedTextInsertion &b) {
-    // Sort in reverse order (so offset indexes are valid)
-    if (b.offset + b.removeLength == a.offset + a.removeLength)
-        return b.offset < a.offset;
-    return b.offset + b.removeLength < a.offset + a.removeLength;
-}
-
 QVariantMap Utilities::newFormattedText(const QString &text, const QVariantList &entities) {
     QVariantMap formattedText{{_TYPE, "formattedText"}, {TEXT, text}};
     if (entities.length() > 0)
-        formattedText.insert("entities", entities);
+        formattedText.insert(ENTITIES, entities);
     return formattedText;
 }
 
@@ -248,131 +205,22 @@ QVariantMap Utilities::enhanceInputText(const QString &originalText) {
     return newFormattedText(text, entities);
 }
 
-QString Utilities::enhanceMessageTextInternal(const QVariantMap &formattedText, QList<QVariantMap> *customInsertions, bool ignoreEntities, bool escapeReserved) {
-    if (formattedText.isEmpty()) return QString();
-
-    QString messageText = formattedText.value(TEXT).toString();
-
-    auto getPlainText = [&]() {
-        return escapeReserved ? fixReservedHtmlCharacters(messageText) : messageText;
-    };
-
-    if (ignoreEntities) // FIXME: previously we ignored escapeReserved with ignoreEntities. was that on purpose?
-        return getPlainText();
-
-    const QVariantList entities = formattedText.value(ENTITIES).toList();
-    if(entities.isEmpty())
-        return getPlainText();
-
-    QList<FormattedTextInsertion> messageInsertions;
-
-    //emojiSize = Math.round((typeof emojiSize === 'undefined' ? Silica.Theme.fontSizeSmall : emojiSize) * 1.15)
-    for (const QVariant &entityVariant : entities) {
-        const QVariantMap entity = entityVariant.toMap();
-        if (entity.value(_TYPE) != TEXT_ENTITY)
-            continue;
-        const QString entityType = entity.value(TYPE).toMap().value(_TYPE).toString();
-
-        QString start, end;
-        // int startRemove, endRemove; // possibly unit? probably not because it can also remove length in the opposite direction in theory (at least it (probably) could in JS); unused for now
-
-        if (entityType == "textEntityTypeBold") {
-            start = "<b>";
-            end = "</b>";
-        } else if (entityType == "textEntityTypeUrl") {
-            start = "<a href=\"" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypeCode") {
-            start = "<pre>";
-            end = "</pre>";
-        } else if (entityType == "textEntityTypeEmailAddress") {
-            start = "<a href=\"mailto:" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypeItalic") {
-            start = "<i>";
-            end = "</i>";
-        } else if (entityType == "textEntityTypeStrikethrough") {
-            start = "<s>";
-            end = "</s>";
-        } else if (entityType == "textEntityTypeMention") {
-            start = "<a href=\"user://" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypeMentionName") {
-            start = "<a href=\"userId://" + entity.value(TYPE).toMap().value(USER_ID).toString() + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypePhoneNumber") {
-            start = "<a href=\"tel:" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypePre" || entityType == "textEntityTypePreCode") {
-            start = "<pre>";
-            end = "</pre>";
-        } else if (entityType == "textEntityTypeTextUrl") {
-            start = "<a href=\"" + entity.value(TYPE).toMap().value(URL).toString() + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypeUnderline") {
-            start = "<u>";
-            end = "</u>";
-        } else if (entityType == "textEntityTypeBotCommand") {
-            start = "<a href=\"botCommand://" + messageText.mid(entity.value(OFFSET).toInt(), entity.value(LENGTH).toInt()) + "\">";
-            end = "</a>";
-        } else if (entityType == "textEntityTypeCustomEmoji") {
-            // TODO: this doesn't work currently and needs to be reworked
-            if (customInsertions)
-                messageInsertions.append({entity.value(OFFSET).toInt(), "%", entity.value(LENGTH).toInt(), entity.value(TYPE).toMap().value("custom_emoji_id").toLongLong()});
-            continue;
-        } else
-            continue;
-
-        messageInsertions.append({entity.value(OFFSET).toInt(), start /* , startRemove */}); // start
-        messageInsertions.append({entity.value(OFFSET).toInt() + entity.value(LENGTH).toInt(), end /* , endRemove */}); // end
-    }
-
-    if (messageInsertions.isEmpty()) return getPlainText();
-
-    if (escapeReserved) {
-        addInsertionsFor(messageText, messageInsertions, LT, HTML_LT);
-        addInsertionsFor(messageText, messageInsertions, GT, HTML_GT);
-        addInsertionsFor(messageText, messageInsertions, AMP, HTML_AMP);
-        addInsertionsFor(messageText, messageInsertions, QUOT, HTML_QUOT);
-        addInsertionsFor(messageText, messageInsertions, RAW_NEW_LINE_RE, HTML_BR_TAG);
-    }
-
-    std::sort(messageInsertions.begin(), messageInsertions.end(), messageInsertionSorter);
-    for (const FormattedTextInsertion &insertion : messageInsertions) {
-        messageText.replace(insertion.offset, insertion.removeLength, insertion.insertion);
-
-        if (customInsertions) {
-            for (QVariantMap &customInsertion : *customInsertions)
-                customInsertion.insert(POSITION, customInsertion.value(POSITION).toInt() + insertion.insertion.length() - insertion.removeLength);
-
-            if (insertion.data.isValid())
-                (*customInsertions).append(QVariantMap{{POSITION, insertion.offset}, {DATA, insertion.data}});
-        }
-    }
-
-    return messageText;
+FormattedText *Utilities::createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis, QObject *parent) const {
+    return new FormattedText(formattedText, tdLibWrapper, ignoreCustomEmojis, parent);
 }
 
 QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities, bool escapeReserved) {
-    if (formattedText.isEmpty()) return QString();
-    //if (ignoreEntities)
-    //    return formattedText.value(TEXT).toString();
+    // Left for compatibility (TODO: remove this; is used in getMessageTextInternal and in a lot of YAST QML)
+    if (ignoreEntities) {
+        QString plainText = FormattedText::getPlainFor(formattedText);
+        return escapeReserved ? FormattedText::getPlainEscapedFor(plainText) : plainText;
+    }
 
-    return enhanceMessageTextInternal(formattedText, nullptr, ignoreEntities, escapeReserved);
+    // ignore escapeReserved here for the time being
+    return FormattedText(formattedText, nullptr, true).parse();
 }
 
-QVariantMap Utilities::enhanceMessageTextWithCustomInsertions(const QVariantMap &formattedText, bool ignoreEntities, bool escapeReserved) {
-    QList<QVariantMap> customInsertions;
-    const QString result = enhanceMessageTextInternal(formattedText, &customInsertions, ignoreEntities, escapeReserved);
-
-    QVariantList customInsertionsVariants;
-    for (const QVariantMap &insertion : customInsertions)
-        customInsertionsVariants.append(insertion);
-
-    return {{TEXT, result}, {"customInsertions", customInsertionsVariants}};
-}
-
-QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, const QString &messageSenderType, qlonglong messageSenderUserId, bool isSponsored, QList<QVariantMap> *customEntities, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
+QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, TDLibData::MessageSender messageSender, bool isSponsored, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
     // NOTE: currently, if type is MessageTextSimple, ignoreEntities is always true
 
     if (messageContent.isEmpty()) return QString();
@@ -380,12 +228,11 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     const bool simple = type != MessageTextDefault;
     const bool simpleWithThumbnails = type == MessageTextSimpleWithThumbnails; // See getMessageMinithumbnail
     const bool inForumTopic = type == MessageTextSimpleInForumTopic;
-    // For messageAudio, messageDocument we always keep the "Audio:" or "File:" prefix
 
     const QString contentType = messageContent.value(_TYPE).toString();
     const bool myself = !isSponsored
-            && messageSenderType == MESSAGE_SENDER_USER
-            && messageSenderUserId == this->tdLibWrapper->data()->myUserId();
+            && messageSender.isUser()
+            && messageSender.id == tdLibWrapper->data()->myUserId();
 
     auto getCaption = [&](const QString &simpleText) -> QString {
         const QVariantMap caption = messageContent.value(CAPTION).toMap();
@@ -395,7 +242,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
             return QString();
 
         return simple ? (simpleText.isEmpty() ? captionText : simpleText.arg(captionText))
-                      : enhanceMessageTextInternal(caption, customEntities, ignoreEntities, escapeReserved);
+                      : enhanceMessageText(caption, ignoreEntities, escapeReserved);
     };
     auto getJustCaption = [&]() -> QString {
         return messageContent.value(CAPTION).toMap().value(TEXT).toString();
@@ -403,7 +250,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
 
     if (contentType == MESSAGE_CONTENT_TYPE_TEXT)
         return simple ? messageContent.value(TEXT).toMap().value(TEXT).toString()
-                      : enhanceMessageTextInternal(messageContent.value(TEXT).toMap(), customEntities, ignoreEntities, escapeReserved);
+                      : enhanceMessageText(messageContent.value(TEXT).toMap(), ignoreEntities, escapeReserved);
     if (contentType == MESSAGE_CONTENT_TYPE_STICKER) {
         if (!simple) return QString();
         const QString emoji = messageContent.value(STICKER).toMap().value(EMOJI).toString();
@@ -522,7 +369,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     if (contentType == "messageChatJoinByLink")
         return myself ? tr("joined this chat", "myself") : tr("joined this chat");
     if (contentType == "messageChatAddMembers") {
-        if (messageSenderType == MESSAGE_SENDER_TYPE_USER && messageSenderUserId == messageContent.value("member_user_ids").toList().at(0).toLongLong()) {
+        if (messageSender.isUser(messageContent.value("member_user_ids").toList().at(0).toLongLong())) {
             return myself ? tr("were added to this chat", "myself") : tr("was added to this chat");
         } else {
             QVariantList memberUserIds = messageContent.value("member_user_ids").toList();
@@ -537,7 +384,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         }
     }
     if (contentType == "messageChatDeleteMember") {
-        if (messageSenderType == MESSAGE_SENDER_TYPE_USER && messageSenderUserId == messageContent.value(USER_ID).toLongLong())
+        if (messageSender.isUser(messageContent.value(USER_ID).toLongLong()))
             return myself ? tr("left this chat", "myself") : tr("left this chat");
         else {
             const QString name = getUserName(tdLibWrapper->data()->getUserInformation(messageContent.value("user_id").toLongLong()));
@@ -665,14 +512,11 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
 }
 
 QString Utilities::getMessageText(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    const QVariantMap messageSender = message.value(SENDER_ID).toMap();
     return getMessageTextInternal(
                 message.value(CONTENT).toMap(),
                 message.value(IS_OUTGOING).toBool(),
-                messageSender.value(_TYPE).toString(),
-                messageSender.value(USER_ID).toLongLong(),
+                {message.value(SENDER_ID).toMap()},
                 message.value(_TYPE).toString() == SPONSORED_MESSAGE,
-                nullptr,
                 type,
                 ignoreEntities,
                 escapeReserved,
@@ -684,39 +528,13 @@ QString Utilities::getMessageContentText(const QVariantMap &messageContent, Mess
     return getMessageTextInternal(
                 messageContent,
                 false,
-                MESSAGE_SENDER_TYPE_CHAT, // Skips all user-related checks
-                0,
+                TDLibData::MessageSender(true, 0), // Skips all user-related checks
                 false,
-                nullptr,
                 type,
                 ignoreEntities,
                 escapeReserved,
                 forumTopicName
                 );
-}
-
-QVariantMap Utilities::getMessageTextWithCustomEntities(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    const QVariantMap messageSender = message.value(SENDER_ID).toMap();
-
-    QList<QVariantMap> customInsertions;
-    const QString result = getMessageTextInternal(
-                message.value(CONTENT).toMap(),
-                message.value(IS_OUTGOING).toBool(),
-                messageSender.value(_TYPE).toString(),
-                messageSender.value(USER_ID).toLongLong(),
-                message.value(_TYPE).toString() == SPONSORED_MESSAGE,
-                &customInsertions,
-                type,
-                ignoreEntities,
-                escapeReserved,
-                forumTopicName
-                );
-
-    QVariantList customInsertionsVariants;
-    for (const QVariantMap &insertion : customInsertions)
-        customInsertionsVariants.append(insertion);
-
-    return {{TEXT, result}, {"customInsertions", customInsertionsVariants}};
 }
 
 QString Utilities::getAlbumMessagesText(const QVariantList &messages, bool ignoreDocumentsAudios, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {

@@ -312,8 +312,8 @@ public:
     Q_INVOKABLE void importContacts(const QVariantList &contacts, const QString &extra = QString());
     Q_INVOKABLE void importContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note = {}, const QString &extra = QString());
     Q_INVOKABLE void addContact(qlonglong userId, const QString &firstName, const QString &lastName, const QString &phone, const QVariantMap &note = {}, bool sharePhoneNumber = true);
-    Q_INVOKABLE void removeContacts(QStringList userIds);
-    Q_INVOKABLE void removeContact(QString userId);
+    Q_INVOKABLE void removeContacts(const QVariantList &userIds);
+    Q_INVOKABLE void removeContact(qlonglong userId);
     Q_INVOKABLE void searchChatMessages(qlonglong chatId, const QString &query, int extra, qlonglong fromMessageId = 0, SearchMessagesFilter filter = SearchMessagesFilterEmpty, int limit = 50, int offset = 0);
     Q_INVOKABLE void searchChats(const QString &query);
     Q_INVOKABLE void searchPublicChats(const QString &query);
@@ -352,8 +352,9 @@ public:
     Q_INVOKABLE void setNetworkType(NetworkType networkType);
     Q_INVOKABLE void setInactiveSessionTtl(int days);
     Q_INVOKABLE void getMessageProperties(qlonglong chatId, qlonglong messageId);
-    Q_INVOKABLE void getCustomEmojiStickers(QStringList ids, const QVariant &extra);
-    Q_INVOKABLE void getCustomEmojiStickers(QString id, const QVariant &extra);
+    void getCustomEmojiStickers(const QStringList &ids, QObject *receiver, std::function<void(const QVariantList &)> slot);
+    Q_INVOKABLE void getCustomEmojiStickers(const QStringList &ids, const QVariant &extra);
+    Q_INVOKABLE void getCustomEmojiStickers(const QString &id, const QVariant &extra);
     Q_INVOKABLE void getStorageStatisticsFast();
     Q_INVOKABLE void optimizeStorage(bool entire = false);
     Q_INVOKABLE void translateText(const QVariantMap &text, const QString &languageCode, const QString &extra);

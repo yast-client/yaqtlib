@@ -98,6 +98,7 @@ target_sources(yaqtlib PRIVATE
     src/ngfinterface.cpp
     src/tdlib/tdlibdata.cpp
     src/usersmodel.cpp
+    src/formattedtext.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -140,4 +141,5 @@ target_sources(yaqtlib PRIVATE
     src/ngfinterface.h
     src/tdlib/tdlibdata.h
     src/usersmodel.h
+    src/formattedtext.h
 )

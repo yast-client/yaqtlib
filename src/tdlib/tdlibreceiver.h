@@ -22,6 +22,9 @@ public:
     void setActive(bool active);
     void setClientId(int clientId);
 
+    static const QVariantList cleanupList(const QVariantList& list, bool *updated = Q_NULLPTR);
+    static const QVariantMap cleanupMap(const QVariantMap& data, bool *updated = Q_NULLPTR);
+
 signals:
     void responseForRequestIdReceived(qlonglong requestId, const QVariantMap &response);
     void authorizationStateChanged(const QString &authorizationState, const QVariantMap &authorizationStateData);
@@ -312,8 +315,6 @@ private:
     bool isActive = true;
 
 private:
-    static const QVariantList cleanupList(const QVariantList& list, bool *updated = Q_NULLPTR);
-    static const QVariantMap cleanupMap(const QVariantMap& data, bool *updated = Q_NULLPTR);
     void receiverLoop();
     void ok(const QVariantMap &data);
     void processReceivedDocument(const QJsonDocument &receivedJsonDocument);

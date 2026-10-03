@@ -41,6 +41,9 @@ public:
         MessageSender(bool isChat, qlonglong id) : isChat(isChat), id(id) {}
         MessageSender(const QVariantMap &sender);
 
+        inline bool isUser() { return !isChat; }
+        inline bool isUser(qlonglong userId) { return isUser() && id == userId; }
+
         bool operator==(const MessageSender &other) const;
 
         bool isChat = false;

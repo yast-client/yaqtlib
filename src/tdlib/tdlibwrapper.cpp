@@ -59,7 +59,6 @@ namespace {
     const QString PATH("path");
     const QString CONTACT("contact");
     const QString PHONE_NUMBER("phone_number");
-    const QString REMOVE_CONTACTS("removeContacts");
     const QString INPUT_MESSAGE_CONTENT("input_message_content");
     const QString LOCATION("location");
     const QString LIMIT("limit");
@@ -1120,17 +1119,17 @@ void TDLibWrapper::addContact(qlonglong userId, const QString &firstName, const 
     });
 }
 
-void TDLibWrapper::removeContacts(QStringList userIds) {
+void TDLibWrapper::removeContacts(const QVariantList &userIds) {
     LOG("Removing" << userIds.size() << "contacts");
-    const QVariantMap extra{{_TYPE, REMOVE_CONTACTS}, {"user_ids", userIds}};
+    const QVariantMap extra{{_TYPE, "removeContacts"}, {"user_ids", userIds}};
     QVariantMap requestObject = extra;
     requestObject.insert(_EXTRA, extra);
     sendRequest(requestObject);
 }
 
-void TDLibWrapper::removeContact(QString userId) {
+void TDLibWrapper::removeContact(qlonglong userId) {
     LOG("Removing contact" << userId);
-    removeContacts(QStringList{userId});
+    removeContacts({userId});
 }
 
 void TDLibWrapper::searchChatMessages(qlonglong chatId, const QString &query, int extra, qlonglong fromMessageId, SearchMessagesFilter filter, int limit, int offset) {
@@ -1967,16 +1966,23 @@ void TDLibWrapper::getMessageProperties(qlonglong chatId, qlonglong messageId) {
     this->sendRequest(requestObject);
 }
 
-void TDLibWrapper::getCustomEmojiStickers(QStringList ids, const QVariant &extra) {
+void TDLibWrapper::getCustomEmojiStickers(const QStringList &ids, QObject *receiver, std::function<void(const QVariantList &)> slot) {
+    LOG("Getting custom emoji stickers with id" << ids);
+    sendRequestWithId({{_TYPE, "getCustomEmojiStickers"}, {"custom_emoji_ids", ids}}, receiver, [this, slot](const QString &type, const QVariantMap &data) {
+        slot(tdLibReceiver->cleanupList(data.value("stickers").toList()));
+    });
+}
+
+void TDLibWrapper::getCustomEmojiStickers(const QStringList &ids, const QVariant &extra) {
     LOG("Receiving stickers for custom emojis" << ids);
-    this->sendRequest({
+    sendRequest({
         {_TYPE, "getCustomEmojiStickers"},
         {"custom_emoji_ids", ids},
         {_EXTRA, ensureNonJsVariant(extra)}
     });
 }
 
-void TDLibWrapper::getCustomEmojiStickers(QString id, const QVariant &extra) {
+void TDLibWrapper::getCustomEmojiStickers(const QString &id, const QVariant &extra) {
     // NOTE: QStringList{} is explicitly needed here because otherwise the function calls itself
     getCustomEmojiStickers(QStringList{id}, extra);
 }
