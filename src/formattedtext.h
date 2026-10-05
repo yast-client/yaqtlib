@@ -68,11 +68,15 @@ class FormattedText : public QObject {
     Q_PROPERTY(int customEmojiSize MEMBER customEmojiSize WRITE setCustomEmojiSize NOTIFY customEmojiSizeChanged)
     Q_PROPERTY(QString parsedText READ parse NOTIFY parsedTextChanged)
 public:
-    explicit FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper = nullptr, bool ignoreCustomEmojis = false, QObject *parent = nullptr);
+    FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {}, QObject *parent = nullptr);
+    explicit FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper = nullptr, bool ignoreEntities = false, bool ignoreCustomEmojis = false, QObject *parent = nullptr);
 
     void setCustomEmojiSize(int size);
 
+    void argFrom(const QString &text);
     inline void addEntity(const PositionedFormattedTextEntity &entity) { entities.append(entity); }
+
+    inline bool isEmpty() const { return plainText.isEmpty(); }
     inline QString getPlain() const { return plainText; }
     inline QString getPlainEscaped() const { return getPlainEscapedFor(plainText); }
     QString parse() const;
@@ -105,6 +109,7 @@ private:
     TDLibWrapper *tdLibWrapper = nullptr;
     QString plainText;
     QList<PositionedFormattedTextEntity> entities;
+    int prefixOffset = 0;
     int customEmojiSize = 20;
     QHash<qlonglong, TDLibFile*> customEmojiFiles;
 };

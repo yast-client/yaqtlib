@@ -155,7 +155,11 @@ struct FormattedText::Insertion {
         : position(position), entity(entity) {}
 };*/
 
-FormattedText::FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, bool ignoreCustomEmojis, QObject *parent) :
+FormattedText::FormattedText(const QString &text, const QList<PositionedFormattedTextEntity> &entities, QObject *parent)
+    : QObject(parent), plainText(text), entities(entities)
+{}
+
+FormattedText::FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, bool ignoreEntities, bool ignoreCustomEmojis, QObject *parent) :
     QObject(parent),
     tdLibWrapper(tdLibWrapper),
     plainText(formattedText.value(TEXT).toString())
@@ -163,6 +167,7 @@ FormattedText::FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdL
     connect(this, &FormattedText::customEmojiSizeChanged, this, &FormattedText::parsedTextChanged);
     connect(this, &FormattedText::customEmojisPartiallyLoaded, this, &FormattedText::parsedTextChanged);
 
+    if (ignoreEntities) return;
     QSet<QString> customEmojiIds;
 
     for (const QVariant &rawEntity : formattedText.value(ENTITIES).toList()) {
@@ -213,6 +218,12 @@ void FormattedText::setCustomEmojiSize(int size) {
     }
 }
 
+void FormattedText::argFrom(const QString &text) {
+    this->plainText = text.arg(plainText);
+    // For performance, don't loop here additionally
+    this->prefixOffset += text.arg("%1").indexOf("%1");
+}
+
 QString FormattedText::parse() const {
     if (entities.isEmpty()) return getPlainEscaped();
 
@@ -245,7 +256,7 @@ QString FormattedText::parse() const {
     std::sort(insertions.begin(), insertions.end(), Insertion::sort);
     QString result = plainText;
     for (const Insertion &insertion : insertions) {
-        result.replace(insertion.offset, insertion.removeLength, insertion.insertion);
+        result.replace(this->prefixOffset + insertion.offset, insertion.removeLength, insertion.insertion);
 
         //if (withCustom)
         //    for (CustomEntity &entity : customEntities)

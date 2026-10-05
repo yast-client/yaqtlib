@@ -210,7 +210,7 @@ FormattedText *Utilities::createFormattedText(const QVariantMap &formattedText, 
 }
 
 QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities, bool escapeReserved) {
-    // Left for compatibility (TODO: remove this; is used in getMessageTextInternal and in a lot of YAST QML)
+    // Left for compatibility (TODO: remove this from where it's still used in QML)
     if (ignoreEntities) {
         QString plainText = FormattedText::getPlainFor(formattedText);
         return escapeReserved ? FormattedText::getPlainEscapedFor(plainText) : plainText;
@@ -220,150 +220,17 @@ QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ign
     return FormattedText(formattedText, nullptr, true).parse();
 }
 
-QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, bool outgoing, TDLibData::MessageSender messageSender, bool isSponsored, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    // NOTE: currently, if type is MessageTextSimple, ignoreEntities is always true
-
-    if (messageContent.isEmpty()) return QString();
-
-    const bool simple = type != MessageTextDefault;
-    const bool simpleWithThumbnails = type == MessageTextSimpleWithThumbnails; // See getMessageMinithumbnail
-    const bool inForumTopic = type == MessageTextSimpleInForumTopic;
-
+QVariantMap Utilities::getMessageContentFormattedText(const QVariantMap &messageContent) {
     const QString contentType = messageContent.value(_TYPE).toString();
-    const bool myself = !isSponsored
-            && messageSender.isUser()
-            && messageSender.id == tdLibWrapper->data()->myUserId();
-
-    auto getCaption = [&](const QString &simpleText) -> QString {
-        const QVariantMap caption = messageContent.value(CAPTION).toMap();
-        const QString captionText = caption.value(TEXT).toString();
-
-        if (captionText.isEmpty() && caption.value(ENTITIES).toList().isEmpty())
-            return QString();
-
-        return simple ? (simpleText.isEmpty() ? captionText : simpleText.arg(captionText))
-                      : enhanceMessageText(caption, ignoreEntities, escapeReserved);
-    };
-    auto getJustCaption = [&]() -> QString {
-        return messageContent.value(CAPTION).toMap().value(TEXT).toString();
-    };
-
     if (contentType == MESSAGE_CONTENT_TYPE_TEXT)
-        return simple ? messageContent.value(TEXT).toMap().value(TEXT).toString()
-                      : enhanceMessageText(messageContent.value(TEXT).toMap(), ignoreEntities, escapeReserved);
-    if (contentType == MESSAGE_CONTENT_TYPE_STICKER) {
-        if (!simple) return QString();
-        const QString emoji = messageContent.value(STICKER).toMap().value(EMOJI).toString();
-        return emoji.isEmpty() ? tr("Sticker") : emoji;
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_DICE) {
-        if (!simple) return {};
-        QString emoji = messageContent.value(EMOJI).toString();
-        int value = messageContent.value("value").toInt();
-        if (emoji == "🎯") {
-            // Dart
-            emoji += " ";
-            switch (value) {
-            case 0:
-                return emoji + tr("Dart: throwing…", "0");
-            case 1:
-                return emoji + tr("Dart: missed!", "1");
-            case 2:
-                return emoji + tr("Dart thrown", "2");
-            case 3:
-                return emoji + tr("Dart thrown", "3");
-            case 4:
-                return emoji + tr("Dart thrown", "4");
-            case 6:
-                return emoji + tr("Dart: bullseye!", "6");
-            case 5:
-            default:
-                return emoji + tr("Dart: almost there!", "5");
-            }
-        } else if (emoji == "🎲") {
-            // Regular dice
-            emoji += " ";
-            if (value >= 1 && value <= 6)
-                return emoji + tr("Dice: %n", "", value);
-            return emoji + tr("Dice: rolling…");
-        }
-        return emoji;
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_STAKE_DICE)
-        return simple ? "🎲" : QString();
-    if (contentType == MESSAGE_CONTENT_TYPE_ANIMATED_EMOJI)
-        return simple ? messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString() : QString();
-    if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
-        QString caption;
-        if (simpleWithThumbnails && messageContent.value(PHOTO).toMap().contains(MINITHUMBNAIL))
-            caption = getJustCaption();
-        else caption = getCaption(tr("Photo: %1"));
-        return !caption.isEmpty() ? caption : (simple ? tr("Photo") : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_VIDEO) {
-        QString caption;
-        if (simpleWithThumbnails && (messageContent.value(COVER).toMap().contains(MINITHUMBNAIL) || messageContent.value(VIDEO).toMap().contains(MINITHUMBNAIL)))
-            caption = getJustCaption();
-        else caption = getCaption(tr("Video: %1"));
-        return !caption.isEmpty() ? caption : (simple ? tr("Video") : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_VIDEO_NOTE)
-        return simple ? tr("Video message") : QString();
-    if (contentType == MESSAGE_CONTENT_TYPE_ANIMATION) {
-        QString caption;
-        if (simpleWithThumbnails && messageContent.value(ANIMATION).toMap().contains(MINITHUMBNAIL))
-            caption = getJustCaption();
-        else caption = getCaption(tr("GIF: %1"));
-        return !caption.isEmpty() ? caption : (simple ? tr("GIF") : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_AUDIO) {
-        const QString fileName = messageContent.value(AUDIO).toMap().value(FILE_NAME).toString();
-        const QString caption = getCaption(tr("%1: %2", "Audio message. %1 is the audio file name, %2 is the caption").arg(fileName));
-        return !caption.isEmpty() ? caption : (simple ? (!fileName.isEmpty() ? fileName : tr("Audio")) : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT) {
-        const QString fileName = messageContent.value(DOCUMENT).toMap().value(FILE_NAME).toString();
-        const QString caption = getCaption(tr("%1: %2", "A message with a file attached. %1 is the file name, %2 is the caption").arg(fileName));
-        return !caption.isEmpty() ? caption : (simple ? (!fileName.isEmpty() ? fileName : tr("File")) : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_VOICE_NOTE) {
-        const QString caption = getCaption(tr("Voice message: %1"));
-        return !caption.isEmpty() ? caption : (simple ? tr("Voice message") : "");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_LOCATION)
-        return simple ? tr("Location") : QString();
-    if (contentType == MESSAGE_CONTENT_TYPE_VENUE) {
-        const QVariantMap venue = messageContent.value(VENUE).toMap();
-        const QString title = venue.value(TITLE).toString();
-        return simple ? (!title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue")) : ("<b>" + title + "</b>, " + venue.value(ADDRESS).toString());
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_POLL) {
-        if (!simple) return {};
+        return messageContent.value(TEXT).toMap();
+    return messageContent.value(CAPTION).toMap();
+}
 
-        const QVariantMap poll = messageContent.value("poll").toMap();
-        const bool anonymnous = poll.value("is_anonymous").toBool();
-        const QString question = poll.value("question").toMap().value(TEXT).toString();
-        if (poll.value(TYPE).toMap().value(_TYPE).toString() == "pollTypeQuiz") {
-            if (anonymnous)
-                return !question.isEmpty() ? tr("Anonymous Quiz: %1").arg(question) : tr("Anonymous Quiz");
-            return !question.isEmpty() ? tr("Quiz: %1").arg(question) : tr("Quiz");
-        }
-        if (anonymnous)
-            return !question.isEmpty() ? tr("Anonymous Poll: %1").arg(question) : tr("Anonymous Poll");
-        return !question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_GAME) {
-        if (!simple) return {};
-        const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
-        return !shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game");
-    }
-    if (contentType == MESSAGE_CONTENT_TYPE_CONTACT) {
-        if (!simple) return {};
-        const QString name = messageContent.value("contact").toMap().value(FIRST_NAME).toString();
-        return name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name);
-    }
+QString Utilities::getServiceMessageText(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, const QString &forumTopicName, bool inForumTopic) const {
+    const QString contentType = messageContent.value(_TYPE).toString();
+    const bool myself = messageSender.isUser(tdLibWrapper->data()->myUserId());
 
-    // Service messages
     if (contentType == "messageContactRegistered")
         return myself ? tr("joined Telegram", "myself") : tr("joined Telegram");
     if (contentType == "messageChatJoinByLink")
@@ -424,6 +291,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         return myself ? tr("scored %Ln points", "myself", score) : tr("scored %Ln points", "", score);
     }
     if (contentType == "messageBotWriteAccessAllowed") {
+        // Big TODO for this
         QVariantMap reason = messageContent.value("reason").toMap();
         QString reasonType = reason.value(_TYPE).toString();
         if (reasonType == "botWriteAccessAllowReasonAddedToAttachmentMenu")
@@ -462,8 +330,7 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
         else
             return inForumTopic
                     ? (myself ? tr("changed this topic's icon", "myself") : tr("changed this topic's icon"))
-                    : (myself ? tr("changed the icon of the topic \"%1\"", "myself") : tr("changed the icon of the topic \"%1\""))
-                        .arg(forumTopicName);
+                    : (myself ? tr("changed the icon of the topic \"%1\"", "myself") : tr("changed the icon of the topic \"%1\"")).arg(forumTopicName);
     }
     if (contentType == "messageForumTopicIsClosedToggled") {
         if (messageContent.value("is_closed").toBool())
@@ -487,9 +354,9 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
     }
     // TODO: open the poll when clicking on the message
     if (contentType == "messagePollOptionAdded")
-        return (myself ? tr("added \"%1\" to the poll", "myself") : tr("added \"%1\" to the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
+        return (myself ? tr("added \"%1\" to the poll", "myself") : tr("added \"%1\" to the poll")).arg(FormattedText::getPlainFor(messageContent.value(TEXT).toMap()));
     if (contentType == "messagePollOptionDeleted")
-        return (myself ? tr("removed \"%1\" from the poll", "myself") : tr("removed \"%1\" from the poll")).arg(enhanceMessageText(messageContent.value(TEXT).toMap(), true));
+        return (myself ? tr("removed \"%1\" from the poll", "myself") : tr("removed \"%1\" from the poll")).arg(FormattedText::getPlainFor(messageContent.value(TEXT).toMap()));
     // TODO: update the message content if community name changes
     if (contentType == "messageChatJoinFromCommunity")
         return (myself ? tr("joined the chat from the \"%1\" community", "myself") : tr("joined the chat from the \"%1\" community"))
@@ -499,57 +366,207 @@ QString Utilities::getMessageTextInternal(const QVariantMap &messageContent, boo
                 .arg(tdLibWrapper->data()->getCommunity(messageContent.value(COMMUNITY_ID).toLongLong()).value(NAME).toString());
     if (contentType == "messageChatRemovedFromCommunity")
         return (myself ? tr("removed the chat from the community", "myself") : tr("removed the chat from the community"));
+
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
-    if (contentType == MESSAGE_CONTENT_TYPE_CALL)
-        return simple ? getMessageCallText(messageContent, outgoing) : QString();
-    if (contentType == MESSAGE_CONTENT_TYPE_GROUP_CALL)
-        return simple ? getMessageGroupCallText(messageContent, outgoing) : QString();
-
     return myself
             ? tr("sent an unsupported message: %1", "myself; %1 is message type").arg(contentType.mid(7))
             : tr("sent an unsupported message: %1", "%1 is message type").arg(contentType.mid(7));
 }
 
-QString Utilities::getMessageText(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
+QString Utilities::getServiceMessageText(const QVariantMap &message, const QString &forumTopicName, bool inForumTopic) const {
+    return getServiceMessageText(message.value(CONTENT).toMap(), {message.value(SENDER_ID).toMap()}, forumTopicName, inForumTopic);
+}
+
+FormattedText *Utilities::getMessagePreview(const QVariantMap &messageContent, bool outgoing, bool withThumbnails, bool ignoreEntities, bool ignoreCustomEmojis) const {
+    // Only for non-service messages
+    const QString contentType = messageContent.value(_TYPE).toString();
+
+    // Not formatted
+    if (contentType == MESSAGE_CONTENT_TYPE_STICKER) {
+        const QString emoji = messageContent.value(STICKER).toMap().value(EMOJI).toString();
+        return new FormattedText(emoji.isEmpty() ? tr("Sticker") : emoji);
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_DICE) {
+        QString emoji = messageContent.value(EMOJI).toString();
+        int value = messageContent.value("value").toInt();
+        if (emoji == "🎯") {
+            // Dart
+            emoji += " ";
+            switch (value) {
+            case 0:
+                return new FormattedText(emoji + tr("Dart: throwing…", "0"));
+            case 1:
+                return new FormattedText(emoji + tr("Dart: missed!", "1"));
+            case 2:
+                return new FormattedText(emoji + tr("Dart thrown", "2"));
+            case 3:
+                return new FormattedText(emoji + tr("Dart thrown", "3"));
+            case 4:
+                return new FormattedText(emoji + tr("Dart thrown", "4"));
+            case 6:
+                return new FormattedText(emoji + tr("Dart: bullseye!", "6"));
+            case 5:
+            default:
+                return new FormattedText(emoji + tr("Dart: almost there!", "5"));
+            }
+        } else if (emoji == "🎲") {
+            // Regular dice
+            emoji += " ";
+            if (value >= 1 && value <= 6)
+                return new FormattedText(emoji + tr("Dice: %n", "", value));
+            return new FormattedText(emoji + tr("Dice: rolling…"));
+        }
+        return new FormattedText(emoji);
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_STAKE_DICE)
+        return new FormattedText("🎲");
+    if (contentType == MESSAGE_CONTENT_TYPE_ANIMATED_EMOJI)
+        return new FormattedText(messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString());
+    if (contentType == MESSAGE_CONTENT_TYPE_VIDEO_NOTE)
+        return new FormattedText(tr("Video message"));
+    if (contentType == MESSAGE_CONTENT_TYPE_LOCATION)
+        return new FormattedText(tr("Location"));
+    if (contentType == MESSAGE_CONTENT_TYPE_VENUE) {
+        const QVariantMap venue = messageContent.value(VENUE).toMap();
+        const QString title = venue.value(TITLE).toString();
+        return new FormattedText(!title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue"));
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_POLL) {
+        const QVariantMap poll = messageContent.value("poll").toMap();
+        const bool anonymnous = poll.value("is_anonymous").toBool();
+        const QString question = poll.value("question").toMap().value(TEXT).toString();
+        if (poll.value(TYPE).toMap().value(_TYPE).toString() == "pollTypeQuiz") {
+            if (anonymnous)
+                return new FormattedText(!question.isEmpty() ? tr("Anonymous Quiz: %1").arg(question) : tr("Anonymous Quiz"));
+            return new FormattedText(!question.isEmpty() ? tr("Quiz: %1").arg(question) : tr("Quiz"));
+        }
+        if (anonymnous)
+            return new FormattedText(!question.isEmpty() ? tr("Anonymous Poll: %1").arg(question) : tr("Anonymous Poll"));
+        return new FormattedText(!question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll"));
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_GAME) {
+        const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
+        return new FormattedText(!shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game"));
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_CONTACT) {
+        const QString name = messageContent.value("contact").toMap().value(FIRST_NAME).toString();
+        return new FormattedText(name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name));
+    }
+    if (contentType == MESSAGE_CONTENT_TYPE_CALL)
+        return new FormattedText(getMessageCallText(messageContent, outgoing));
+    if (contentType == MESSAGE_CONTENT_TYPE_GROUP_CALL)
+        return new FormattedText(getMessageGroupCallText(messageContent, outgoing));
+
+    // Formatted
+    QScopedPointer<FormattedText> caption(new FormattedText(getMessageContentFormattedText(messageContent), tdLibWrapper, ignoreEntities, ignoreCustomEmojis));
+    QString captionTemplate, noCaptionText;
+    
+    if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
+        if (!withThumbnails || !messageContent.value(PHOTO).toMap().contains(MINITHUMBNAIL))
+            captionTemplate = tr("Photo: %1");
+        noCaptionText = tr("Photo");
+    } else if (contentType == MESSAGE_CONTENT_TYPE_VIDEO) {
+        if (!withThumbnails || !(messageContent.value(COVER).toMap().contains(MINITHUMBNAIL) || messageContent.value(VIDEO).toMap().contains(MINITHUMBNAIL)))
+            captionTemplate = tr("Video: %1");
+        noCaptionText = tr("Video");
+    } else if (contentType == MESSAGE_CONTENT_TYPE_ANIMATION) {
+        if (!withThumbnails || !messageContent.value(ANIMATION).toMap().contains(MINITHUMBNAIL))
+            captionTemplate = tr("GIF: %1");
+        noCaptionText = tr("GIF");
+    } else if (contentType == MESSAGE_CONTENT_TYPE_AUDIO) {
+        const QString fileName = messageContent.value(AUDIO).toMap().value(FILE_NAME).toString();
+        if (!fileName.isEmpty()) {
+            captionTemplate = tr("%1: %2", "Audio message. %1 is the audio file name, %2 is the caption").arg(fileName);
+            noCaptionText = fileName;
+        } else
+            noCaptionText = tr("Audio");
+    } else if (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT) {
+        const QString fileName = messageContent.value(DOCUMENT).toMap().value(FILE_NAME).toString();
+        if (!fileName.isEmpty()) {
+            captionTemplate = tr("%1: %2", "A message with a file attached. %1 is the file name, %2 is the caption").arg(fileName);
+            noCaptionText = fileName;
+        } else
+            noCaptionText = tr("File");
+    } else if (contentType == MESSAGE_CONTENT_TYPE_VOICE_NOTE) {
+        captionTemplate = tr("Voice message: %1");
+        noCaptionText = tr("Voice message");
+    } else if (contentType != MESSAGE_CONTENT_TYPE_TEXT) {
+        WARN("getMessagePreview called with an unsupported message type:" << contentType);
+        return new FormattedText();
+    }
+
+    if (caption->isEmpty()) return new FormattedText(noCaptionText);
+
+    if (!captionTemplate.isEmpty()) caption->argFrom(captionTemplate);
+    return caption.take();
+}
+
+FormattedText *Utilities::getMessageTextInternal(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+    if (messageContent.isEmpty()) return new FormattedText();
+
+    if (messageContentIsService(messageContent.value(_TYPE).toString()))
+        // TODO: use a template for name for service messages instead of this,
+        // e.g. tr("You joined the group") + tr("%{user} joined the group")
+        // instead of tr("You") + " " (from qml) + tr("joined the group", "myself")
+        // and senderName + " " (from qml) + tr("joined the group")
+        // Plus, use some other message fields (is_channel, is_outgoing etc) when composing too
+        return new FormattedText(getServiceMessageText(messageContent, messageSender, forumTopicName, type == MessageTextSimpleInForumTopic));
+
+    return type == MessageTextDefault
+            ? new FormattedText(getMessageContentFormattedText(messageContent), tdLibWrapper, ignoreEntities, ignoreCustomEmojis)
+            : getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, ignoreEntities, ignoreCustomEmojis);
+}
+
+FormattedText *Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
     return getMessageTextInternal(
-                message.value(CONTENT).toMap(),
-                message.value(IS_OUTGOING).toBool(),
-                {message.value(SENDER_ID).toMap()},
-                message.value(_TYPE).toString() == SPONSORED_MESSAGE,
-                type,
-                ignoreEntities,
-                escapeReserved,
-                forumTopicName
-                );
+        message.value(CONTENT).toMap(),
+        message.value(SENDER_ID).toMap(),
+        message.value(IS_OUTGOING).toBool(),
+        type, false, ignoreCustomEmojis,
+        forumTopicName
+    );
+}
+
+QString Utilities::getMessageText(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
+    QScopedPointer<FormattedText> text(getMessageTextInternal(
+        message.value(CONTENT).toMap(),
+        message.value(SENDER_ID).toMap(),
+        message.value(IS_OUTGOING).toBool(),
+        type, ignoreEntities, false,
+        forumTopicName
+    ));
+    if (ignoreEntities)
+        return escapeReserved ? text->getPlainEscaped() : text->getPlain();
+    return text->parse();
 }
 
 QString Utilities::getMessageContentText(const QVariantMap &messageContent, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    return getMessageTextInternal(
-                messageContent,
-                false,
-                TDLibData::MessageSender(true, 0), // Skips all user-related checks
-                false,
-                type,
-                ignoreEntities,
-                escapeReserved,
-                forumTopicName
-                );
+    QScopedPointer<FormattedText> text(getMessageTextInternal(
+        messageContent, TDLibData::MessageSender(true, 0), false, // Skip all user-related checks
+        type, ignoreEntities, false,
+        forumTopicName
+    ));
+    if (ignoreEntities)
+        return escapeReserved ? text->getPlainEscaped() : text->getPlain();
+    return text->parse();
 }
 
-QString Utilities::getAlbumMessagesText(const QVariantList &messages, bool ignoreDocumentsAudios, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    QString result;
+QVariantMap Utilities::getMainAlbumMessage(const QVariantList &messages, bool ignoreDocumentsAudios) {
+    QVariantMap result;
     for (const QVariant &message : messages) {
         // Documents and audios don't open in fullscreen viewer, so we display caption together with each of the grouped messages
-        const QString contentType = message.toMap().value(CONTENT).toMap().value(_TYPE).toString();
-        if (ignoreDocumentsAudios && (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT || contentType == MESSAGE_CONTENT_TYPE_AUDIO))
-            return QString();
+        if (ignoreDocumentsAudios) {
+            const QString contentType = message.toMap().value(CONTENT).toMap().value(_TYPE).toString();
+            if (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT || contentType == MESSAGE_CONTENT_TYPE_AUDIO)
+                return {};
+        }
 
-        const QString text = getMessageText(message.toMap(), type, ignoreEntities, escapeReserved, forumTopicName);
+        const QVariantMap text = getMessageContentFormattedText(message.toMap().value(CONTENT).toMap());
         if (!text.isEmpty()) {
             if (!result.isEmpty())
-                return QString(); // if more than one caption is available, return empty
-            result = text;
+                return {}; // if more than one caption is available, return empty
+            result = message.toMap();
         }
     }
 
@@ -582,7 +599,6 @@ bool Utilities::messageContentIsService(const QString &contentType) {
         MESSAGE_CONTENT_TYPE_GROUP_CALL,
         MESSAGE_CONTENT_TYPE_CONTACT
     };
-
     return !nonServiceContentTypes.contains(contentType);
 }
 
@@ -825,7 +841,8 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
 }
 
 void Utilities::handleLink(const QString &link, bool skipConfirmation, bool checkExternalOnError) {
-    // Checks for links from enhanceMessageText, and calls getInternalLinkType otherwise
+    // Checks for links from FormattedText, and calls getInternalLinkType otherwise
+    // TODO: move this to FormattedText
     if (link.startsWith("user://"))
         tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
     else if (link.indexOf("userId://") == 0)
