@@ -306,6 +306,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::messageEphemeralContentUpdated, this, &TDLibWrapper::messageEphemeralContentUpdated);
     connect(tdLibReceiver, &TDLibReceiver::communityFullInfoUpdated, this, &TDLibWrapper::communityFullInfoUpdated);
     connect(tdLibReceiver, &TDLibReceiver::communityIdReceived, this, &TDLibWrapper::communityIdReceived);
+    connect(tdLibReceiver, &TDLibReceiver::userLinkReceived, this, &TDLibWrapper::userLinkReceived);
 }
 
 void TDLibWrapper::initializeTDLibData() {
@@ -3071,4 +3072,9 @@ bool TDLibWrapper::searchStringByPrefix(const QString &string, const QString &qu
     });
     QVariantList positions = result.value("positions").toList();
     return positions.size() && positions.at(0) >= 0;
+}
+
+void TDLibWrapper::getUserLink() {
+    LOG("Getting user link");
+    sendRequest({{_TYPE, "getUserLink"}});
 }

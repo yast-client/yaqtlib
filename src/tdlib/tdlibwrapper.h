@@ -449,6 +449,7 @@ public:
     Q_INVOKABLE void openBotSimilarBot(qlonglong botId, qlonglong openedBotId);
     Q_INVOKABLE void getStakeDiceState();
     Q_INVOKABLE bool searchStringByPrefix(const QString &string, const QString &query);
+    Q_INVOKABLE void getUserLink();
 
 signals:
     void authorizationStateChanged();
@@ -563,6 +564,7 @@ signals:
     void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
     void communityFullInfoUpdated(qlonglong communityId, const QVariantMap &communityFullInfo);
     void communityIdReceived(qlonglong communityId);
+    void userLinkReceived(const QString &link, int expiresIn);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);

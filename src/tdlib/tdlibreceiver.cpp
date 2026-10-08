@@ -1450,3 +1450,9 @@ void TDLibReceiver::processStakeDiceState(const QVariantMap &data) {
     LOG("Received stake dice state");
     emit stakeDiceStateUpdated(data);
 }
+
+void TDLibReceiver::processUserLink(const QVariantMap &data) {
+    int expiresIn = data.value("expires_in").toInt();
+    LOG("Received user link, expires in" << expiresIn);
+    emit userLinkReceived(data.value(URL).toString(), expiresIn);
+}

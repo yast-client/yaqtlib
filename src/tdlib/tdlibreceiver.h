@@ -164,6 +164,7 @@ signals:
     void ownedStarCountUpdated(qlonglong stars, int nanostars);
     void ownedGramCountUpdated(qlonglong grams);
     void stakeDiceStateUpdated(const QVariantMap &state);
+    void userLinkReceived(const QString &link, int expiresIn);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -299,6 +300,7 @@ private:
         {"updateOwnedGramCount", &TDLibReceiver::processUpdateOwnedGramCount},
         {"updateStakeDiceState", &TDLibReceiver::processUpdateStakeDiceState},
         {"stakeDiceState", &TDLibReceiver::processStakeDiceState},
+        {"userLink", &TDLibReceiver::processUserLink},
 
         // Abstract handlers defined as normal ones
         {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
@@ -454,6 +456,7 @@ private:
     void processUpdateOwnedGramCount(const QVariantMap &data);
     void processUpdateStakeDiceState(const QVariantMap &data);
     void processStakeDiceState(const QVariantMap &data);
+    void processUserLink(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);
