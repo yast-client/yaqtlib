@@ -24,7 +24,7 @@ public:
     qlonglong lastMessageSenderChatId() const;
     bool lastMessageSenderIsChat() const;
     qlonglong lastMessageDate() const;
-    QString lastMessageText() const;
+    virtual QString lastMessageText() const;
     QVariant lastMessageMinithumbnail() const;
     bool lastMessageIsService() const;
     QVariant lastMessageSendingState() const;

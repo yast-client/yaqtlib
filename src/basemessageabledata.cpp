@@ -52,7 +52,7 @@ qlonglong BaseMessageableData::lastMessageDate() const {
 }
 
 QString BaseMessageableData::lastMessageText() const {
-    return utilities->getMessageText(lastMessage(), Utilities::MessageTextSimpleWithThumbnails);
+    return utilities->getMessageText(lastMessage(), Utilities::MessageTextSimpleWithThumbnails, true);
 }
 
 QVariant BaseMessageableData::lastMessageMinithumbnail() const {

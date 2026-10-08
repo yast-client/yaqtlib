@@ -2,8 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "forumtopic.h"
-
-#include "forumtopicsmodel.h"
+#include "utilities.h"
 
 namespace {
     const QString INFO("info");
@@ -113,6 +112,10 @@ qlonglong ForumTopic::lastReadOutboxMessageId() const {
 
 const QVariantMap ForumTopic::lastMessage() const {
     return data.value(LAST_MESSAGE).toMap();
+}
+
+QString ForumTopic::lastMessageText() const {
+    return utilities->getMessageText(lastMessage(), Utilities::MessageTextSimpleWithThumbnails, true, true, name());
 }
 
 const QVariantMap ForumTopic::draftMessage() const {

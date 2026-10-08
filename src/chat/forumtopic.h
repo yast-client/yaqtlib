@@ -70,6 +70,8 @@ struct ForumTopic : public BaseMessageableData {
     virtual const QVariantMap lastMessage() const override;
     virtual const QVariantMap draftMessage() const override;
 
+    virtual QString lastMessageText() const override;
+
     const QVector<int> updateIsPinned(bool value);
     const QVector<int> updateLastReadInboxMessageId(qlonglong value);
     const QVector<int> updateLastReadOutboxMessageId(qlonglong value);
