@@ -26,7 +26,7 @@ This project uses:
 
 First, you would need to implement `PlatformApp`. See `platformapp.h` for details, or `platformapp.cpp` in YAST source for an example.
 
-The installation of TDLib should be handled by the application. **The version of TDLib currently supported by yaqtlib is 1.8.67.**
+The installation of TDLib should be handled by the application. **The version of TDLib currently supported by yaqtlib is 1.8.68.**
 
 See [YAST](https://github.com/yast-client/harbour-yast-client) for a complete example of including yaqtlib in your project.
 

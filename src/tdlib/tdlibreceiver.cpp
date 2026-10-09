@@ -1390,6 +1390,12 @@ void TDLibReceiver::processUpdateCommunity(const QVariantMap &data) {
     emit communityUpdated(id, community);
 }
 
+void TDLibReceiver::processCommunityFullInfo(const QVariantMap &data) {
+    qlonglong id = data.value(_EXTRA).toLongLong();
+    LOG("Community full info received" << id);
+    emit communityFullInfoReceived(id, data);
+}
+
 void TDLibReceiver::processUpdateCommunityFullInfo(const QVariantMap &data) {
     qlonglong id = data.value("community_id").toLongLong();
     LOG("Community full info updated" << id);

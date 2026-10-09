@@ -304,6 +304,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::messageUnreadReactionsUpdated, this, &TDLibWrapper::messageUnreadReactionsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::messageContainsUnreadPollVotesUpdated, this, &TDLibWrapper::messageContainsUnreadPollVotesUpdated);
     connect(tdLibReceiver, &TDLibReceiver::messageEphemeralContentUpdated, this, &TDLibWrapper::messageEphemeralContentUpdated);
+    connect(tdLibReceiver, &TDLibReceiver::communityFullInfoReceived, this, &TDLibWrapper::communityFullInfoReceived);
     connect(tdLibReceiver, &TDLibReceiver::communityFullInfoUpdated, this, &TDLibWrapper::communityFullInfoUpdated);
     connect(tdLibReceiver, &TDLibReceiver::communityIdReceived, this, &TDLibWrapper::communityIdReceived);
     connect(tdLibReceiver, &TDLibReceiver::userLinkReceived, this, &TDLibWrapper::userLinkReceived);

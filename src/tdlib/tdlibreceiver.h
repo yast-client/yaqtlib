@@ -156,6 +156,7 @@ signals:
     void chatAccentColorsUpdated(qlonglong chatId, int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
     void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
     void communityUpdated(qlonglong id, const QVariantMap &community);
+    void communityFullInfoReceived(qlonglong id, const QVariantMap &communityFullInfo);
     void communityFullInfoUpdated(qlonglong id, const QVariantMap &communityFullInfo);
     void communityIdReceived(qlonglong id);
     void loginUrlInfoOpenReceived(const QString &url, bool skipConfirmation, const QVariant &extra);
@@ -294,6 +295,7 @@ private:
         {"sponsoredChats", &TDLibReceiver::processSponsoredChats},
         {"updateMessageEphemeralContent", &TDLibReceiver::processUpdateMessageEphemeralContent},
         {"updateCommunity", &TDLibReceiver::processUpdateCommunity},
+        {"communityFullInfo", &TDLibReceiver::processCommunityFullInfo},
         {"updateCommunityFullInfo", &TDLibReceiver::processUpdateCommunityFullInfo},
         {"communityId", &TDLibReceiver::processCommunityId},
         {"updateOwnedStarCount", &TDLibReceiver::processUpdateOwnedStarCount},
@@ -447,6 +449,7 @@ private:
     void processOptionValue(const QVariantMap &data);
     void processUpdateMessageEphemeralContent(const QVariantMap &data);
     void processUpdateCommunity(const QVariantMap &data);
+    void processCommunityFullInfo(const QVariantMap &data);
     void processUpdateCommunityFullInfo(const QVariantMap &data);
     void processCommunityId(const QVariantMap &data);
     void processLoginUrlInfoOpen(const QVariantMap &data);

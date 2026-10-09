@@ -562,6 +562,7 @@ signals:
     void messageUnreadReactionsUpdated(qlonglong chatId, qlonglong messageId, const QVariantList &unreadReactions);
     void messageContainsUnreadPollVotesUpdated(qlonglong chatId, qlonglong messageId, bool value);
     void messageEphemeralContentUpdated(qlonglong chatId, qlonglong messageId, const QVariantMap &ephemeralContent);
+    void communityFullInfoReceived(qlonglong communityId, const QVariantMap &communityFullInfo);
     void communityFullInfoUpdated(qlonglong communityId, const QVariantMap &communityFullInfo);
     void communityIdReceived(qlonglong communityId);
     void userLinkReceived(const QString &link, int expiresIn);
