@@ -63,15 +63,10 @@ struct PositionedFormattedTextEntity : public FormattedTextEntity {
     int offset, length;
 };
 
-class FormattedText : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(int customEmojiSize MEMBER customEmojiSize WRITE setCustomEmojiSize NOTIFY customEmojiSizeChanged)
-    Q_PROPERTY(QString parsedText READ parse NOTIFY parsedTextChanged)
+class FormattedText {
 public:
-    FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {}, QObject *parent = nullptr);
-    explicit FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper = nullptr, bool ignoreEntities = false, bool ignoreCustomEmojis = false, QObject *parent = nullptr);
-
-    void setCustomEmojiSize(int size);
+    FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {});
+    FormattedText(const QVariantMap &formattedText, bool ignoreEntities = false, bool ignoreCustomEmojis = false);
 
     void argFrom(const QString &text);
     inline void addEntity(const PositionedFormattedTextEntity &entity) { entities.append(entity); }
@@ -86,8 +81,37 @@ public:
     inline static QString getPlainEscapedFor(const QVariantMap &formattedText) {
         return getPlainEscapedFor(getPlainFor(formattedText));
     }
+    
+    virtual inline int getCustomEmojiSize() const { return 0; }
+    virtual inline QString getCustomEmojiPath(qlonglong customEmojiId) const { return {}; }
 
-    friend struct PositionedFormattedTextEntity;
+private:
+    struct Insertion;
+    //struct CustomEntity;
+
+    void addInsertionsToFor(QList<Insertion> &insertions, const QString &original, const QString &replacement) const;
+    void addInsertionsToFor(QList<Insertion> &insertions, const QChar &original, const QString &replacement) const;
+    void addInsertionsToFor(QList<Insertion> &insertions, const QRegularExpression &original, const QString &replacement) const;
+
+    QString plainText;
+    QList<PositionedFormattedTextEntity> entities;
+    int prefixOffset = 0;
+
+protected:
+    QStringList customEmojiIds;
+};
+
+class FullFormattedText : public QObject, public FormattedText {
+    Q_OBJECT
+    Q_PROPERTY(int customEmojiSize MEMBER customEmojiSize WRITE setCustomEmojiSize NOTIFY customEmojiSizeChanged)
+    Q_PROPERTY(QString parsedText READ parse NOTIFY parsedTextChanged)
+public:
+    FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper, QObject *parent = nullptr);
+    FullFormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper = nullptr, bool ignoreEntities = false, bool ignoreCustomEmojis = false, QObject *parent = nullptr);
+
+    virtual inline int getCustomEmojiSize() const override { return customEmojiSize; }
+    void setCustomEmojiSize(int size);
+    virtual QString getCustomEmojiPath(qlonglong customEmojiId) const override;
 
 signals:
     void customEmojiSizeChanged();
@@ -99,17 +123,7 @@ private slots:
     void handleStickerDownloadingCompletedChanged();
 
 private:
-    struct Insertion;
-    //struct CustomEntity;
-
-    void addInsertionsToFor(QList<Insertion> &insertions, const QString &original, const QString &replacement) const;
-    void addInsertionsToFor(QList<Insertion> &insertions, const QChar &original, const QString &replacement) const;
-    void addInsertionsToFor(QList<Insertion> &insertions, const QRegularExpression &original, const QString &replacement) const;
-
     TDLibWrapper *tdLibWrapper = nullptr;
-    QString plainText;
-    QList<PositionedFormattedTextEntity> entities;
-    int prefixOffset = 0;
     int customEmojiSize = 20;
     QHash<qlonglong, TDLibFile*> customEmojiFiles;
 };

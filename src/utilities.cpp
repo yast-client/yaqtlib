@@ -205,8 +205,8 @@ QVariantMap Utilities::enhanceInputText(const QString &originalText) {
     return newFormattedText(text, entities);
 }
 
-FormattedText *Utilities::createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis, QObject *parent) const {
-    return new FormattedText(formattedText, tdLibWrapper, ignoreCustomEmojis, parent);
+FullFormattedText *Utilities::createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis, QObject *parent) const {
+    return new FullFormattedText(formattedText, tdLibWrapper, false, ignoreCustomEmojis, parent);
 }
 
 QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities, bool escapeReserved) {
@@ -216,8 +216,8 @@ QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ign
         return escapeReserved ? FormattedText::getPlainEscapedFor(plainText) : plainText;
     }
 
-    // ignore escapeReserved here for the time being
-    return FormattedText(formattedText, nullptr, true).parse();
+    // ignore escapeReserved here for now
+    return FormattedText(formattedText, true).parse();
 }
 
 QVariantMap Utilities::getMessageContentFormattedText(const QVariantMap &messageContent) {
@@ -378,14 +378,14 @@ QString Utilities::getServiceMessageText(const QVariantMap &message, const QStri
     return getServiceMessageText(message.value(CONTENT).toMap(), {message.value(SENDER_ID).toMap()}, forumTopicName, inForumTopic);
 }
 
-FormattedText *Utilities::getMessagePreview(const QVariantMap &messageContent, bool outgoing, bool withThumbnails, bool ignoreEntities, bool ignoreCustomEmojis) const {
+FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bool outgoing, bool withThumbnails, bool ignoreEntities, bool ignoreCustomEmojis) const {
     // Only for non-service messages
     const QString contentType = messageContent.value(_TYPE).toString();
 
     // Not formatted
     if (contentType == MESSAGE_CONTENT_TYPE_STICKER) {
         const QString emoji = messageContent.value(STICKER).toMap().value(EMOJI).toString();
-        return new FormattedText(emoji.isEmpty() ? tr("Sticker") : emoji);
+        return emoji.isEmpty() ? tr("Sticker") : emoji;
     }
     if (contentType == MESSAGE_CONTENT_TYPE_DICE) {
         QString emoji = messageContent.value(EMOJI).toString();
@@ -395,42 +395,42 @@ FormattedText *Utilities::getMessagePreview(const QVariantMap &messageContent, b
             emoji += " ";
             switch (value) {
             case 0:
-                return new FormattedText(emoji + tr("Dart: throwing…", "0"));
+                return emoji + tr("Dart: throwing…", "0");
             case 1:
-                return new FormattedText(emoji + tr("Dart: missed!", "1"));
+                return emoji + tr("Dart: missed!", "1");
             case 2:
-                return new FormattedText(emoji + tr("Dart thrown", "2"));
+                return emoji + tr("Dart thrown", "2");
             case 3:
-                return new FormattedText(emoji + tr("Dart thrown", "3"));
+                return emoji + tr("Dart thrown", "3");
             case 4:
-                return new FormattedText(emoji + tr("Dart thrown", "4"));
+                return emoji + tr("Dart thrown", "4");
             case 6:
-                return new FormattedText(emoji + tr("Dart: bullseye!", "6"));
+                return emoji + tr("Dart: bullseye!", "6");
             case 5:
             default:
-                return new FormattedText(emoji + tr("Dart: almost there!", "5"));
+                return emoji + tr("Dart: almost there!", "5");
             }
         } else if (emoji == "🎲") {
             // Regular dice
             emoji += " ";
             if (value >= 1 && value <= 6)
-                return new FormattedText(emoji + tr("Dice: %n", "", value));
-            return new FormattedText(emoji + tr("Dice: rolling…"));
+                return emoji + tr("Dice: %n", "", value);
+            return emoji + tr("Dice: rolling…");
         }
-        return new FormattedText(emoji);
+        return emoji;
     }
     if (contentType == MESSAGE_CONTENT_TYPE_STAKE_DICE)
-        return new FormattedText("🎲");
+        return {"🎲"};
     if (contentType == MESSAGE_CONTENT_TYPE_ANIMATED_EMOJI)
-        return new FormattedText(messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString());
+        return messageContent.value(ANIMATED_EMOJI).toMap().value(STICKER).toMap().value(EMOJI).toString();
     if (contentType == MESSAGE_CONTENT_TYPE_VIDEO_NOTE)
-        return new FormattedText(tr("Video message"));
+        return tr("Video message");
     if (contentType == MESSAGE_CONTENT_TYPE_LOCATION)
-        return new FormattedText(tr("Location"));
+        return tr("Location");
     if (contentType == MESSAGE_CONTENT_TYPE_VENUE) {
         const QVariantMap venue = messageContent.value(VENUE).toMap();
         const QString title = venue.value(TITLE).toString();
-        return new FormattedText(!title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue"));
+        return !title.isEmpty() ? tr("Venue: %1").arg(title) : tr("Venue");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_POLL) {
         const QVariantMap poll = messageContent.value("poll").toMap();
@@ -438,28 +438,28 @@ FormattedText *Utilities::getMessagePreview(const QVariantMap &messageContent, b
         const QString question = poll.value("question").toMap().value(TEXT).toString();
         if (poll.value(TYPE).toMap().value(_TYPE).toString() == "pollTypeQuiz") {
             if (anonymnous)
-                return new FormattedText(!question.isEmpty() ? tr("Anonymous Quiz: %1").arg(question) : tr("Anonymous Quiz"));
-            return new FormattedText(!question.isEmpty() ? tr("Quiz: %1").arg(question) : tr("Quiz"));
+                return !question.isEmpty() ? tr("Anonymous Quiz: %1").arg(question) : tr("Anonymous Quiz");
+            return !question.isEmpty() ? tr("Quiz: %1").arg(question) : tr("Quiz");
         }
         if (anonymnous)
-            return new FormattedText(!question.isEmpty() ? tr("Anonymous Poll: %1").arg(question) : tr("Anonymous Poll"));
-        return new FormattedText(!question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll"));
+            return !question.isEmpty() ? tr("Anonymous Poll: %1").arg(question) : tr("Anonymous Poll");
+        return !question.isEmpty() ? tr("Poll: %1").arg(question) : tr("Poll");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_GAME) {
         const QString shortName = messageContent.value("game").toMap().value("short_name").toString();
-        return new FormattedText(!shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game"));
+        return !shortName.isEmpty() ? tr("Game: %1").arg(shortName) : tr("Game");
     }
     if (contentType == MESSAGE_CONTENT_TYPE_CONTACT) {
         const QString name = messageContent.value("contact").toMap().value(FIRST_NAME).toString();
-        return new FormattedText(name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name));
+        return name.isEmpty() ? tr("Contact") : tr("Contact: %1").arg(name);
     }
     if (contentType == MESSAGE_CONTENT_TYPE_CALL)
-        return new FormattedText(getMessageCallText(messageContent, outgoing));
+        return getMessageCallText(messageContent, outgoing);
     if (contentType == MESSAGE_CONTENT_TYPE_GROUP_CALL)
-        return new FormattedText(getMessageGroupCallText(messageContent, outgoing));
+        return getMessageGroupCallText(messageContent, outgoing);
 
     // Formatted
-    QScopedPointer<FormattedText> caption(new FormattedText(getMessageContentFormattedText(messageContent), tdLibWrapper, ignoreEntities, ignoreCustomEmojis));
+    FormattedText caption(getMessageContentFormattedText(messageContent), ignoreEntities, ignoreCustomEmojis);
     QString captionTemplate, noCaptionText;
     
     if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
@@ -493,17 +493,17 @@ FormattedText *Utilities::getMessagePreview(const QVariantMap &messageContent, b
         noCaptionText = tr("Voice message");
     } else if (contentType != MESSAGE_CONTENT_TYPE_TEXT) {
         WARN("getMessagePreview called with an unsupported message type:" << contentType);
-        return new FormattedText();
+        return {};
     }
 
-    if (caption->isEmpty()) return new FormattedText(noCaptionText);
+    if (caption.isEmpty()) return noCaptionText;
 
-    if (!captionTemplate.isEmpty()) caption->argFrom(captionTemplate);
-    return caption.take();
+    if (!captionTemplate.isEmpty()) caption.argFrom(captionTemplate);
+    return caption;
 }
 
-FormattedText *Utilities::getMessageTextInternal(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
-    if (messageContent.isEmpty()) return new FormattedText();
+FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+    if (messageContent.isEmpty()) return {};
 
     if (messageContentIsService(messageContent.value(_TYPE).toString()))
         // TODO: use a template for name for service messages instead of this,
@@ -511,45 +511,45 @@ FormattedText *Utilities::getMessageTextInternal(const QVariantMap &messageConte
         // instead of tr("You") + " " (from qml) + tr("joined the group", "myself")
         // and senderName + " " (from qml) + tr("joined the group")
         // Plus, use some other message fields (is_channel, is_outgoing etc) when composing too
-        return new FormattedText(getServiceMessageText(messageContent, messageSender, forumTopicName, type == MessageTextSimpleInForumTopic));
+        return getServiceMessageText(messageContent, messageSender, forumTopicName, type == MessageTextSimpleInForumTopic);
 
-    return type == MessageTextDefault
-            ? new FormattedText(getMessageContentFormattedText(messageContent), tdLibWrapper, ignoreEntities, ignoreCustomEmojis)
-            : getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, ignoreEntities, ignoreCustomEmojis);
+    if (type == MessageTextDefault)
+        return {getMessageContentFormattedText(messageContent), ignoreEntities, ignoreCustomEmojis};
+    return getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, ignoreEntities, ignoreCustomEmojis);
 }
 
-FormattedText *Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
-    return getMessageTextInternal(
+FullFormattedText *Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+    return new FullFormattedText(getMessageTextInternal(
         message.value(CONTENT).toMap(),
         message.value(SENDER_ID).toMap(),
         message.value(IS_OUTGOING).toBool(),
         type, false, ignoreCustomEmojis,
         forumTopicName
-    );
+    ), tdLibWrapper);
 }
 
 QString Utilities::getMessageText(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    QScopedPointer<FormattedText> text(getMessageTextInternal(
+    FormattedText text = getMessageTextInternal(
         message.value(CONTENT).toMap(),
         message.value(SENDER_ID).toMap(),
         message.value(IS_OUTGOING).toBool(),
         type, ignoreEntities, false,
         forumTopicName
-    ));
+    );
     if (ignoreEntities)
-        return escapeReserved ? text->getPlainEscaped() : text->getPlain();
-    return text->parse();
+        return escapeReserved ? text.getPlainEscaped() : text.getPlain();
+    return text.parse();
 }
 
 QString Utilities::getMessageContentText(const QVariantMap &messageContent, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
-    QScopedPointer<FormattedText> text(getMessageTextInternal(
+    FormattedText text = getMessageTextInternal(
         messageContent, TDLibData::MessageSender(true, 0), false, // Skip all user-related checks
         type, ignoreEntities, false,
         forumTopicName
-    ));
+    );
     if (ignoreEntities)
-        return escapeReserved ? text->getPlainEscaped() : text->getPlain();
-    return text->parse();
+        return escapeReserved ? text.getPlainEscaped() : text.getPlain();
+    return text.parse();
 }
 
 QVariantMap Utilities::getMainAlbumMessage(const QVariantList &messages, bool ignoreDocumentsAudios) {

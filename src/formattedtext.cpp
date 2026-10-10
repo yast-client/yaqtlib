@@ -82,13 +82,14 @@ QString PositionedFormattedTextEntity::getReplacement(const FormattedText &paren
     switch (type) {
     case Type::CustomEmoji:
     {
-        if (!parent.customEmojiSize) return {};
 
-        TDLibFile *file = parent.customEmojiFiles.value(typeData.toLongLong());
-        if (file && file->isDownloadingCompleted()) {
-            QString size = QString::number(parent.customEmojiSize);
+        if (!parent.getCustomEmojiSize()) return {};
+
+        QString path = parent.getCustomEmojiPath(typeData.toLongLong());
+        if (!path.isEmpty()) {
+            QString size = QString::number(parent.getCustomEmojiSize());
             return "<img align=\"middle\" width=\"" + size + "\" height=\"" + size
-                    + "\" src=\"" + file->getPath() + "\"/>";
+                    + "\" src=\"" + path + "\"/>";
         }
         return {};
     }
@@ -155,32 +156,24 @@ struct FormattedText::Insertion {
         : position(position), entity(entity) {}
 };*/
 
-FormattedText::FormattedText(const QString &text, const QList<PositionedFormattedTextEntity> &entities, QObject *parent)
-    : QObject(parent), plainText(text), entities(entities)
+FormattedText::FormattedText(const QString &text, const QList<PositionedFormattedTextEntity> &entities)
+    : plainText(text), entities(entities)
 {}
 
-FormattedText::FormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, bool ignoreEntities, bool ignoreCustomEmojis, QObject *parent) :
-    QObject(parent),
-    tdLibWrapper(tdLibWrapper),
+FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreCustomEmojis) :
     plainText(formattedText.value(TEXT).toString())
 {
-    connect(this, &FormattedText::customEmojiSizeChanged, this, &FormattedText::parsedTextChanged);
-    connect(this, &FormattedText::customEmojisPartiallyLoaded, this, &FormattedText::parsedTextChanged);
-
     if (ignoreEntities) return;
-    QSet<QString> customEmojiIds;
 
     for (const QVariant &rawEntity : formattedText.value(ENTITIES).toList()) {
         PositionedFormattedTextEntity entity(rawEntity.toMap());
-        if (ignoreCustomEmojis && entity.type == FormattedTextEntity::Type::CustomEmoji) continue;
+        bool isCustomEmoji = entity.type == FormattedTextEntity::Type::CustomEmoji;
+        if (ignoreCustomEmojis && isCustomEmoji) continue;
         entities.append(entity);
 
-        if (tdLibWrapper && entity.type == FormattedTextEntity::Type::CustomEmoji)
-            customEmojiIds.insert(entity.typeData.toString());
+        if (isCustomEmoji)
+            customEmojiIds.append(entity.typeData.toString());
     }
-
-    if (!customEmojiIds.isEmpty())
-        tdLibWrapper->getCustomEmojiStickers(QStringList::fromSet(customEmojiIds), this, [this](const QVariantList &stickers) { handleCustomEmojiStickersReceived(stickers); });
 }
 
 void FormattedText::addInsertionsToFor(QList<Insertion> &insertions, const QString &original, const QString &replacement) const {
@@ -209,13 +202,6 @@ QString FormattedText::getPlainFor(const QVariantMap &formattedText) {
 
 QString FormattedText::getPlainEscapedFor(const QString &text) {
     return text.toHtmlEscaped().replace(RAW_NEW_LINE_RE, HTML_BR_TAG);
-}
-
-void FormattedText::setCustomEmojiSize(int size) {
-    if (customEmojiSize != size) {
-        customEmojiSize = size;
-        emit customEmojiSizeChanged();
-    }
 }
 
 void FormattedText::argFrom(const QString &text) {
@@ -267,7 +253,40 @@ QString FormattedText::parse() const {
     return result;
 }
 
-void FormattedText::handleCustomEmojiStickersReceived(const QVariantList &stickers) {
+
+FullFormattedText::FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper, QObject *parent) :
+    QObject(parent),
+    FormattedText(formattedText),
+    tdLibWrapper(tdLibWrapper)
+{
+    connect(this, &FullFormattedText::customEmojiSizeChanged, this, &FullFormattedText::parsedTextChanged);
+    connect(this, &FullFormattedText::customEmojisPartiallyLoaded, this, &FullFormattedText::parsedTextChanged);   
+
+    if (!customEmojiIds.isEmpty()) {
+        tdLibWrapper->getCustomEmojiStickers(customEmojiIds, this, [this](const QVariantList &stickers) { handleCustomEmojiStickersReceived(stickers); });
+        customEmojiIds.clear();
+    }
+}
+
+FullFormattedText::FullFormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, bool ignoreEntities, bool ignoreCustomEmojis, QObject *parent)
+    : FullFormattedText({formattedText, ignoreEntities, ignoreCustomEmojis}, tdLibWrapper, parent)
+{}
+
+void FullFormattedText::setCustomEmojiSize(int size) {
+    if (customEmojiSize != size) {
+        customEmojiSize = size;
+        emit customEmojiSizeChanged();
+    }
+}
+
+QString FullFormattedText::getCustomEmojiPath(qlonglong customEmojiId) const {
+    TDLibFile *file = customEmojiFiles.value(customEmojiId);
+    if (file && file->isDownloadingCompleted())
+        return file->getPath();
+    return {};
+}
+
+void FullFormattedText::handleCustomEmojiStickersReceived(const QVariantList &stickers) {
     bool changed = false;
     for (const QVariant &stickerVariant : stickers) {
         const QVariantMap sticker = stickerVariant.toMap();
@@ -283,7 +302,7 @@ void FormattedText::handleCustomEmojiStickersReceived(const QVariantList &sticke
         TDLibFile *file = new TDLibFile(tdLibWrapper, fileInfo, this);
         customEmojiFiles.insert(customEmojiId, file);
 
-        connect(file, &TDLibFile::downloadingCompletedChanged, this, &FormattedText::handleStickerDownloadingCompletedChanged);
+        connect(file, &TDLibFile::downloadingCompletedChanged, this, &FullFormattedText::handleStickerDownloadingCompletedChanged);
         if (file->isDownloadingCompleted())
             changed = true;
         else
@@ -294,7 +313,7 @@ void FormattedText::handleCustomEmojiStickersReceived(const QVariantList &sticke
         emit customEmojisPartiallyLoaded();
 }
 
-void FormattedText::handleStickerDownloadingCompletedChanged() {
+void FullFormattedText::handleStickerDownloadingCompletedChanged() {
     TDLibFile *file = qobject_cast<TDLibFile*>(sender());
     if (!file) return;
 
