@@ -128,6 +128,7 @@ namespace {
     const QString TYPE_GET_LOGIN_URL("getLoginUrl");
     const QString TYPE_GET_EXTERNAL_LINK_INFO("getExternalLinkInfo");
     const QString EXTRA_LOGIN_URL("openLoginUrl");
+    const QString MAIN_PROFILE_TAB("main_profile_tab");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -3078,4 +3079,14 @@ bool TDLibWrapper::searchStringByPrefix(const QString &string, const QString &qu
 void TDLibWrapper::getUserLink() {
     LOG("Getting user link");
     sendRequest({{_TYPE, "getUserLink"}});
+}
+
+void TDLibWrapper::setMainProfileTab(const QString &type) {
+    LOG("Setting main profile tab" << type);
+    sendRequest({{_TYPE, "setMainProfileTab"}, {MAIN_PROFILE_TAB, QVariantMap{{_TYPE, type}}}});
+}
+
+void TDLibWrapper::setSupergroupMainProfileTab(qlonglong supergroupId, const QString &type) {
+    LOG("Setting supergroup main profile tab" << supergroupId << type);
+    sendRequest({{_TYPE, "setSupergroupMainProfileTab"}, {SUPERGROUP_ID, supergroupId}, {MAIN_PROFILE_TAB, QVariantMap{{_TYPE, type}}}});
 }

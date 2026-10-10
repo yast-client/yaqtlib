@@ -450,6 +450,8 @@ public:
     Q_INVOKABLE void getStakeDiceState();
     Q_INVOKABLE bool searchStringByPrefix(const QString &string, const QString &query);
     Q_INVOKABLE void getUserLink();
+    Q_INVOKABLE void setMainProfileTab(const QString &type);
+    Q_INVOKABLE void setSupergroupMainProfileTab(qlonglong supergroupId, const QString &type);
 
 signals:
     void authorizationStateChanged();
