@@ -68,6 +68,8 @@ public:
     FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {});
     FormattedText(const QVariantMap &formattedText, bool ignoreEntities = false, bool ignoreCustomEmojis = false);
 
+    virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreCustomEmojis = false);
+
     void argFrom(const QString &text);
     inline void addEntity(const PositionedFormattedTextEntity &entity) { entities.append(entity); }
 
@@ -101,19 +103,26 @@ protected:
     QStringList customEmojiIds;
 };
 
+// It would make no sense to use this without custom emojis, and so without any entities either, meaning we can omit those flags here
 class FullFormattedText : public QObject, public FormattedText {
     Q_OBJECT
+    Q_PROPERTY(TDLibWrapper *tdlib MEMBER tdLibWrapper WRITE setTdLibWrapper NOTIFY tdlibChanged)
     Q_PROPERTY(int customEmojiSize MEMBER customEmojiSize WRITE setCustomEmojiSize NOTIFY customEmojiSizeChanged)
     Q_PROPERTY(QString parsedText READ parse NOTIFY parsedTextChanged)
 public:
-    FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper, QObject *parent = nullptr);
-    FullFormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper = nullptr, bool ignoreEntities = false, bool ignoreCustomEmojis = false, QObject *parent = nullptr);
+    FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
+    FullFormattedText(const QVariantMap &formattedText = {}, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
+
+    void setTdLibWrapper(TDLibWrapper *tdLibWrapper);
+    Q_INVOKABLE void setFormattedText(const FormattedText &formattedText);
+    Q_INVOKABLE virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreCustomEmojis = false) override;
 
     virtual inline int getCustomEmojiSize() const override { return customEmojiSize; }
     void setCustomEmojiSize(int size);
     virtual QString getCustomEmojiPath(qlonglong customEmojiId) const override;
 
 signals:
+    void tdlibChanged();
     void customEmojiSizeChanged();
     void customEmojisPartiallyLoaded();
     void parsedTextChanged();
@@ -123,6 +132,8 @@ private slots:
     void handleStickerDownloadingCompletedChanged();
 
 private:
+    void processCustomEmojis();
+
     TDLibWrapper *tdLibWrapper = nullptr;
     int customEmojiSize = 20;
     QHash<qlonglong, TDLibFile*> customEmojiFiles;

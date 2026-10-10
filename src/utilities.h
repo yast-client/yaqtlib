@@ -38,7 +38,6 @@ public:
     }
     static QString formatDuration(int seconds);
 
-    Q_INVOKABLE FullFormattedText *createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis = false, QObject *parent = nullptr) const;
     Q_INVOKABLE inline static QString escapeHtml(const QString &text) { return FormattedText::getPlainEscapedFor(text); }
     Q_INVOKABLE static QString enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities = false, bool escapeReserved = true);
 
@@ -48,7 +47,7 @@ public:
     Q_INVOKABLE QString getServiceMessageText(const QVariantMap &message, const QString &forumTopicName = {}, bool inForumTopic = false) const;
     FormattedText getMessagePreview(const QVariantMap &messageContent, bool outgoing = false, bool withThumbnails = false, bool ignoreEntites = false, bool ignoreCustomEmojis = false) const;
 
-    Q_INVOKABLE FullFormattedText *getMessageFormattedText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
+    Q_INVOKABLE FormattedText getMessageFormattedText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
     Q_INVOKABLE QString getMessageText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QString getMessageContentText(const QVariantMap &messageContent, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 

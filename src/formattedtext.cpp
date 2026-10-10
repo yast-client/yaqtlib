@@ -160,12 +160,17 @@ FormattedText::FormattedText(const QString &text, const QList<PositionedFormatte
     : plainText(text), entities(entities)
 {}
 
-FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreCustomEmojis) :
-    plainText(formattedText.value(TEXT).toString())
-{
-    if (ignoreEntities) return;
+FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreCustomEmojis) {
+    if (formattedText.isEmpty()) return;
+    setFormattedText(formattedText, ignoreEntities, ignoreCustomEmojis);
+}
 
-    for (const QVariant &rawEntity : formattedText.value(ENTITIES).toList()) {
+void FormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreCustomEmojis) {
+    this->plainText = text.value(TEXT).toString();
+
+    entities.clear();
+    if (ignoreEntities) return;
+    for (const QVariant &rawEntity : text.value(ENTITIES).toList()) {
         PositionedFormattedTextEntity entity(rawEntity.toMap());
         bool isCustomEmoji = entity.type == FormattedTextEntity::Type::CustomEmoji;
         if (ignoreCustomEmojis && isCustomEmoji) continue;
@@ -260,17 +265,43 @@ FullFormattedText::FullFormattedText(const FormattedText &formattedText, TDLibWr
     tdLibWrapper(tdLibWrapper)
 {
     connect(this, &FullFormattedText::customEmojiSizeChanged, this, &FullFormattedText::parsedTextChanged);
-    connect(this, &FullFormattedText::customEmojisPartiallyLoaded, this, &FullFormattedText::parsedTextChanged);   
+    connect(this, &FullFormattedText::customEmojisPartiallyLoaded, this, &FullFormattedText::parsedTextChanged);
+}
 
-    if (!customEmojiIds.isEmpty()) {
+FullFormattedText::FullFormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, QObject *parent)
+    : FullFormattedText(FormattedText(), tdLibWrapper, parent)
+{
+    setFormattedText(formattedText);
+}
+
+void FullFormattedText::processCustomEmojis() {
+    qDeleteAll(customEmojiFiles);
+    customEmojiFiles.clear();
+    if (tdLibWrapper && !customEmojiIds.isEmpty()) {
         tdLibWrapper->getCustomEmojiStickers(customEmojiIds, this, [this](const QVariantList &stickers) { handleCustomEmojiStickersReceived(stickers); });
         customEmojiIds.clear();
     }
 }
 
-FullFormattedText::FullFormattedText(const QVariantMap &formattedText, TDLibWrapper *tdLibWrapper, bool ignoreEntities, bool ignoreCustomEmojis, QObject *parent)
-    : FullFormattedText({formattedText, ignoreEntities, ignoreCustomEmojis}, tdLibWrapper, parent)
-{}
+void FullFormattedText::setTdLibWrapper(TDLibWrapper *tdLibWrapper) {
+    if (this->tdLibWrapper != tdLibWrapper) {
+        this->tdLibWrapper = tdLibWrapper;
+        emit tdlibChanged();
+        processCustomEmojis();
+    }
+}
+
+void FullFormattedText::setFormattedText(const FormattedText &formattedText) {
+    FormattedText::operator=(formattedText);
+    emit parsedTextChanged();
+    processCustomEmojis();
+}
+
+void FullFormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreCustomEmojis) {
+    FormattedText::setFormattedText(text, ignoreEntities, ignoreCustomEmojis);
+    emit parsedTextChanged();
+    processCustomEmojis();
+}
 
 void FullFormattedText::setCustomEmojiSize(int size) {
     if (customEmojiSize != size) {
@@ -285,7 +316,6 @@ QString FullFormattedText::getCustomEmojiPath(qlonglong customEmojiId) const {
         return file->getPath();
     return {};
 }
-
 void FullFormattedText::handleCustomEmojiStickersReceived(const QVariantList &stickers) {
     bool changed = false;
     for (const QVariant &stickerVariant : stickers) {

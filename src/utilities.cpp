@@ -205,10 +205,6 @@ QVariantMap Utilities::enhanceInputText(const QString &originalText) {
     return newFormattedText(text, entities);
 }
 
-FullFormattedText *Utilities::createFormattedText(const QVariantMap &formattedText, bool ignoreCustomEmojis, QObject *parent) const {
-    return new FullFormattedText(formattedText, tdLibWrapper, false, ignoreCustomEmojis, parent);
-}
-
 QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ignoreEntities, bool escapeReserved) {
     // Left for compatibility (TODO: remove this from where it's still used in QML)
     if (ignoreEntities) {
@@ -518,14 +514,14 @@ FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageConten
     return getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, ignoreEntities, ignoreCustomEmojis);
 }
 
-FullFormattedText *Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
-    return new FullFormattedText(getMessageTextInternal(
+FormattedText Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+    return getMessageTextInternal(
         message.value(CONTENT).toMap(),
         message.value(SENDER_ID).toMap(),
         message.value(IS_OUTGOING).toBool(),
         type, false, ignoreCustomEmojis,
         forumTopicName
-    ), tdLibWrapper);
+    );
 }
 
 QString Utilities::getMessageText(const QVariantMap &message, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
