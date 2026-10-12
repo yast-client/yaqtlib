@@ -61,7 +61,7 @@ public:
         CallState state = CallState::Discarded;
         QVariantMap stateData;
 
-        Call() {}
+        Call() = default;
         Call(qlonglong uniqueId, qlonglong userId, bool outgoing, bool video, const QVariantMap &state);
         void update(qlonglong uniqueId, qlonglong userId, bool outgoing, bool video, const QVariantMap &state);
     };

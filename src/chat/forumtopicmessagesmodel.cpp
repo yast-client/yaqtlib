@@ -14,7 +14,7 @@ namespace {
     const QString INFO("info");
 }
 
-ForumTopicMessagesModel::ForumTopicMessagesModel(QObject *parent) : ReadableMessagesModel() {}
+ForumTopicMessagesModel::ForumTopicMessagesModel(QObject *parent) : ReadableMessagesModel(parent) {}
 
 void ForumTopicMessagesModel::setTDLibWrapper(QObject *obj) {
     TDLibWrapper *wrapper = qobject_cast<TDLibWrapper*>(obj);

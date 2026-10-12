@@ -50,7 +50,7 @@ private:
         QVariantMap description;
         QString url;
 
-        CustomSuggestedAction() {}
+        CustomSuggestedAction() = default;
         CustomSuggestedAction(QVariantMap title, QVariantMap description, QString url);
     };
 

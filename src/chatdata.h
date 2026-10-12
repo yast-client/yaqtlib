@@ -63,7 +63,7 @@ public:
         TDLibWrapper::ChatActionType type = TDLibWrapper::ChatActionType::Cancel; // not Cancel in ChatData.chatActions
         QVariant progressOrEmoji;
 
-        ChatAction() {}
+        ChatAction() = default;
         ChatAction(const QVariantMap &action);
 
         bool operator==(const ChatAction &other) const;
