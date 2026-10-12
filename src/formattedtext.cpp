@@ -1,7 +1,8 @@
-#include "formattedtext.h"
+//@ SPDX-FileCopyrightText: 2026-present roundedrectangle
+//@ SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "formattedtext.h"
 #include <QRegularExpression>
-//#include <QQmlEngine>
 
 namespace {
     const QString _TYPE("@type");

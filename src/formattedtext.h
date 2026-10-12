@@ -1,3 +1,6 @@
+//@ SPDX-FileCopyrightText: 2026-present roundedrectangle
+//@ SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
 #include <QObject>
