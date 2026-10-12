@@ -101,22 +101,9 @@ namespace {
     const QString PHONE_NUMBER("phone_number");
     const QString NOTE("note");
 
-    const QChar LT('<');
-    const QString HTML_LT("&lt;");
-    const QChar GT('>');
-    const QString HTML_GT("&gt;");
-    const QChar AMP('&');
-    const QString HTML_AMP("&amp;");
-    const QChar QUOT('"');
-    const QString HTML_QUOT("&quot;");
-    const QRegularExpression RAW_NEW_LINE_RE("\r?\n");
-    const QString HTML_BR_TAG("<br>");
-
     const QRegularExpression AT_METION_ID_RE("\\@(?<type>\\d+)\\((?<text>[^\\)]+)\\)");
 
     const QString WIDTH("width");
-
-    const QString EXTRA_OPEN_DIRECTLY("openDirectly");
 }
 
 Utilities::Utilities(TDLibWrapper *tdLibWrapper, QObject *parent) :
@@ -834,17 +821,6 @@ bool Utilities::messageMatchesSearchFilter(const QVariantMap &message, TDLibWrap
     default:
         return messageContentTypeMatchesSearchFilter(message.value(CONTENT).toMap().value(_TYPE).toString(), filter);
     }
-}
-
-void Utilities::handleLink(const QString &link, bool skipConfirmation, bool checkExternalOnError) {
-    // Checks for links from FormattedText, and calls getInternalLinkType otherwise
-    // TODO: move this to FormattedText
-    if (link.startsWith("user://"))
-        tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
-    else if (link.indexOf("userId://") == 0)
-        tdLibWrapper->createPrivateChat(link.mid(9).toLongLong(), EXTRA_OPEN_DIRECTLY);
-    else
-        tdLibWrapper->getInternalLinkType(link, skipConfirmation, checkExternalOnError);
 }
 
 void Utilities::handleLink(const QString &link, qlonglong botCommandChatId, const QVariantMap &botCommandTopicId, bool skipConfirmation, bool checkExternalOnError) {

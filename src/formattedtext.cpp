@@ -60,6 +60,8 @@ FormattedTextEntity::FormattedTextEntity(const QVariantMap &entityType) {
     case Type::CustomEmoji:
         typeData = entityType.value("custom_emoji_id").toLongLong();
         break;
+    case Type::Spoiler:
+        typeData = false;
     default:
         break;
     }
@@ -101,7 +103,7 @@ QString PositionedFormattedTextEntity::getReplacement(const FormattedText &paren
     }
 }
 
-QPair<QString, QString> PositionedFormattedTextEntity::getHtmlTags(const QString &fullText) const {
+QPair<QString, QString> PositionedFormattedTextEntity::getHtmlTags(const QString &fullText, int index) const {
     switch (type) {
     case Type::Bold:
         return {"<b>", "</b>"};
@@ -111,6 +113,9 @@ QPair<QString, QString> PositionedFormattedTextEntity::getHtmlTags(const QString
         return {"<s>", "</s>"};
     case Type::Underline:
         return {"<u>", "</u>"};
+    case Type::Spoiler:
+        if (typeData.toBool()) return {}; // Spoiler is revealed
+        return {"<a class=\"spoiler\" href=\"revealSpoiler://" + QString::number(index) + "\">", A_TAG_END};
     case Type::Pre:
     case Type::Code:
     case Type::PreCode: // TODO: show a separate block for pre code (with proper syntax highlighting, etc.)
@@ -129,10 +134,10 @@ QPair<QString, QString> PositionedFormattedTextEntity::getHtmlTags(const QString
         return {"<a href=\"user://" + getTextPart(fullText) + "\">", A_TAG_END};
     case Type::MentionName:
         return {"<a href=\"userId://" + typeData.toString() + "\">", A_TAG_END};
-    //case Type::Hashtag:
-    //    return {"<a href=\"hashtag://" + getTextPart(fullText) + "\">", A_TAG_END};
-    //case Type::Cashtag:
-    //    return {"<a href=\"cashtag://" + getTextPart(fullText) + "\">", A_TAG_END};
+    case Type::Hashtag:
+        return {"<a href=\"hashtag://" + getTextPart(fullText) + "\">", A_TAG_END};
+    case Type::Cashtag:
+        return {"<a href=\"cashtag://" + getTextPart(fullText) + "\">", A_TAG_END};
     default:
         return {};
     }
@@ -153,36 +158,46 @@ struct FormattedText::Insertion {
     }
 };
 
-/*struct FormattedText::CustomEntity {
-    int position;
-    FormattedTextEntity entity;
-
-    CustomEntity(int position, const FormattedTextEntity &entity)
-        : position(position), entity(entity) {}
-};*/
-
 FormattedText::FormattedText(const QString &text, const QList<PositionedFormattedTextEntity> &entities)
     : plainText(text), entities(entities)
 {}
 
-FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreCustomEmojis) {
+FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreFull) {
     if (formattedText.isEmpty()) return;
-    setFormattedText(formattedText, ignoreEntities, ignoreCustomEmojis);
+    setFormattedText(formattedText, ignoreEntities, ignoreFull);
 }
 
-void FormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreCustomEmojis) {
+void FormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreFull) {
     this->plainText = text.value(TEXT).toString();
+    this->needsRichText = false;
 
     entities.clear();
     if (ignoreEntities) return;
-    for (const QVariant &rawEntity : text.value(ENTITIES).toList()) {
+    const QVariantList rawEntities = text.value(ENTITIES).toList();
+    for (const QVariant &rawEntity : rawEntities) {
         PositionedFormattedTextEntity entity(rawEntity.toMap());
-        bool isCustomEmoji = entity.type == FormattedTextEntity::Type::CustomEmoji;
-        if (ignoreCustomEmojis && isCustomEmoji) continue;
-        entities.append(entity);
 
-        if (isCustomEmoji)
-            customEmojiIds.append(entity.typeData.toString());
+        if (ignoreFull)
+            switch (entity.type) {
+            case FormattedTextEntity::Type::CustomEmoji:
+            case FormattedTextEntity::Type::Spoiler:
+                continue;
+            default:
+                break;
+            }
+        else
+            switch (entity.type) {
+            case FormattedTextEntity::Type::CustomEmoji:
+                customEmojiIds.append(entity.typeData.toString());
+                break;
+            case FormattedTextEntity::Type::Spoiler:
+                this->needsRichText = true;
+                break;
+            default:
+                break;
+            }
+
+        entities.append(entity);
     }
 }
 
@@ -225,15 +240,13 @@ QString FormattedText::parse() const {
 
     QList<Insertion> insertions;
 
-    //QList<CustomEntity> customEntities;
-    for (const PositionedFormattedTextEntity &entity : entities) {
-        //if (withCustom && entity.isCustom())
-        //    customEntities.append({entity.position, entity.getUnpositioned()});
+    for (int i=0; i < entities.length(); i++) {
+        const PositionedFormattedTextEntity &entity = entities.at(i);
 
         QString replacement = entity.getReplacement(*this);
         if (!replacement.isEmpty())
             insertions.append({entity.offset, replacement, entity.length});
-        auto htmlTags = entity.getHtmlTags(plainText);
+        auto htmlTags = entity.getHtmlTags(plainText, i);
         if (htmlTags.first.isEmpty() && htmlTags.second.isEmpty())
             continue;
 
@@ -251,16 +264,24 @@ QString FormattedText::parse() const {
 
     std::sort(insertions.begin(), insertions.end(), Insertion::sort);
     QString result = plainText;
-    for (const Insertion &insertion : insertions) {
+    for (const Insertion &insertion : insertions)
         result.replace(this->prefixOffset + insertion.offset, insertion.removeLength, insertion.insertion);
 
-        //if (withCustom)
-        //    for (CustomEntity &entity : customEntities)
-        //        if (entity.position >= insertion.offset)
-        //            entity.position += insertion.insertion.length() - insertion.removeLength;
-    }
-
     return result;
+}
+
+void FormattedText::handleLink(const QString &link, TDLibWrapper *tdLibWrapper, bool skipConfirmation, bool checkExternalOnError) {
+    if (link.startsWith("user://"))
+        tdLibWrapper->searchPublicChatOpenDirectly(link.mid(8));
+    else if (link.startsWith("userId://"))
+        tdLibWrapper->createPrivateChat(link.mid(9).toLongLong(), "openDirectly");
+    else if (link.startsWith("hashtag://"))
+        emit tdLibWrapper->searchHashtag(link.mid(10));
+    else if (link.startsWith("cashtag://"))
+        emit tdLibWrapper->searchHashtag(link.mid(10), true);
+    else
+        // Not a link from FormattedText, let TDLib check if it's an internal one
+        tdLibWrapper->getInternalLinkType(link, skipConfirmation, checkExternalOnError);
 }
 
 
@@ -296,16 +317,20 @@ void FullFormattedText::setTdLibWrapper(TDLibWrapper *tdLibWrapper) {
     }
 }
 
+// TODO: reorganize this somehow
 void FullFormattedText::setFormattedText(const FormattedText &formattedText) {
+    bool prevNeedsRichText = needsRichText;
     FormattedText::operator=(formattedText);
     emit parsedTextChanged();
     processCustomEmojis();
+    if (prevNeedsRichText != needsRichText) emit needsRichTextChanged();
 }
-
 void FullFormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreCustomEmojis) {
+    bool prevNeedsRichText = needsRichText;
     FormattedText::setFormattedText(text, ignoreEntities, ignoreCustomEmojis);
     emit parsedTextChanged();
     processCustomEmojis();
+    if (prevNeedsRichText != needsRichText) emit needsRichTextChanged();
 }
 
 void FullFormattedText::setCustomEmojiSize(int size) {
@@ -354,4 +379,22 @@ void FullFormattedText::handleStickerDownloadingCompletedChanged() {
 
     if (file->isDownloadingCompleted())
         emit customEmojisPartiallyLoaded();
+}
+
+bool FullFormattedText::handleTextLink(const QString &link) {
+    if (link.startsWith("revealSpoiler://")) {
+        bool ok;
+        int i = link.mid(16).toInt(&ok);
+        if (ok && i >= 0 && i <= entities.length()) {
+            entities[i].typeData = true;
+            emit parsedTextChanged();
+        }
+        return true;
+    }
+    return false;
+}
+
+void FullFormattedText::handleLink(const QString &link, bool skipConfirmation, bool checkExternalOnError) {
+    if (!handleTextLink(link))
+        FormattedText::handleLink(link, tdLibWrapper, skipConfirmation, checkExternalOnError);
 }

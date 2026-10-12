@@ -48,9 +48,10 @@ struct FormattedTextEntity {
     Type type = Type::Unknown;
 
     QVariant typeData;
+    // URL for TextUrl
     // User ID for MentionName
     // Emoji ID for CustomEmoji
-    // TODO other types..
+    // Revealed or not for spoilers
 };
 
 struct PositionedFormattedTextEntity : public FormattedTextEntity {
@@ -59,7 +60,7 @@ struct PositionedFormattedTextEntity : public FormattedTextEntity {
 
     QString getTextPart(const QString &fullText) const;
     QString getReplacement(const FormattedText &parent) const;
-    QPair<QString, QString> getHtmlTags(const QString &fullText) const;
+    QPair<QString, QString> getHtmlTags(const QString &fullText, int index) const;
 
     inline FormattedTextEntity getUnpositioned() const { return {type, typeData}; }
 
@@ -69,12 +70,11 @@ struct PositionedFormattedTextEntity : public FormattedTextEntity {
 class FormattedText {
 public:
     FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {});
-    FormattedText(const QVariantMap &formattedText, bool ignoreEntities = false, bool ignoreCustomEmojis = false);
+    FormattedText(const QVariantMap &formattedText, bool ignoreEntities = false, bool ignoreFull = false);
 
-    virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreCustomEmojis = false);
+    virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreFull = false);
 
     void argFrom(const QString &text);
-    inline void addEntity(const PositionedFormattedTextEntity &entity) { entities.append(entity); }
 
     inline bool isEmpty() const { return plainText.isEmpty(); }
     inline QString getPlain() const { return plainText; }
@@ -90,6 +90,8 @@ public:
     virtual inline int getCustomEmojiSize() const { return 0; }
     virtual inline QString getCustomEmojiPath(qlonglong customEmojiId) const { return {}; }
 
+    static void handleLink(const QString &link, TDLibWrapper *tdLibWrapper, bool skipConfirmation, bool checkExternalOnError);
+
 private:
     struct Insertion;
     //struct CustomEntity;
@@ -98,20 +100,22 @@ private:
     void addInsertionsToFor(QList<Insertion> &insertions, const QChar &original, const QString &replacement) const;
     void addInsertionsToFor(QList<Insertion> &insertions, const QRegularExpression &original, const QString &replacement) const;
 
+protected:
     QString plainText;
     QList<PositionedFormattedTextEntity> entities;
     int prefixOffset = 0;
 
-protected:
     QStringList customEmojiIds;
+    bool needsRichText = false;
 };
 
-// It would make no sense to use this without custom emojis, and so without any entities either, meaning we can omit those flags here
+// FullFormattedText supports custom emojis, spoilers, and in the future quotes
 class FullFormattedText : public QObject, public FormattedText {
     Q_OBJECT
     Q_PROPERTY(TDLibWrapper *tdlib MEMBER tdLibWrapper WRITE setTdLibWrapper NOTIFY tdlibChanged)
     Q_PROPERTY(int customEmojiSize MEMBER customEmojiSize WRITE setCustomEmojiSize NOTIFY customEmojiSizeChanged)
     Q_PROPERTY(QString parsedText READ parse NOTIFY parsedTextChanged)
+    Q_PROPERTY(bool needsRichText MEMBER needsRichText NOTIFY needsRichTextChanged)
 public:
     FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
     FullFormattedText(const QVariantMap &formattedText = {}, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
@@ -124,11 +128,15 @@ public:
     void setCustomEmojiSize(int size);
     virtual QString getCustomEmojiPath(qlonglong customEmojiId) const override;
 
+    Q_INVOKABLE bool handleTextLink(const QString &link);
+    Q_INVOKABLE void handleLink(const QString &link, bool skipConfirmation = false, bool checkExternalOnError = true);
+
 signals:
     void tdlibChanged();
     void customEmojiSizeChanged();
     void customEmojisPartiallyLoaded();
     void parsedTextChanged();
+    void needsRichTextChanged();
 
 private slots:
     void handleCustomEmojiStickersReceived(const QVariantList &stickers);

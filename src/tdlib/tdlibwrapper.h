@@ -574,6 +574,9 @@ signals:
     void internalLinkTypeSettingsReceived(const QString &section, const QString &subsection);
     void linkUnsupportedByApp(const QString &type);
 
+    // FormattedText links
+    void searchHashtag(const QString &text, bool cashtag = false);
+
     // For non-default extra value
     void internalLinkTypeReceived(const QVariantMap &type, const QString &extra);
 
