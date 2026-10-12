@@ -6,6 +6,7 @@
 
 #include "tdlibreceiver.h"
 #include "tdlibwrapper.h"
+#include "messagesender.h"
 #include <QObject>
 #include <QQmlPropertyMap>
 
@@ -35,19 +36,6 @@ public:
 
         const qlonglong groupId;
         QVariantMap groupInfo;
-    };
-
-    struct MessageSender {
-        MessageSender(bool isChat, qlonglong id) : isChat(isChat), id(id) {}
-        MessageSender(const QVariantMap &sender);
-
-        inline bool isUser() { return !isChat; }
-        inline bool isUser(qlonglong userId) { return isUser() && id == userId; }
-
-        bool operator==(const MessageSender &other) const;
-
-        bool isChat = false;
-        qlonglong id = 0;
     };
 
     void reset();
@@ -243,5 +231,3 @@ private:
     qlonglong ownedGrams;
     QVariantMap stakeDiceState;
 };
-
-uint qHash(const TDLibData::MessageSender &key, uint seed = 0) noexcept;

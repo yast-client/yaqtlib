@@ -85,6 +85,7 @@ MainHelper::AppContext* MainHelper::registerTypes(int argc, char *argv[], QShare
     qmlRegisterUncreatableType<ChatData>(uri, 1, 0, "TDLibChat", QString());
     qmlRegisterUncreatableType<MessageData>(uri, 1, 0, "TDLibMessage", QString());
 
+    qRegisterMetaType<MessageSender>("MessageSender");
     qRegisterMetaType<FormattedText>("FormattedText");
 
     Utilities *utilities = tdLibWrapper->getUtilities();

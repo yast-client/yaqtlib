@@ -35,20 +35,8 @@ qlonglong BaseMessageableData::lastMessageId() const {
     return lastMessage(ID).toLongLong();
 }
 
-QVariantMap BaseMessageableData::lastMessageSenderId() const {
+MessageSender BaseMessageableData::lastMessageSenderId() const {
     return lastMessage(SENDER_ID).toMap();
-}
-
-qlonglong BaseMessageableData::lastMessageSenderUserId() const {
-    return lastMessage(SENDER_ID).toMap().value(USER_ID).toLongLong();
-}
-
-qlonglong BaseMessageableData::lastMessageSenderChatId() const {
-    return lastMessage(SENDER_ID).toMap().value(CHAT_ID).toLongLong();
-}
-
-bool BaseMessageableData::lastMessageSenderIsChat() const {
-    return lastMessage(SENDER_ID).toMap().value(_TYPE).toString() == "messageSenderChat";
 }
 
 qlonglong BaseMessageableData::lastMessageDate() const {

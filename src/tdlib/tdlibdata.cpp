@@ -92,21 +92,6 @@ bool TDLibData::Group::isPublic() const {
             || this->groupInfo.value("is_direct_messages_group").toBool(); // last one is questionable
 }
 
-// MessageSender
-
-TDLibData::MessageSender::MessageSender(const QVariantMap &sender) :
-    isChat(sender.value(_TYPE) == "messageSenderChat"),
-    id(sender.value(isChat ? CHAT_ID : USER_ID).toLongLong())
-{}
-
-bool TDLibData::MessageSender::operator==(const MessageSender &other) const {
-    return isChat == other.isChat && id == other.id;
-}
-
-uint qHash(const TDLibData::MessageSender &key, uint seed) noexcept {
-    return qHash(QPair<bool, qlonglong>(key.isChat, key.id), seed);
-}
-
 
 TDLibData::TDLibData(TDLibWrapper *tdLibWrapper, TDLibReceiver *tdLibReceiver)
     : QObject(tdLibWrapper),

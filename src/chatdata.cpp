@@ -175,7 +175,7 @@ bool ChatData::updateLastReadOutboxMessageId(qlonglong messageId) {
 
 QVector<int> ChatData::updateLastMessage(const QVariantMap &message) {
     const qlonglong prevLastMessageId = lastMessageId();
-    const qlonglong prevSenderUserId = lastMessageSenderUserId();
+    const MessageSender prevSenderId = lastMessageSenderId();
     const qlonglong prevLastMessageDate = lastMessageDate();
     const QString prevLastMessageText = lastMessageText();
     const QVariant prevLastMessageMinithumbnail = lastMessageMinithumbnail();
@@ -189,7 +189,7 @@ QVector<int> ChatData::updateLastMessage(const QVariantMap &message) {
     changedRoles.append(ChatData::RoleDisplay);
     if (prevLastMessageId != lastMessageId())
         changedRoles.append(ChatData::RoleLastMessageId);
-    if (prevSenderUserId != lastMessageSenderUserId())
+    if (prevSenderId != lastMessageSenderId())
         changedRoles.append(ChatData::RoleLastMessageSenderId);
     if (prevLastMessageDate != lastMessageDate())
         changedRoles.append(ChatData::RoleLastMessageDate);

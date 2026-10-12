@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QVariant>
 #include <QVector>
+#include "tdlib/messagesender.h"
 
 struct MessageData {
     Q_GADGET
@@ -81,14 +82,9 @@ public:
     QVector<int> setContainsUnreadPollVotes(bool value);
     QVector<int> setEphemeralContent(const QVariantMap &factCheck);
 
-    int lastMessageSenderUserId() const;
-    qlonglong lastMessageSenderChatId() const;
-    bool lastMessageSenderIsChat() const;
-
+    MessageSender senderId() const;
     qlonglong mediaAlbumId() const;
-
     QVariantMap getContent() const;
-
 
 
     QVariantMap messageData;

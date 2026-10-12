@@ -210,7 +210,7 @@ QVariantMap Utilities::getMessageContentFormattedText(const QVariantMap &message
     return messageContent.value(CAPTION).toMap();
 }
 
-QString Utilities::getServiceMessageText(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, const QString &forumTopicName, bool inForumTopic) const {
+QString Utilities::getServiceMessageText(const QVariantMap &messageContent, MessageSender messageSender, const QString &forumTopicName, bool inForumTopic) const {
     const QString contentType = messageContent.value(_TYPE).toString();
     const bool myself = messageSender.isUser(tdLibWrapper->data()->myUserId());
 
@@ -485,7 +485,7 @@ FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bo
     return caption;
 }
 
-FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
     if (messageContent.isEmpty()) return {};
 
     if (messageContentIsService(messageContent.value(_TYPE).toString()))
@@ -526,7 +526,7 @@ QString Utilities::getMessageText(const QVariantMap &message, MessageText type, 
 
 QString Utilities::getMessageContentText(const QVariantMap &messageContent, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
     FormattedText text = getMessageTextInternal(
-        messageContent, TDLibData::MessageSender(true, 0), false, // Skip all user-related checks
+        messageContent, MessageSender(true, 0), false, // Skip all user-related checks
         type, ignoreEntities, false,
         forumTopicName
     );
@@ -641,7 +641,7 @@ QString Utilities::getChatTitle(const ChatData *chat) const {
     return title.isEmpty() ? tr("Unknown", "A chat without a known name") : title;
 }
 
-QString Utilities::formatMessageSender(const TDLibData::MessageSender &messageSender) const {
+QString Utilities::formatMessageSender(const MessageSender &messageSender) const {
     if (messageSender.isChat)
         return getChatTitleById(messageSender.id);
     else
@@ -874,7 +874,7 @@ ChatData::ChatAction Utilities::getMainChatAction(bool isUser, const QList<ChatD
     return mainAction;
 }
 
-QString Utilities::formatChatActions(bool isUser, const QHash<TDLibData::MessageSender, ChatData::ChatAction> &chatActions) const {
+QString Utilities::formatChatActions(bool isUser, const QHash<MessageSender, ChatData::ChatAction> &chatActions) const {
     if (chatActions.isEmpty()) return QString();
 
     QString prefix;
@@ -887,7 +887,7 @@ QString Utilities::formatChatActions(bool isUser, const QHash<TDLibData::Message
         QStringList names;
         int othersCount = 0;
 
-        for (const TDLibData::MessageSender &sender : chatActions.keys()) {
+        for (const MessageSender &sender : chatActions.keys()) {
             if (names.size() < 2)
                 names.append(formatMessageSender(sender));
             else

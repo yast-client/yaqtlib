@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include "tdlib/tdlibwrapper.h"
+#include "tdlib/tdlibdata.h"
 
 class BaseMessageableData {
 public:
@@ -20,10 +21,7 @@ public:
     const QVariant lastMessage(const QString &key) const;
 
     qlonglong lastMessageId() const;
-    QVariantMap lastMessageSenderId() const;
-    qlonglong lastMessageSenderUserId() const;
-    qlonglong lastMessageSenderChatId() const;
-    bool lastMessageSenderIsChat() const;
+    MessageSender lastMessageSenderId() const;
     qlonglong lastMessageDate() const;
     virtual QString lastMessageText() const;
     QVariant lastMessageMinithumbnail() const;

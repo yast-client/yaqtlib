@@ -152,7 +152,7 @@ const QVector<int> ForumTopic::updateLastReadOutboxMessageId(qlonglong value) {
 
 const QVector<int> ForumTopic::updateLastMessage(const QVariantMap &message) {
     const qlonglong prevLastMessageId = lastMessageId();
-    const qlonglong prevSenderUserId = lastMessageSenderUserId();
+    const MessageSender prevSenderId = lastMessageSenderId();
     const qlonglong prevLastMessageDate = lastMessageDate();
     const QString prevLastMessageText = lastMessageText();
     const QVariant prevLastMessageMinithumbnail = lastMessageMinithumbnail();
@@ -165,7 +165,7 @@ const QVector<int> ForumTopic::updateLastMessage(const QVariantMap &message) {
     QVector<int> changedRoles;
     if (prevLastMessageId != lastMessageId())
         changedRoles.append(RoleLastMessageId);
-    if (prevSenderUserId != lastMessageSenderUserId())
+    if (prevSenderId != lastMessageSenderId())
         changedRoles.append(RoleLastMessageSenderId);
     if (prevLastMessageDate != lastMessageDate())
         changedRoles.append(RoleLastMessageDate);
@@ -271,7 +271,7 @@ const QVector<int> ForumTopic::updateForumTopicInfo(const QVariantMap &newInfo) 
     if (info().value(CREATION_DATE).toInt() != newInfo.value(CREATION_DATE).toInt())
         changedRoles.append(RoleCreationDate);
     if (info().value(CREATOR_ID).toMap() != newInfo.value(CREATOR_ID).toMap())
-        changedRoles << RoleCreatorIsChat << RoleCreatorUserId << RoleCreatorChatId;
+        changedRoles << RoleCreatorId;
     if (info().value(IS_GENERAL).toBool() != newInfo.value(IS_GENERAL).toBool())
         changedRoles.append(RoleIsGeneral);
     if (info().value(IS_OUTGOING).toBool() != newInfo.value(IS_OUTGOING).toBool())

@@ -92,16 +92,8 @@ QVector<int> MessageData::flagsToRoles(uint flags) {
     return roles;
 }
 
-int MessageData::lastMessageSenderUserId() const {
-    return messageData.value(SENDER_ID).toMap().value(USER_ID).toInt();
-}
-
-qlonglong MessageData::lastMessageSenderChatId() const {
-    return messageData.value(SENDER_ID).toMap().value(CHAT_ID).toLongLong();
-}
-
-bool MessageData::lastMessageSenderIsChat() const {
-    return messageData.value(SENDER_ID).toMap().value(_TYPE).toString() == "messageSenderChat";
+MessageSender MessageData::senderId() const {
+    return messageData.value(SENDER_ID).toMap();
 }
 
 qlonglong MessageData::mediaAlbumId() const {
@@ -325,11 +317,7 @@ bool MessageData::areTogether(const MessageData *message1, const MessageData *me
     if (Utilities::messageContentIsService(message1->messageContentType) || Utilities::messageContentIsService(message2->messageContentType))
         return false;
 
-    if (message1->lastMessageSenderIsChat() != message2->lastMessageSenderIsChat())
-        return false;
-    if (message1->lastMessageSenderIsChat() && message1->lastMessageSenderChatId() != message2->lastMessageSenderChatId())
-        return false;
-    if (!message1->lastMessageSenderIsChat() && message1->lastMessageSenderUserId() != message2->lastMessageSenderUserId())
+    if (message1->senderId() != message2->senderId())
         return false;
 
     return qAbs(message1->messageData.value(DATE).toInt() - message2->messageData.value(DATE).toInt()) <= 900;

@@ -99,6 +99,7 @@ target_sources(yaqtlib PRIVATE
     src/tdlib/tdlibdata.cpp
     src/usersmodel.cpp
     src/formattedtext.cpp
+    src/tdlib/messagesender.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -142,4 +143,5 @@ target_sources(yaqtlib PRIVATE
     src/tdlib/tdlibdata.h
     src/usersmodel.h
     src/formattedtext.h
+    src/tdlib/messagesender.h
 )

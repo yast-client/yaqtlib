@@ -117,5 +117,5 @@ public:
     QVariantMap verificationStatus;
     TDLibWrapper::ChatType chatType;
     TDLibWrapper::ChatMemberStatus memberStatus;
-    QHash<TDLibData::MessageSender, ChatAction> chatActions;
+    QHash<MessageSender, ChatAction> chatActions;
 };

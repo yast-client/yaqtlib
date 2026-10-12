@@ -68,9 +68,7 @@ QHash<int,QByteArray> ForumTopicsModel::roleNames() const {
         {ForumTopic::RoleIconColor, "icon_color"},
         {ForumTopic::RoleIconCustomEmojiId, "icon_custom_emoji_id"},
         {ForumTopic::RoleCreationDate, "creation_date"},
-        {ForumTopic::RoleCreatorIsChat, "creator_is_chat"},
-        {ForumTopic::RoleCreatorUserId, "creator_user_id"},
-        {ForumTopic::RoleCreatorChatId, "creator_chat_id"},
+        {ForumTopic::RoleCreatorId, "creator_id"},
         {ForumTopic::RoleIsGeneral, "is_general"},
         {ForumTopic::RoleIsOutgoing, "is_outgoing"},
         {ForumTopic::RoleIsClosed, "is_closed"},
@@ -118,12 +116,8 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
             return QString::number(topic->iconCustomEmojiId());
         case ForumTopic::RoleCreationDate:
             return topic->info("creation_date").toInt();
-        case ForumTopic::RoleCreatorIsChat:
-            return topic->info(CREATOR_ID).toMap().value(_TYPE).toString() == "messageSenderChat";
-        case ForumTopic::RoleCreatorUserId:
-            return topic->info(CREATOR_ID).toMap().value("user_id");
-        case ForumTopic::RoleCreatorChatId:
-            return topic->info(CREATOR_ID).toMap().value("chat_id");
+        case ForumTopic::RoleCreatorId:
+            return QVariant::fromValue(MessageSender(topic->info(CREATOR_ID).toMap()));
         case ForumTopic::RoleIsGeneral:
             return topic->isGeneral();
         case ForumTopic::RoleIsOutgoing:
@@ -136,7 +130,7 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
             return topic->info("is_name_implicit").toBool();
 
         case ForumTopic::RoleLastMessageId: return topic->lastMessageId();
-        case ForumTopic::RoleLastMessageSenderId: return topic->lastMessageSenderId();
+        case ForumTopic::RoleLastMessageSenderId: return QVariant::fromValue(topic->lastMessageSenderId());
         case ForumTopic::RoleLastMessageText: return topic->lastMessageText();
         case ForumTopic::RoleLastMessageMinithumbnail: return topic->lastMessageMinithumbnail();
         case ForumTopic::RoleLastMessageIsService: return topic->lastMessageIsService();

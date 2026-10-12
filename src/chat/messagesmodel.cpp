@@ -508,7 +508,7 @@ void MessagesModel::setMessagesAlbum(MessageData *message) {
 int MessagesModel::findLastSentMessageIndex() const {
     const qlonglong myUserId = tdLibWrapper->data()->myUserId();
     for (int i = (messages.size() - 1); i >= 0; i--) // find last own message in list
-        if (messages.at(i)->lastMessageSenderUserId() == myUserId)
+        if (messages.at(i)->senderId().isUser(myUserId))
             return i;
     return -1;
 }

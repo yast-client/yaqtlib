@@ -32,9 +32,9 @@ public:
     Q_INVOKABLE inline QString getChatTitleById(qlonglong chatId) const {
         return getChatTitle(tdLibWrapper->data()->getChatData(chatId));
     }
-    QString formatMessageSender(const TDLibData::MessageSender &sender) const;
+    Q_INVOKABLE QString formatMessageSender(const MessageSender &sender) const;
     Q_INVOKABLE QString formatMessageSender(const QVariantMap &messageSender) const {
-        return formatMessageSender(TDLibData::MessageSender(messageSender));
+        return formatMessageSender(MessageSender(messageSender));
     }
     static QString formatDuration(int seconds);
 
@@ -43,7 +43,7 @@ public:
 
     Q_INVOKABLE static QVariantMap getMessageContentFormattedText(const QVariantMap &messageContent);
     Q_INVOKABLE static QVariantMap getMainAlbumMessage(const QVariantList &messages, bool ignoreDocumentsAudios = true);
-    QString getServiceMessageText(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, const QString &forumTopicName = {}, bool inForumTopic = false) const;
+    QString getServiceMessageText(const QVariantMap &messageContent, MessageSender messageSender, const QString &forumTopicName = {}, bool inForumTopic = false) const;
     Q_INVOKABLE QString getServiceMessageText(const QVariantMap &message, const QString &forumTopicName = {}, bool inForumTopic = false) const;
     FormattedText getMessagePreview(const QVariantMap &messageContent, bool outgoing = false, bool withThumbnails = false, bool ignoreEntites = false, bool ignoreCustomEmojis = false) const;
 
@@ -81,7 +81,7 @@ public:
 
     Q_INVOKABLE static QString formatNames(const QStringList &names, int othersCount);
     static ChatData::ChatAction getMainChatAction(bool isUser, const QList<ChatData::ChatAction> &chatActions);
-    QString formatChatActions(bool isUser, const QHash<TDLibData::MessageSender, ChatData::ChatAction> &chatActions) const;
+    QString formatChatActions(bool isUser, const QHash<MessageSender, ChatData::ChatAction> &chatActions) const;
     static qreal getChatActionsProgress(bool isUser, const QList<ChatData::ChatAction> &chatActions);
 
     Q_INVOKABLE static QVariantMap makeImportedContact(const QString &firstName, const QString &lastName, const QString &phoneNumber, const QVariantMap &note, bool forceEmptyNote = false);
@@ -99,7 +99,7 @@ private:
     static QList<FormattedTextReplacement> findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter);
     static QVariantList formattedTextEntitiesFromReplacements(QList<FormattedTextReplacement> &replacements, QString &text);
 
-    FormattedText getMessageTextInternal(const QVariantMap &messageContent, TDLibData::MessageSender messageSender, bool outgoing = false, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
+    FormattedText getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing = false, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
 
     static QString getUnknownUserName(const QVariantMap &user);
 
