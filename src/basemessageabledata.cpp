@@ -35,6 +35,10 @@ qlonglong BaseMessageableData::lastMessageId() const {
     return lastMessage(ID).toLongLong();
 }
 
+QVariantMap BaseMessageableData::lastMessageSenderId() const {
+    return lastMessage(SENDER_ID).toMap();
+}
+
 qlonglong BaseMessageableData::lastMessageSenderUserId() const {
     return lastMessage(SENDER_ID).toMap().value(USER_ID).toLongLong();
 }

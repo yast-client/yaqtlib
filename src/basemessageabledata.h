@@ -20,6 +20,7 @@ public:
     const QVariant lastMessage(const QString &key) const;
 
     qlonglong lastMessageId() const;
+    QVariantMap lastMessageSenderId() const;
     qlonglong lastMessageSenderUserId() const;
     qlonglong lastMessageSenderChatId() const;
     bool lastMessageSenderIsChat() const;

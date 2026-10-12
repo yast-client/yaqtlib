@@ -157,7 +157,7 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const {
         case ChatData::RoleLastReadInboxMessageId: return data->data->lastReadInboxMessageId();
         case ChatData::RoleLastReadOutboxMessageId: return data->data->lastReadOutboxMessageId();
         case ChatData::RoleLastMessageId: return data->data->lastMessageId();
-        case ChatData::RoleLastMessageSenderId: return data->data->lastMessageSenderUserId();
+        case ChatData::RoleLastMessageSenderId: return data->data->lastMessageSenderId();
         case ChatData::RoleLastMessageText: return data->data->lastMessageText();
         case ChatData::RoleLastMessageMinithumbnail: return data->data->lastMessageMinithumbnail();
         case ChatData::RoleLastMessageIsService: return data->data->lastMessageIsService();

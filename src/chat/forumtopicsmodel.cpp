@@ -136,7 +136,7 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
             return topic->info("is_name_implicit").toBool();
 
         case ForumTopic::RoleLastMessageId: return topic->lastMessageId();
-        case ForumTopic::RoleLastMessageSenderId: return topic->lastMessageSenderUserId();
+        case ForumTopic::RoleLastMessageSenderId: return topic->lastMessageSenderId();
         case ForumTopic::RoleLastMessageText: return topic->lastMessageText();
         case ForumTopic::RoleLastMessageMinithumbnail: return topic->lastMessageMinithumbnail();
         case ForumTopic::RoleLastMessageIsService: return topic->lastMessageIsService();
