@@ -52,6 +52,8 @@ FormattedTextEntity::FormattedTextEntity(const QVariantMap &entityType) {
     if (type == "textEntityTypeDateTime") this->type = Type::DateTime;
 
     switch (this->type) {
+    case Type::TextUrl:
+        typeData = entityType.value("url").toString();
     case Type::MentionName:
         typeData = entityType.value("user_id").toLongLong();
     case Type::CustomEmoji:
@@ -114,6 +116,8 @@ QPair<QString, QString> PositionedFormattedTextEntity::getHtmlTags(const QString
         return {"<pre>", "</pre>"};
     case Type::Url:
         return {"<a href=\"" + getTextPart(fullText) + "\">", A_TAG_END};
+    case Type::TextUrl:
+        return {"<a href=\"" + typeData.toString() + "\">", A_TAG_END};
     case Type::PhoneNumber:
         return {"<a href=\"tel:" + getTextPart(fullText) + "\">", A_TAG_END};
     case Type::EmailAddress:
