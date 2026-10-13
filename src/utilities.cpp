@@ -200,7 +200,7 @@ QString Utilities::enhanceMessageText(const QVariantMap &formattedText, bool ign
     }
 
     // ignore escapeReserved here for now
-    return FormattedText(formattedText, true).parse();
+    return FormattedText(formattedText, FormattedText::Ignore::Full).parse();
 }
 
 QVariantMap Utilities::getMessageContentFormattedText(const QVariantMap &messageContent) {
@@ -361,7 +361,7 @@ QString Utilities::getServiceMessageText(const QVariantMap &message, const QStri
     return getServiceMessageText(message.value(CONTENT).toMap(), {message.value(SENDER_ID).toMap()}, forumTopicName, inForumTopic);
 }
 
-FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bool outgoing, bool withThumbnails, bool ignoreEntities, bool ignoreCustomEmojis) const {
+FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bool outgoing, bool withThumbnails, FormattedText::Ignore formattedIgnore) const {
     // Only for non-service messages
     const QString contentType = messageContent.value(_TYPE).toString();
 
@@ -442,7 +442,7 @@ FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bo
         return getMessageGroupCallText(messageContent, outgoing);
 
     // Formatted
-    FormattedText caption(getMessageContentFormattedText(messageContent), ignoreEntities, ignoreCustomEmojis);
+    FormattedText caption(getMessageContentFormattedText(messageContent), formattedIgnore);
     QString captionTemplate, noCaptionText;
     
     if (contentType == MESSAGE_CONTENT_TYPE_PHOTO) {
@@ -458,10 +458,14 @@ FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bo
             captionTemplate = tr("GIF: %1");
         noCaptionText = tr("GIF");
     } else if (contentType == MESSAGE_CONTENT_TYPE_AUDIO) {
-        const QString fileName = messageContent.value(AUDIO).toMap().value(FILE_NAME).toString();
-        if (!fileName.isEmpty()) {
-            captionTemplate = tr("%1: %2", "Audio message. %1 is the audio file name, %2 is the caption").arg(fileName);
-            noCaptionText = fileName;
+        const QVariantMap audio = messageContent.value(AUDIO).toMap();
+        QString name = audio.value(TITLE).toString();
+        if (name.isEmpty())
+            name = audio.value(FILE_NAME).toString();
+
+        if (!name.isEmpty()) {
+            captionTemplate = tr("%1: %2", "Audio message. %1 is the audio file name, %2 is the caption").arg(name);
+            noCaptionText = name;
         } else
             noCaptionText = tr("Audio");
     } else if (contentType == MESSAGE_CONTENT_TYPE_DOCUMENT) {
@@ -485,7 +489,7 @@ FormattedText Utilities::getMessagePreview(const QVariantMap &messageContent, bo
     return caption;
 }
 
-FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing, MessageText type, bool ignoreEntities, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing, MessageText type, FormattedText::Ignore formattedIgnore, const QString &forumTopicName) const {
     if (messageContent.isEmpty()) return {};
 
     if (messageContentIsService(messageContent.value(_TYPE).toString()))
@@ -497,16 +501,16 @@ FormattedText Utilities::getMessageTextInternal(const QVariantMap &messageConten
         return getServiceMessageText(messageContent, messageSender, forumTopicName, type == MessageTextSimpleInForumTopic);
 
     if (type == MessageTextDefault)
-        return {getMessageContentFormattedText(messageContent), ignoreEntities, ignoreCustomEmojis};
-    return getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, ignoreEntities, ignoreCustomEmojis);
+        return {getMessageContentFormattedText(messageContent), formattedIgnore};
+    return getMessagePreview(messageContent, outgoing, type == MessageTextSimpleWithThumbnails, formattedIgnore);
 }
 
-FormattedText Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, bool ignoreCustomEmojis, const QString &forumTopicName) const {
+FormattedText Utilities::getMessageFormattedText(const QVariantMap &message, MessageText type, FormattedText::Ignore formattedIgnore, const QString &forumTopicName) const {
     return getMessageTextInternal(
         message.value(CONTENT).toMap(),
         message.value(SENDER_ID).toMap(),
         message.value(IS_OUTGOING).toBool(),
-        type, false, ignoreCustomEmojis,
+        type, formattedIgnore,
         forumTopicName
     );
 }
@@ -516,7 +520,7 @@ QString Utilities::getMessageText(const QVariantMap &message, MessageText type, 
         message.value(CONTENT).toMap(),
         message.value(SENDER_ID).toMap(),
         message.value(IS_OUTGOING).toBool(),
-        type, ignoreEntities, false,
+        type, ignoreEntities ? FormattedText::Ignore::All : FormattedText::Ignore::Full,
         forumTopicName
     );
     if (ignoreEntities)
@@ -527,7 +531,7 @@ QString Utilities::getMessageText(const QVariantMap &message, MessageText type, 
 QString Utilities::getMessageContentText(const QVariantMap &messageContent, MessageText type, bool ignoreEntities, bool escapeReserved, const QString &forumTopicName) const {
     FormattedText text = getMessageTextInternal(
         messageContent, MessageSender(true, 0), false, // Skip all user-related checks
-        type, ignoreEntities, false,
+        type, ignoreEntities ? FormattedText::Ignore::All : FormattedText::Ignore::Full,
         forumTopicName
     );
     if (ignoreEntities)

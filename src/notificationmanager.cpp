@@ -494,7 +494,7 @@ void NotificationManager::publishNotification(const QSharedPointer<NotificationG
                 // Add author
                 body = utilities->formatMessageSender(message.value(SENDER_ID).toMap()) + ": ";
 
-            body += utilities->getMessageText(message, Utilities::MessageTextSimple, true, false);
+            body += utilities->getMessageFormattedText(message, Utilities::MessageTextSimple, FormattedText::Ignore::FullAndTagged).parse(false);
             nemoNotification->setBody(body);
         } else
             nemoNotification->setBody(tr("You have a new message", "Notification"));

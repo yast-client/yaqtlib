@@ -43,7 +43,8 @@ struct FormattedTextEntity {
     FormattedTextEntity(Type type, const QVariant &typeData = {});
     FormattedTextEntity(const QVariantMap &entity);
 
-    //bool isCustom() const; // TODO: use different blocks, or Qt formatted text, or smth else or both
+    bool isFull() const;
+    bool isLink() const;
 
     Type type = Type::Unknown;
 
@@ -69,17 +70,25 @@ struct PositionedFormattedTextEntity : public FormattedTextEntity {
 
 class FormattedText {
 public:
-    FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {});
-    FormattedText(const QVariantMap &formattedText, bool ignoreEntities = false, bool ignoreFull = false);
+    enum class Ignore {
+        None,
+        All,
+        Full,
+        FullBoldLinks,
+        FullAndTagged
+    };
 
-    virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreFull = false);
+    FormattedText(const QString &text = {}, const QList<PositionedFormattedTextEntity> &entities = {});
+    FormattedText(const QVariantMap &formattedText, Ignore ignore = Ignore::None);
+
+    virtual void setFormattedText(const QVariantMap &text, Ignore ignore = Ignore::None);
 
     void argFrom(const QString &text);
 
     inline bool isEmpty() const { return plainText.isEmpty(); }
     inline QString getPlain() const { return plainText; }
     inline QString getPlainEscaped() const { return getPlainEscapedFor(plainText); }
-    QString parse() const;
+    QString parse(bool escape = true) const;
 
     static QString getPlainFor(const QVariantMap &formattedText);
     static QString getPlainEscapedFor(const QString &text);
@@ -87,6 +96,7 @@ public:
         return getPlainEscapedFor(getPlainFor(formattedText));
     }
     
+    virtual inline bool isFull() const { return false; }
     virtual inline int getCustomEmojiSize() const { return 0; }
     virtual inline QString getCustomEmojiPath(qlonglong customEmojiId) const { return {}; }
 
@@ -120,10 +130,13 @@ public:
     FullFormattedText(const FormattedText &formattedText, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
     FullFormattedText(const QVariantMap &formattedText = {}, TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
 
+    Q_ENUM(Ignore)
+
     void setTdLibWrapper(TDLibWrapper *tdLibWrapper);
     Q_INVOKABLE void setFormattedText(const FormattedText &formattedText);
-    Q_INVOKABLE virtual void setFormattedText(const QVariantMap &text, bool ignoreEntities = false, bool ignoreCustomEmojis = false) override;
+    Q_INVOKABLE virtual void setFormattedText(const QVariantMap &text, Ignore ignore = Ignore::None) override;
 
+    virtual inline bool isFull() const override { return true; }
     virtual inline int getCustomEmojiSize() const override { return customEmojiSize; }
     void setCustomEmojiSize(int size);
     virtual QString getCustomEmojiPath(qlonglong customEmojiId) const override;

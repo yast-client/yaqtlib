@@ -45,9 +45,9 @@ public:
     Q_INVOKABLE static QVariantMap getMainAlbumMessage(const QVariantList &messages, bool ignoreDocumentsAudios = true);
     QString getServiceMessageText(const QVariantMap &messageContent, MessageSender messageSender, const QString &forumTopicName = {}, bool inForumTopic = false) const;
     Q_INVOKABLE QString getServiceMessageText(const QVariantMap &message, const QString &forumTopicName = {}, bool inForumTopic = false) const;
-    FormattedText getMessagePreview(const QVariantMap &messageContent, bool outgoing = false, bool withThumbnails = false, bool ignoreEntites = false, bool ignoreCustomEmojis = false) const;
+    FormattedText getMessagePreview(const QVariantMap &messageContent, bool outgoing = false, bool withThumbnails = false, FormattedText::Ignore formattedIgnore = FormattedText::Ignore::None) const;
 
-    Q_INVOKABLE FormattedText getMessageFormattedText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
+    Q_INVOKABLE FormattedText getMessageFormattedText(const QVariantMap &message, MessageText type = MessageTextDefault, FormattedText::Ignore formattedIgnore = FormattedText::Ignore::None, const QString &forumTopicName = {}) const;
     Q_INVOKABLE QString getMessageText(const QVariantMap &message, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
     Q_INVOKABLE QString getMessageContentText(const QVariantMap &messageContent, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool escapeReserved = true, const QString &forumTopicName = QString()) const;
 
@@ -99,7 +99,7 @@ private:
     static QList<FormattedTextReplacement> findFormattedTextReplacements(const QRegularExpression &re, const QString &text, const QString &entityType, const QString &typeParameter);
     static QVariantList formattedTextEntitiesFromReplacements(QList<FormattedTextReplacement> &replacements, QString &text);
 
-    FormattedText getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing = false, MessageText type = MessageTextDefault, bool ignoreEntities = false, bool ignoreCustomEmojis = false, const QString &forumTopicName = {}) const;
+    FormattedText getMessageTextInternal(const QVariantMap &messageContent, MessageSender messageSender, bool outgoing = false, MessageText type = MessageTextDefault, FormattedText::Ignore formattedIgnore = FormattedText::Ignore::None, const QString &forumTopicName = {}) const;
 
     static QString getUnknownUserName(const QVariantMap &user);
 

@@ -115,7 +115,7 @@ const QVariantMap ForumTopic::lastMessage() const {
 }
 
 QString ForumTopic::lastMessageText() const {
-    return utilities->getMessageText(lastMessage(), Utilities::MessageTextSimpleInForumTopic, true, false, name());
+    return utilities->getMessageFormattedText(lastMessage(), Utilities::MessageTextSimpleWithThumbnails, FormattedText::Ignore::FullBoldLinks, name()).parse();
 }
 
 const QVariantMap ForumTopic::draftMessage() const {

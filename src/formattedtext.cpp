@@ -29,28 +29,28 @@ FormattedTextEntity::FormattedTextEntity(const QVariantMap &entityType) {
     const QString type = entityType.value(_TYPE).toString();
 
     if (type == "textEntityTypeMention") this->type = Type::Mention;
-    if (type == "textEntityTypeHashtag") this->type = Type::Hashtag;
-    if (type == "textEntityTypeCashtag") this->type = Type::Cashtag;
-    if (type == "textEntityTypeBotCommand") this->type = Type::BotCommand;
-    if (type == "textEntityTypeUrl") this->type = Type::Url;
-    if (type == "textEntityTypeEmailAddress") this->type = Type::EmailAddress;
-    if (type == "textEntityTypePhoneNumber") this->type = Type::PhoneNumber;
-    if (type == "textEntityTypeBankCardNumber") this->type = Type::BankCardNumber;
-    if (type == "textEntityTypeBold") this->type = Type::Bold;
-    if (type == "textEntityTypeItalic") this->type = Type::Italic;
-    if (type == "textEntityTypeUnderline") this->type = Type::Underline;
-    if (type == "textEntityTypeStrikethrough") this->type = Type::Strikethrough;
-    if (type == "textEntityTypeSpoiler") this->type = Type::Spoiler;
-    if (type == "textEntityTypeCode") this->type = Type::Code;
-    if (type == "textEntityTypePre") this->type = Type::Pre;
-    if (type == "textEntityTypePreCode") this->type = Type::PreCode;
-    if (type == "textEntityTypeBlockQuote") this->type = Type::BlockQuote;
-    if (type == "textEntityTypeExpandableBlockQuote") this->type = Type::ExpandableBlockQuote;
-    if (type == "textEntityTypeTextUrl") this->type = Type::TextUrl;
-    if (type == "textEntityTypeMentionName") this->type = Type::MentionName;
-    if (type == "textEntityTypeCustomEmoji") this->type = Type::CustomEmoji;
-    if (type == "textEntityTypeMediaTimestamp") this->type = Type::MediaTimestamp;
-    if (type == "textEntityTypeDateTime") this->type = Type::DateTime;
+    else if (type == "textEntityTypeHashtag") this->type = Type::Hashtag;
+    else if (type == "textEntityTypeCashtag") this->type = Type::Cashtag;
+    else if (type == "textEntityTypeBotCommand") this->type = Type::BotCommand;
+    else if (type == "textEntityTypeUrl") this->type = Type::Url;
+    else if (type == "textEntityTypeEmailAddress") this->type = Type::EmailAddress;
+    else if (type == "textEntityTypePhoneNumber") this->type = Type::PhoneNumber;
+    else if (type == "textEntityTypeBankCardNumber") this->type = Type::BankCardNumber;
+    else if (type == "textEntityTypeBold") this->type = Type::Bold;
+    else if (type == "textEntityTypeItalic") this->type = Type::Italic;
+    else if (type == "textEntityTypeUnderline") this->type = Type::Underline;
+    else if (type == "textEntityTypeStrikethrough") this->type = Type::Strikethrough;
+    else if (type == "textEntityTypeSpoiler") this->type = Type::Spoiler;
+    else if (type == "textEntityTypeCode") this->type = Type::Code;
+    else if (type == "textEntityTypePre") this->type = Type::Pre;
+    else if (type == "textEntityTypePreCode") this->type = Type::PreCode;
+    else if (type == "textEntityTypeBlockQuote") this->type = Type::BlockQuote;
+    else if (type == "textEntityTypeExpandableBlockQuote") this->type = Type::ExpandableBlockQuote;
+    else if (type == "textEntityTypeTextUrl") this->type = Type::TextUrl;
+    else if (type == "textEntityTypeMentionName") this->type = Type::MentionName;
+    else if (type == "textEntityTypeCustomEmoji") this->type = Type::CustomEmoji;
+    else if (type == "textEntityTypeMediaTimestamp") this->type = Type::MediaTimestamp;
+    else if (type == "textEntityTypeDateTime") this->type = Type::DateTime;
 
     switch (this->type) {
     case Type::TextUrl:
@@ -64,6 +64,27 @@ FormattedTextEntity::FormattedTextEntity(const QVariantMap &entityType) {
         typeData = false;
     default:
         break;
+    }
+}
+
+inline bool FormattedTextEntity::isFull() const {
+    return type == Type::CustomEmoji;
+}
+
+bool FormattedTextEntity::isLink() const {
+    switch (type) {
+    case Type::Url:
+    case Type::TextUrl:
+    case Type::PhoneNumber:
+    case Type::EmailAddress:
+    case Type::BotCommand:
+    case Type::Mention:
+    case Type::MentionName:
+    case Type::Hashtag:
+    case Type::Cashtag:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -87,7 +108,6 @@ QString PositionedFormattedTextEntity::getReplacement(const FormattedText &paren
     switch (type) {
     case Type::CustomEmoji:
     {
-
         if (!parent.getCustomEmojiSize()) return {};
 
         QString path = parent.getCustomEmojiPath(typeData.toLongLong());
@@ -98,6 +118,9 @@ QString PositionedFormattedTextEntity::getReplacement(const FormattedText &paren
         }
         return {};
     }
+    case Type::Spoiler:
+        if (parent.isFull()) return {};
+        return QString("▒").repeated(length);
     default:
         return {};
     }
@@ -162,40 +185,46 @@ FormattedText::FormattedText(const QString &text, const QList<PositionedFormatte
     : plainText(text), entities(entities)
 {}
 
-FormattedText::FormattedText(const QVariantMap &formattedText, bool ignoreEntities, bool ignoreFull) {
+FormattedText::FormattedText(const QVariantMap &formattedText, Ignore ignore) {
     if (formattedText.isEmpty()) return;
-    setFormattedText(formattedText, ignoreEntities, ignoreFull);
+    setFormattedText(formattedText, ignore);
 }
 
-void FormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreFull) {
+void FormattedText::setFormattedText(const QVariantMap &text, Ignore ignore) {
     this->plainText = text.value(TEXT).toString();
     this->needsRichText = false;
 
     entities.clear();
-    if (ignoreEntities) return;
+    if (ignore == Ignore::All) return;
+
     const QVariantList rawEntities = text.value(ENTITIES).toList();
     for (const QVariant &rawEntity : rawEntities) {
         PositionedFormattedTextEntity entity(rawEntity.toMap());
 
-        if (ignoreFull)
-            switch (entity.type) {
-            case FormattedTextEntity::Type::CustomEmoji:
-            case FormattedTextEntity::Type::Spoiler:
-                continue;
-            default:
-                break;
-            }
-        else
-            switch (entity.type) {
-            case FormattedTextEntity::Type::CustomEmoji:
-                customEmojiIds.append(entity.typeData.toString());
-                break;
-            case FormattedTextEntity::Type::Spoiler:
-                this->needsRichText = true;
-                break;
-            default:
-                break;
-            }
+        switch (ignore) {
+        case Ignore::Full:
+            if (entity.isFull()) continue;
+            break;
+        case Ignore::FullBoldLinks:
+            if (entity.isFull() || entity.type == FormattedTextEntity::Type::Bold || entity.isLink()) continue;
+            break;
+        case Ignore::FullAndTagged:
+            if (entity.type != FormattedTextEntity::Type::Spoiler) continue;
+            break;
+        default:
+            break;
+        }
+
+        switch (entity.type) {
+        case FormattedTextEntity::Type::CustomEmoji:
+            customEmojiIds.append(entity.typeData.toString());
+            break;
+        case FormattedTextEntity::Type::Spoiler:
+            this->needsRichText = true;
+            break;
+        default:
+            break;
+        }
 
         entities.append(entity);
     }
@@ -235,8 +264,8 @@ void FormattedText::argFrom(const QString &text) {
     this->prefixOffset += text.arg("%1").indexOf("%1");
 }
 
-QString FormattedText::parse() const {
-    if (entities.isEmpty()) return getPlainEscaped();
+QString FormattedText::parse(bool escape) const {
+    if (entities.isEmpty()) return escape ? getPlainEscaped() : plainText;
 
     QList<Insertion> insertions;
 
@@ -254,13 +283,15 @@ QString FormattedText::parse() const {
         insertions.append({entity.offset + entity.length, htmlTags.second});
     }
 
-    if (insertions.isEmpty()) return getPlainEscaped();
+    if (insertions.isEmpty()) return escape ? getPlainEscaped() : plainText;
 
-    addInsertionsToFor(insertions, '<', "&lt;");
-    addInsertionsToFor(insertions, '>', "&gt;");
-    addInsertionsToFor(insertions, '&', "&amp;");
-    addInsertionsToFor(insertions, '"', "&quot;");
-    addInsertionsToFor(insertions, RAW_NEW_LINE_RE, HTML_BR_TAG);
+    if (escape) {
+        addInsertionsToFor(insertions, '<', "&lt;");
+        addInsertionsToFor(insertions, '>', "&gt;");
+        addInsertionsToFor(insertions, '&', "&amp;");
+        addInsertionsToFor(insertions, '"', "&quot;");
+        addInsertionsToFor(insertions, RAW_NEW_LINE_RE, HTML_BR_TAG);
+    }
 
     std::sort(insertions.begin(), insertions.end(), Insertion::sort);
     QString result = plainText;
@@ -325,9 +356,9 @@ void FullFormattedText::setFormattedText(const FormattedText &formattedText) {
     processCustomEmojis();
     if (prevNeedsRichText != needsRichText) emit needsRichTextChanged();
 }
-void FullFormattedText::setFormattedText(const QVariantMap &text, bool ignoreEntities, bool ignoreCustomEmojis) {
+void FullFormattedText::setFormattedText(const QVariantMap &text, Ignore ignore) {
     bool prevNeedsRichText = needsRichText;
-    FormattedText::setFormattedText(text, ignoreEntities, ignoreCustomEmojis);
+    FormattedText::setFormattedText(text, ignore);
     emit parsedTextChanged();
     processCustomEmojis();
     if (prevNeedsRichText != needsRichText) emit needsRichTextChanged();
