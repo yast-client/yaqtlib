@@ -348,7 +348,10 @@ QString Utilities::getServiceMessageText(const QVariantMap &messageContent, Mess
         return (myself ? tr("added the chat to the \"%1\" community", "myself") : tr("added the chat to the \"%1\" community"))
                 .arg(tdLibWrapper->data()->getCommunity(messageContent.value(COMMUNITY_ID).toLongLong()).value(NAME).toString());
     if (contentType == "messageChatRemovedFromCommunity")
-        return (myself ? tr("removed the chat from the community", "myself") : tr("removed the chat from the community"));
+        return myself ? tr("removed the chat from the community", "myself") : tr("removed the chat from the community");
+    if (contentType == "messageUnpaidMessagesAllowedByLink")
+        // TODO: You used %1's QR code and can message them for free
+        return myself ? tr("used a QR code and can message this user for free", "myself") : tr("used your QR code and can message you for free");
 
     if (contentType == "messageUnsupported")
         return myself ? tr("sent an unsupported message", "myself") : tr("sent an unsupported message");
