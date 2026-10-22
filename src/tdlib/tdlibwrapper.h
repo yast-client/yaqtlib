@@ -452,6 +452,7 @@ public:
     Q_INVOKABLE void getUserLink();
     Q_INVOKABLE void setMainProfileTab(const QString &type);
     Q_INVOKABLE void setSupergroupMainProfileTab(qlonglong supergroupId, const QString &type);
+    Q_INVOKABLE void applyUnpaidMessagesToken(qlonglong userId, const QString &token);
 
 signals:
     void authorizationStateChanged();

@@ -3090,3 +3090,8 @@ void TDLibWrapper::setSupergroupMainProfileTab(qlonglong supergroupId, const QSt
     LOG("Setting supergroup main profile tab" << supergroupId << type);
     sendRequest({{_TYPE, "setSupergroupMainProfileTab"}, {SUPERGROUP_ID, supergroupId}, {MAIN_PROFILE_TAB, QVariantMap{{_TYPE, type}}}});
 }
+
+void TDLibWrapper::applyUnpaidMessagesToken(qlonglong userId, const QString &token) {
+    LOG("Applying unpaid messages token" << userId);
+    sendRequest({{_TYPE, "applyUnpaidMessagesToken"}, {USER_ID, userId}, {TOKEN, token}});
+}
