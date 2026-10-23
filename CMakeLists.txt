@@ -100,6 +100,7 @@ target_sources(yaqtlib PRIVATE
     src/usersmodel.cpp
     src/formattedtext.cpp
     src/tdlib/messagesender.cpp
+    src/webproxymanager.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -144,4 +145,5 @@ target_sources(yaqtlib PRIVATE
     src/usersmodel.h
     src/formattedtext.h
     src/tdlib/messagesender.h
+    src/webproxymanager.h
 )

@@ -81,6 +81,8 @@ namespace {
     const QString URL("url");
     const QString DOMAIN("domain");
     const QString BOT_USER_ID("bot_user_id");
+    const QString CARRIER_ID("carrier_id");
+    const QString DATA("data");
 
     const QString _TYPE("@type");
     const QString _EXTRA("@extra");
@@ -1273,7 +1275,7 @@ void TDLibReceiver::processUpdateNewCallSignalingData(const QVariantMap &data) {
     int callId = data.value("call_id").toInt();
     LOG("New call signaling data received" << callId);
 
-    emit newCallSignalingDataReceived(callId, QByteArray::fromBase64(data.value("data").toString().toUtf8()));
+    emit newCallSignalingDataReceived(callId, QByteArray::fromBase64(data.value(DATA).toString().toUtf8()));
 }
 
 void TDLibReceiver::processMessageReadDate(const QVariantMap &data) {
@@ -1461,4 +1463,24 @@ void TDLibReceiver::processUserLink(const QVariantMap &data) {
     int expiresIn = data.value("expires_in").toInt();
     LOG("Received user link, expires in" << expiresIn);
     emit userLinkReceived(data.value(URL).toString(), expiresIn);
+}
+
+void TDLibReceiver::processUpdateWebProxyCarrierOpened(const QVariantMap &data) {
+    QVariantMap carrier = data.value("carrier").toMap();
+    carrier.remove(_TYPE); // Do not use cleanupMap here
+    int id = carrier.take(ID).toInt();
+    LOG("Web proxy carrier opened" << id);
+    emit webProxyCarrierOpened(id, carrier);
+}
+
+void TDLibReceiver::processUpdateWebProxyCarrierData(const QVariantMap &data) {
+    int id = data.value(CARRIER_ID).toInt();
+    VERBOSE("Web proxy carried data received" << id);
+    emit webProxyCarrierDataReceived(id, data.value(DATA).toString());
+}
+
+void TDLibReceiver::processUpdateWebProxyCarrierClosed(const QVariantMap &data) {
+    int id = data.value(CARRIER_ID).toInt();
+    LOG("Web proxy carrier closed" << id);
+    emit webProxyCarrierClosed(id);
 }

@@ -166,6 +166,9 @@ signals:
     void ownedGramCountUpdated(qlonglong grams);
     void stakeDiceStateUpdated(const QVariantMap &state);
     void userLinkReceived(const QString &link, int expiresIn);
+    void webProxyCarrierOpened(int carrierId, const QVariantMap &carrier);
+    void webProxyCarrierDataReceived(int carrierId, const QString &data);
+    void webProxyCarrierClosed(int carrierId);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -303,6 +306,9 @@ private:
         {"updateStakeDiceState", &TDLibReceiver::processUpdateStakeDiceState},
         {"stakeDiceState", &TDLibReceiver::processStakeDiceState},
         {"userLink", &TDLibReceiver::processUserLink},
+        {"updateWebProxyCarrierOpened", &TDLibReceiver::processUpdateWebProxyCarrierOpened},
+        {"updateWebProxyCarrierData", &TDLibReceiver::processUpdateWebProxyCarrierData},
+        {"updateWebProxyCarrierClosed", &TDLibReceiver::processUpdateWebProxyCarrierClosed},
 
         // Abstract handlers defined as normal ones
         {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
@@ -460,6 +466,9 @@ private:
     void processUpdateStakeDiceState(const QVariantMap &data);
     void processStakeDiceState(const QVariantMap &data);
     void processUserLink(const QVariantMap &data);
+    void processUpdateWebProxyCarrierOpened(const QVariantMap &data);
+    void processUpdateWebProxyCarrierData(const QVariantMap &data);
+    void processUpdateWebProxyCarrierClosed(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);

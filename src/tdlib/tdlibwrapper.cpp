@@ -122,13 +122,17 @@ namespace {
     const QString TOKEN("token");
     const QString ALLOW_WRITE_ACCESS("allow_write_access");
     const QString TYPE_GET_INTERNAL_LINK_TYPE("getInternalLinkType");
-    const QString TYPE_ERROR("error");
+    const QString ERROR("error");
     const QString BUTTON_ID("button_id");
     const QString TYPE_GET_LOGIN_URL_INFO("getLoginUrlInfo");
     const QString TYPE_GET_LOGIN_URL("getLoginUrl");
     const QString TYPE_GET_EXTERNAL_LINK_INFO("getExternalLinkInfo");
     const QString EXTRA_LOGIN_URL("openLoginUrl");
     const QString MAIN_PROFILE_TAB("main_profile_tab");
+    const QString UNPAID_MESSAGES_TOKEN("unpaid_messages_token");
+    const QString CARRIER_ID("carrier_id");
+    const QString MESSAGE("message");
+    const QString DATA("data");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -309,6 +313,9 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::communityFullInfoUpdated, this, &TDLibWrapper::communityFullInfoUpdated);
     connect(tdLibReceiver, &TDLibReceiver::communityIdReceived, this, &TDLibWrapper::communityIdReceived);
     connect(tdLibReceiver, &TDLibReceiver::userLinkReceived, this, &TDLibWrapper::userLinkReceived);
+    connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierOpened, this, &TDLibWrapper::webProxyCarrierOpened);
+    connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierDataReceived, this, &TDLibWrapper::webProxyCarrierDataReceived);
+    connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierClosed, this, &TDLibWrapper::webProxyCarrierClosed);
 }
 
 void TDLibWrapper::initializeTDLibData() {
@@ -2389,7 +2396,7 @@ void TDLibWrapper::getInternalLinkType(const QString &link, bool skipConfirmatio
     LOG("Getting internal link type" << link << "skip confirmation:" << skipConfirmation << "check external on error:" << checkExternalOnError);
     sendRequestWithId({{_TYPE, TYPE_GET_INTERNAL_LINK_TYPE}, {LINK, link}},
                       this, [this, link, skipConfirmation, checkExternalOnError](const QString &type, const QVariantMap &linkType) {
-        if (type == TYPE_ERROR) {
+        if (type == ERROR) {
             LOG("Couldn't get internal link type");
             if (checkExternalOnError)
                 getExternalLinkInfo(link, skipConfirmation);
@@ -2904,7 +2911,7 @@ void TDLibWrapper::sendCallSignalingData(int callId, const QByteArray &data) {
     sendRequest({
         {_TYPE, "sendCallSignalingData"},
         {CALL_ID, callId},
-        {"data", QString::fromLatin1(data.toBase64())}
+        {DATA, QString::fromLatin1(data.toBase64())}
     });
 }
 
@@ -2962,7 +2969,7 @@ void TDLibWrapper::getAndOpenSupportUser() {
 }
 
 void TDLibWrapper::processError(const QVariantMap &error) {
-    if (error.value(_TYPE).toString() == TYPE_ERROR) {
+    if (error.value(_TYPE).toString() == ERROR) {
         LOG("Processing provided error");
         tdLibReceiver->processError(error);
     }
@@ -3094,4 +3101,48 @@ void TDLibWrapper::setSupergroupMainProfileTab(qlonglong supergroupId, const QSt
 void TDLibWrapper::applyUnpaidMessagesToken(qlonglong userId, const QString &token) {
     LOG("Applying unpaid messages token" << userId);
     sendRequest({{_TYPE, "applyUnpaidMessagesToken"}, {USER_ID, userId}, {TOKEN, token}});
+}
+
+void TDLibWrapper::processWebProxyCarrierMessage(int carriedId, bool isBytes, const QString &message) {
+    // If isBytes, then message is base64-encoded
+    VERBOSE("Processing web proxy carrier message" << carriedId << "bytes:" << isBytes);
+    QVariantMap messageObject;
+    if (isBytes) {
+        messageObject.insert(_TYPE, "webProxyCarrierMessageBinary");
+        messageObject.insert(DATA, message);
+    } else {
+        messageObject.insert(_TYPE, "webProxyCarrierMessageText");
+        messageObject.insert(TEXT, message);
+    }
+    sendRequest({{_TYPE, "processWebProxyCarrierMessage"}, {CARRIER_ID, carriedId}, {MESSAGE, messageObject}});
+}
+
+void TDLibWrapper::reportWebProxyCarrierError(int carrierId, WebProxyCarrierError error) {
+    WARN("Reporting web proxy carrier error" << carrierId << error);
+    QString errorType;
+    switch (error) {
+    case WebProxyCarrierErrorUnsupported:
+        errorType = "webProxyCarrierErrorUnsupported";
+        break;
+    case WebProxyCarrierErrorPaused:
+        errorType = "webProxyCarrierErrorPaused";
+        break;
+    case WebProxyCarrierErrorTerminated:
+        errorType = "webProxyCarrierErrorTerminated";
+        break;
+    case WebProxyCarrierErrorRefused:
+        errorType = "webProxyCarrierErrorRefused";
+        break;
+    }
+
+    sendRequest({{_TYPE, "reportWebProxyCarrierError"}, {ERROR, QVariantMap{{_TYPE, errorType}}}});
+}
+
+
+void TDLibWrapper::reportWebProxyCarrierError(int carrierId, const QString &message) {
+    WARN("Reporting web proxy carrier load failed error" << carrierId << message);
+    sendRequest({
+        {_TYPE, "reportWebProxyCarrierError"},
+        {ERROR, QVariantMap{{_TYPE, "webProxyCarrierErrorLoadFailed"}, {MESSAGE, message}}}}
+    );
 }

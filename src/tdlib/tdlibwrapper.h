@@ -197,6 +197,14 @@ public:
     };
     Q_ENUM(ReactionUnavailabilityReason)
 
+    enum WebProxyCarrierError {
+        WebProxyCarrierErrorUnsupported,
+        WebProxyCarrierErrorPaused,
+        WebProxyCarrierErrorTerminated,
+        WebProxyCarrierErrorRefused
+    };
+    Q_ENUM(WebProxyCarrierError)
+
     Q_INVOKABLE void copyFileToDownloads(qlonglong fileId, const QString &filePath, bool openAfterCopy = false);
     SearchMessagesFilter getSearchMessagesFilterForType(const QString &type);
     static QString getSearchMessagesFilterType(SearchMessagesFilter filter);
@@ -453,6 +461,9 @@ public:
     Q_INVOKABLE void setMainProfileTab(const QString &type);
     Q_INVOKABLE void setSupergroupMainProfileTab(qlonglong supergroupId, const QString &type);
     Q_INVOKABLE void applyUnpaidMessagesToken(qlonglong userId, const QString &token);
+    Q_INVOKABLE void processWebProxyCarrierMessage(int carrierId, bool isBytes, const QString &message);
+    Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, WebProxyCarrierError error);
+    Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, const QString &message = {});
 
 signals:
     void authorizationStateChanged();
@@ -569,6 +580,9 @@ signals:
     void communityFullInfoUpdated(qlonglong communityId, const QVariantMap &communityFullInfo);
     void communityIdReceived(qlonglong communityId);
     void userLinkReceived(const QString &link, int expiresIn);
+    void webProxyCarrierOpened(int carrierId, const QVariantMap &carrier);
+    void webProxyCarrierDataReceived(int carrierId, const QString &data);
+    void webProxyCarrierClosed(int carrierId);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);
