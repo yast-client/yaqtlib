@@ -3135,7 +3135,11 @@ void TDLibWrapper::reportWebProxyCarrierError(int carrierId, WebProxyCarrierErro
         break;
     }
 
-    sendRequest({{_TYPE, "reportWebProxyCarrierError"}, {ERROR, QVariantMap{{_TYPE, errorType}}}});
+    sendRequest({
+        {_TYPE, "reportWebProxyCarrierError"},
+        {CARRIER_ID, carrierId},
+        {ERROR, QVariantMap{{_TYPE, errorType}}}
+    });
 }
 
 
@@ -3143,6 +3147,7 @@ void TDLibWrapper::reportWebProxyCarrierError(int carrierId, const QString &mess
     WARN("Reporting web proxy carrier load failed error" << carrierId << message);
     sendRequest({
         {_TYPE, "reportWebProxyCarrierError"},
+        {CARRIER_ID, carrierId},
         {ERROR, QVariantMap{{_TYPE, "webProxyCarrierErrorLoadFailed"}, {MESSAGE, message}}}}
     );
 }
