@@ -952,7 +952,7 @@ QString Utilities::formatChatActions(bool isUser, const QHash<MessageSender, Cha
     case TDLibWrapper::ChatActionType::WatchingAnimations:
         actionText = (isUser
                         ? tr("watching %1", "The other party is watching an animation, %1 is the emoji describing the animation being watched")
-                        : tr("%1 is watching %2", "%1 is watching an animation, %2 is the emoji describing the animation being watched", totalCount)
+                        : tr("%2 is watching %1", "%2 is watching an animation, %1 is the emoji describing the animation being watched", totalCount)
                     ).arg(mainAction.progressOrEmoji.toString());
         break;
     default:
