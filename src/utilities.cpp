@@ -553,7 +553,7 @@ QVariantMap Utilities::getMainAlbumMessage(const QVariantList &messages, bool ig
         }
 
         const QVariantMap text = getMessageContentFormattedText(message.toMap().value(CONTENT).toMap());
-        if (!text.isEmpty()) {
+        if (!text.value(TEXT).toString().isEmpty()) {
             if (!result.isEmpty())
                 return {}; // if more than one caption is available, return empty
             result = message.toMap();
