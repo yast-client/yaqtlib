@@ -302,6 +302,7 @@ void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &use
     if (userId == this->myId) {
         LOG("Current user status information updated");
         this->userInformation.insert(STATUS, userStatusInformation);
+        emit myUserUpdated();
     }
     QVariantMap updatedUserInformation = this->usersById.value(userId);
     if (updatedUserInformation.value(STATUS) == userStatusInformation)
