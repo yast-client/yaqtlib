@@ -3,21 +3,16 @@
 
 #include "formattedtext.h"
 #include <QRegularExpression>
+#include "tdlib/tdconst.h"
 
 namespace {
-    const QString _TYPE("@type");
-    const QString OFFSET("offset");
-    const QString LENGTH("length");
-    const QString TYPE("type");
-    const QString TEXT("text");
-    const QString ENTITIES("entities");
+    const QString OFFSET = QStringLiteral("offset");
+    const QString LENGTH = QStringLiteral("length");
 
-    const QString USER_ID("user_id");
-
-    const QString A_TAG_END("</a>");
+    const QString A_TAG_END = QStringLiteral("</a>");
 
     const QRegularExpression RAW_NEW_LINE_RE("\r?\n");
-    const QString HTML_BR_TAG("<br>");
+    const QString HTML_BR_TAG = QStringLiteral("<br>");
 }
 
 FormattedTextEntity::FormattedTextEntity(Type type, const QVariant &typeData) :

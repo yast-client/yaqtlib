@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tdlibreceiver.h"
+#include "tdconst.h"
 
 #include <QRegularExpression>
 
@@ -12,49 +13,24 @@
 #include "debuglog.h"
 
 namespace {
-    const QString ID("id");
+    const QString STATE("state");
     const QString LIST("list");
-    const QString CHAT_ID("chat_id");
-    const QString USER_ID("user_id");
     const QString OLD_MESSAGE_ID("old_message_id");
-    const QString MESSAGE_ID("message_id");
     const QString MESSAGE_IDS("message_ids");
-    const QString MESSAGE("message");
     const QString MESSAGES("messages");
-    const QString TITLE("title");
-    const QString NAME("name");
     const QString VALUE("value");
     const QString POSITION("position");
     const QString POSITIONS("positions");
-    const QString PHOTO("photo");
-    const QString ORDER("order");
     const QString BASIC_GROUP("basic_group");
     const QString SUPERGROUP("supergroup");
-    const QString LAST_MESSAGE("last_message");
-    const QString TOTAL_COUNT("total_count");
-    const QString UNREAD_COUNT("unread_count");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
-    const QString AVAILABLE_REACTIONS("available_reactions");
-    const QString TEXT("text");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
     const QString SECRET_CHAT("secret_chat");
-    const QString INTERACTION_INFO("interaction_info");
-    const QString ANIMATED_EMOJI("animated_emoji");
-    const QString STICKER("sticker");
-    const QString STICKERS("stickers");
     const QString COVERS("covers");
-    const QString CONTENT("content");
     const QString NEW_CONTENT("new_content");
     const QString SETS("sets");
     const QString EMOJIS("emojis");
     const QString REPLY_TO("reply_to");
     const QString REPLY_IN_CHAT_ID("reply_in_chat_id");
     const QString REPLY_TO_MESSAGE_ID("reply_to_message_id");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString SENDER_ID("sender_id");
     const QString MESSAGE_THREAD_ID("message_thread_id");
     const QString UNIQUE_ID("unique_id");
     const QString INITIAL_STATE("initial_state");
@@ -71,25 +47,11 @@ namespace {
     const QString WAVEFORM("waveform");
     const QString DECODED_WAVEFORM("decoded_waveform");
     const QString NEXT_FROM_MESSAGE_ID("next_from_message_id");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString INFO("info");
-    const QString FORUM_TOPIC_ID("forum_topic_id");
     const QString STICKER_IDS("sticker_ids");
-    const QString TYPE("type");
-    const QString TOPIC_ID("topic_id");
-    const QString STATE("state");
-    const QString URL("url");
-    const QString DOMAIN("domain");
-    const QString BOT_USER_ID("bot_user_id");
     const QString CARRIER_ID("carrier_id");
-    const QString DATA("data");
 
-    const QString _TYPE("@type");
-    const QString _EXTRA("@extra");
     const QString TYPE_STICKER_SET_INFO("stickerSetInfo");
     const QString TYPE_STICKER_SET("stickerSet");
-    const QString TYPE_MESSAGE("message");
-    const QString TYPE_STICKER("sticker");
     const QString TYPE_MESSAGE_STICKER("messageSticker");
     const QString TYPE_MESSAGE_REPLY_TO_MESSAGE("messageReplyToMessage");
     const QString TYPE_MESSAGE_ANIMATED_EMOJI("messageAnimatedEmoji");
@@ -730,10 +692,9 @@ void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &data) {
 // of memory.
 const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *updated) {
     const QString type(map.value(_TYPE).toString());
-    if (type == TYPE_STICKER) {
+    if (type == STICKER) {
         QVariantMap sticker(map);
-        sticker.remove(_TYPE);
-        sticker.insert(_TYPE, TYPE_STICKER); // Replace with a shared value
+        sticker.insert(_TYPE, STICKER); // Replace with a shared value
         if (updated) *updated = true;
         return sticker;
     } else if (type == TYPE_ANIMATED_EMOJI) {
@@ -741,21 +702,17 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantMap sticker(cleanupMap(map.value(STICKER).toMap(), &cleaned));
         if (cleaned) {
             QVariantMap animatedEmoji(map);
-            animatedEmoji.remove(STICKER);
             animatedEmoji.insert(STICKER, sticker);
-            animatedEmoji.remove(_TYPE);
             animatedEmoji.insert(_TYPE, TYPE_ANIMATED_EMOJI); // Replace with a shared value
             if (updated) *updated = true;
             return animatedEmoji;
         }
-    } else if (type == TYPE_MESSAGE) {
+    } else if (type == MESSAGE) {
         QVariantMap message(map);
         bool messageChanged = false;
         const QVariantMap content(cleanupMap(map.value(CONTENT).toMap(), &messageChanged));
-        if (messageChanged) {
-            message.remove(CONTENT);
+        if (messageChanged)
             message.insert(CONTENT, content);
-        }
         if (map.contains(REPLY_TO)) {
             // In TdLib 1.8.15 reply_to_message_id and reply_in_chat_id attributes
             // had been replaced with reply_to structure, e.g:
@@ -778,15 +735,13 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
                     !message.contains(REPLY_IN_CHAT_ID)) {
                     message.insert(REPLY_IN_CHAT_ID, replyTo.value(CHAT_ID));
                 }
-                replyTo.remove(_TYPE);
                 replyTo.insert(_TYPE, TYPE_MESSAGE_REPLY_TO_MESSAGE);
                 message.insert(REPLY_TO, replyTo);
                 messageChanged = true;
             }
         }
         if (messageChanged) {
-            message.remove(_TYPE);
-            message.insert(_TYPE, TYPE_MESSAGE); // Replace with a shared value
+            message.insert(_TYPE, MESSAGE); // Replace with a shared value
             if (updated) *updated = true;
             return message;
         }
@@ -800,10 +755,8 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
                 // reply_to_message_id is what QML (still) expects
                 draftMessage.insert(REPLY_TO_MESSAGE_ID, replyTo.value(MESSAGE_ID));
             }
-            replyTo.remove(_TYPE);
             replyTo.insert(_TYPE, TYPE_INPUT_MESSAGE_REPLY_TO_MESSAGE); // Shared value
             draftMessage.insert(REPLY_TO, replyTo);
-            draftMessage.remove(_TYPE);
             draftMessage.insert(_TYPE, DRAFT_MESSAGE); // Shared value
             if (updated) *updated = true;
             return draftMessage;
@@ -813,9 +766,7 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantMap sticker(cleanupMap(map.value(STICKER).toMap(), &cleaned));
         if (cleaned) {
             QVariantMap messageSticker(map);
-            messageSticker.remove(STICKER);
             messageSticker.insert(STICKER, sticker);
-            messageSticker.remove(_TYPE);
             messageSticker.insert(_TYPE, TYPE_MESSAGE_STICKER); // Replace with a shared value
             if (updated) *updated = true;
             return messageSticker;
@@ -825,9 +776,7 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantMap animatedEmoji(cleanupMap(map.value(ANIMATED_EMOJI).toMap(), &cleaned));
         if (cleaned) {
             QVariantMap messageAnimatedEmoji(map);
-            messageAnimatedEmoji.remove(ANIMATED_EMOJI);
             messageAnimatedEmoji.insert(ANIMATED_EMOJI, animatedEmoji);
-            messageAnimatedEmoji.remove(_TYPE);
             messageAnimatedEmoji.insert(_TYPE, TYPE_MESSAGE_ANIMATED_EMOJI); // Replace with a shared value
             if (updated) *updated = true;
             return messageAnimatedEmoji;
@@ -837,9 +786,7 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantList covers(cleanupList(map.value(COVERS).toList(), &cleaned));
         if (cleaned) {
             QVariantMap stickerSetInfo(map);
-            stickerSetInfo.remove(COVERS);
             stickerSetInfo.insert(COVERS, covers);
-            stickerSetInfo.remove(_TYPE);
             stickerSetInfo.insert(_TYPE, TYPE_STICKER_SET_INFO); // Replace with a shared value
             if (updated) *updated = true;
             return stickerSetInfo;
@@ -849,10 +796,8 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantList stickers(cleanupList(map.value(STICKERS).toList(), &cleaned));
         if (cleaned) {
             QVariantMap stickerSet(map);
-            stickerSet.remove(STICKERS);
             stickerSet.insert(STICKERS, stickers);
             stickerSet.remove(EMOJIS);
-            stickerSet.remove(_TYPE);
             stickerSet.insert(_TYPE, TYPE_STICKER_SET); // Replace with a shared value
             if (updated) *updated = true;
             return stickerSet;
@@ -869,20 +814,17 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
 
         const QVariantMap initialState(cleanupMap(map.value(INITIAL_STATE).toMap(), &cleaned));
         if (cleaned) {
-            messageDice.remove(INITIAL_STATE);
             messageDice.insert(INITIAL_STATE, initialState);
             messageDiceChanged = true;
         }
 
         const QVariantMap finalState(cleanupMap(map.value(FINAL_STATE).toMap(), &cleaned));
         if (cleaned) {
-            messageDice.remove(FINAL_STATE);
             messageDice.insert(FINAL_STATE, finalState);
             messageDiceChanged = true;
         }
 
         if (messageDiceChanged) {
-            messageDice.remove(_TYPE);
             messageDice.insert(_TYPE, TYPE_MESSAGE_DICE); // Replace with a shared value
 
             if (updated) *updated = true;
@@ -893,9 +835,7 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantMap sticker(cleanupMap(map.value(STICKER).toMap(), &cleaned));
         if (cleaned) {
             QVariantMap diceStickers(map);
-            diceStickers.remove(STICKER);
             diceStickers.insert(STICKER, sticker);
-            diceStickers.remove(_TYPE);
             diceStickers.insert(_TYPE, TYPE_DICE_STICKERS_REGULAR); // Replace with a shared value
             if (updated) *updated = true;
             return diceStickers;
@@ -907,35 +847,30 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
 
         const QVariantMap background(cleanupMap(map.value(BACKGROUND).toMap(), &cleaned));
         if (cleaned) {
-            diceStickers.remove(BACKGROUND);
             diceStickers.insert(BACKGROUND, background);
             diceStickersChanged = true;
         }
 
         const QVariantMap lever(cleanupMap(map.value(LEVER).toMap(), &cleaned));
         if (cleaned) {
-            diceStickers.remove(LEVER);
             diceStickers.insert(LEVER, lever);
             diceStickersChanged = true;
         }
 
         const QVariantMap leftReel(cleanupMap(map.value(LEFT_REEL).toMap(), &cleaned));
         if (cleaned) {
-            diceStickers.remove(LEFT_REEL);
             diceStickers.insert(LEFT_REEL, leftReel);
             diceStickersChanged = true;
         }
 
         const QVariantMap centerReel(cleanupMap(map.value(CENTER_REEL).toMap(), &cleaned));
         if (cleaned) {
-            diceStickers.remove(CENTER_REEL);
             diceStickers.insert(CENTER_REEL, centerReel);
             diceStickersChanged = true;
         }
 
         const QVariantMap rightReel(cleanupMap(map.value(RIGHT_REEL).toMap(), &cleaned));
         if (cleaned) {
-            diceStickers.remove(RIGHT_REEL);
             diceStickers.insert(RIGHT_REEL, rightReel);
             diceStickersChanged = true;
         }
@@ -950,16 +885,13 @@ const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *update
         const QVariantMap voiceNote(cleanupMap(map.value(VOICE_NOTE).toMap(), &cleaned));
         if (cleaned) {
             QVariantMap content(map);
-            content.remove(VOICE_NOTE);
             content.insert(VOICE_NOTE, voiceNote);
-            content.remove(_TYPE);
             content.insert(_TYPE, TYPE_MESSAGE_VOICE_NOTE); // Replace with a shared value
             if (updated) *updated = true;
             return content;
         }
     } else if (type == TYPE_VOICE_NOTE) {
         QVariantMap voiceNote(map);
-        voiceNote.remove(_TYPE);
         voiceNote.insert(_TYPE, TYPE_VOICE_NOTE); // Replace with a shared value
 
         const QVariantList decodedWaveform = WaveformManager::decodeWaveform(voiceNote.value(WAVEFORM).toString());

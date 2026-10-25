@@ -3,17 +3,13 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "dbusadaptor.h"
+#include "tdlib/tdconst.h"
 #include "chatdata.h"
 
 #include <QQuickView>
 
 #define DEBUG_MODULE DBusAdaptor
 #include "debuglog.h"
-
-namespace {
-    const QString LAST_MESSAGE("last_message");
-    const QString ID("id");
-}
 
 DBusAdaptor::DBusAdaptor(TDLibWrapper *tdLibWrapper,
 #ifdef USE_CALLS

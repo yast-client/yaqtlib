@@ -2,17 +2,10 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "forumtopicmessagesmodel.h"
+#include "tdlib/tdconst.h"
 
 #define DEBUG_MODULE ForumTopicMessagesModel
 #include "debuglog.h"
-
-namespace {
-    const QString ID("id");
-    const QString TOPIC_ID("topic_id");
-    const QString FORUM_TOPIC_ID("forum_topic_id");
-    const QString NAME("name");
-    const QString INFO("info");
-}
 
 ForumTopicMessagesModel::ForumTopicMessagesModel(QObject *parent) : ReadableMessagesModel(parent) {}
 

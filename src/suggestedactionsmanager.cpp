@@ -2,20 +2,16 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "suggestedactionsmanager.h"
+#include "tdlib/tdconst.h"
 
 #define DEBUG_MODULE SuggestedActions
 #include "debuglog.h"
 
 namespace {
-    const QString _TYPE("@type");
-    const QString TYPE_SUGGESTED_ACTION_CONVERT_TO_BROADCAST_GROUP("suggestedActionConvertToBroadcastGroup");
-    const QString SUPERGROUP_ID("supergroup_id");
+    const QString TYPE_SUGGESTED_ACTION_CONVERT_TO_BROADCAST_GROUP = QStringLiteral("suggestedActionConvertToBroadcastGroup");
 
-    const QString TYPE_SUGGESTED_ACTION_CUSTOM("suggestedActionCustom");
-    const QString NAME("name");
-    const QString TITLE("title");
-    const QString DESCRIPTION("description");
-    const QString URL("url");
+    const QString TYPE_SUGGESTED_ACTION_CUSTOM = QStringLiteral("suggestedActionCustom");
+    const QString DESCRIPTION = QStringLiteral("description");
 }
 
 SuggestedActionsManager::CustomSuggestedAction::CustomSuggestedAction(QVariantMap title, QVariantMap description, QString url) :

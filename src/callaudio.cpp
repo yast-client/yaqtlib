@@ -10,7 +10,7 @@
 #include "debuglog.h"
 
 namespace {
-    const QString SINK_PRIMARY("sink.primary");
+    const QString SINK_PRIMARY = QStringLiteral("sink.primary");
 }
 
 QString CallAudio::getOutputDeviceName() {

@@ -2,6 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "contactsmodel.h"
+#include "tdlib/tdconst.h"
 #include "tdlib/tdlibdata.h"
 
 #define DEBUG_MODULE ContactsModel
@@ -68,8 +69,7 @@ bool ContactsListModel::compareUsersByName(const QModelIndex &index1, const QMod
 }
 
 bool ContactsListModel::compareUsersByStatus(const QModelIndex &index1, const QModelIndex &index2) const {
-    static QString USER_STATUS_OFFLINE = "userStatusOffline";
-    static QStringList statuses{"userStatusEmpty", "userStatusLastMonth", "userStatusLastWeek", USER_STATUS_OFFLINE, "userStatusRecently", "userStatusOnline"};
+    static QStringList statuses{"userStatusEmpty", "userStatusLastMonth", "userStatusLastWeek", TYPE_USER_STATUS_OFFLINE, "userStatusRecently", "userStatusOnline"};
     const QString status1 = data(index1, RoleUserStatus).toString(),
             status2 = data(index2, RoleUserStatus).toString();
 
@@ -78,7 +78,7 @@ bool ContactsListModel::compareUsersByStatus(const QModelIndex &index1, const QM
     if (statusIndex1 != statusIndex2)
         return statusIndex1 < statusIndex2;
 
-    if (status1 == USER_STATUS_OFFLINE) {
+    if (status1 == TYPE_USER_STATUS_OFFLINE) {
         const int lastOnline1 = data(index1, RoleUserLastOnline).toInt(),
                 lastOnline2 = data(index2, RoleUserLastOnline).toInt();
         if (lastOnline1 != lastOnline2)

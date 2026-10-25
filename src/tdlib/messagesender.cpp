@@ -2,11 +2,12 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "messagesender.h"
+#include "tdconst.h"
 #include <QVariantMap>
 
 MessageSender::MessageSender(const QVariantMap &sender) :
-    isChat(sender.value(QStringLiteral("@type")) == QStringLiteral("messageSenderChat")),
-    id(sender.value(isChat ? QStringLiteral("chat_id") : QStringLiteral("user_id")).toLongLong())
+    isChat(sender.value(_TYPE) == QStringLiteral("messageSenderChat")),
+    id(sender.value(isChat ? CHAT_ID : USER_ID).toLongLong())
 {}
 
 bool MessageSender::operator==(const MessageSender &other) const {

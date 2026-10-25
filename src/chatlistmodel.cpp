@@ -3,16 +3,11 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "chatlistmodel.h"
+#include "tdlib/tdconst.h"
 #include <QListIterator>
 
 #define DEBUG_MODULE ChatListModel
 #include "debuglog.h"
-
-namespace {
-    const QString _TYPE("@type");
-    const QString UNREAD_COUNT("unread_count");
-    const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
-}
 
 ChatListModel::ListChatData::ListChatData(ChatData *data, qlonglong order, bool isPinned)
     : data(data), order(order), isPinned(isPinned)

@@ -2,9 +2,14 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "webproxymanager.h"
+#include "tdlib/tdconst.h"
 
 #define DEBUG_MODULE WebProxyManager
 #include "debuglog.h"
+
+namespace {
+    const QString PATH_PREFIX = QStringLiteral("path_prefix");
+}
 
 WebProxyManager::WebProxyManager(TDLibWrapper *tdLibWrapper, QObject *parent) :
     QObject(parent),
@@ -16,9 +21,9 @@ WebProxyManager::WebProxyManager(TDLibWrapper *tdLibWrapper, QObject *parent) :
 }
 
 void WebProxyManager::handleWebProxyCarrierOpened(int carrierId, const QVariantMap &carrier) {
-    const QString url = carrier.value("url").toString(),
-                  origin = carrier.value("origin").toString(),
-                  pathPrefix = carrier.value("path_prefix").toString();
+    const QString url = carrier.value(URL).toString(),
+                  origin = carrier.value(ORIGIN).toString(),
+                  pathPrefix = carrier.value(PATH_PREFIX).toString();
     // don't log url, origin and so on here:
     VERBOSE("Carrier opened" << carrierId << "bridge object name:" << carrier.value("bridge_object_name").toString() << "proxy id:" << carrier.value("proxy_id").toInt() << "is temporary:" << carrier.value("is_temporary").toString());
 

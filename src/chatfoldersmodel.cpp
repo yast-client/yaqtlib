@@ -2,6 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "chatfoldersmodel.h"
+#include "tdlib/tdconst.h"
 #include "utilities.h"
 #include "platformapp.h"
 
@@ -9,13 +10,9 @@
 #include "debuglog.h"
 
 namespace {
-    const QString ID("id");
-    const QString NAME("name");
-    const QString ICON("icon");
-    const QString COLOR_ID("color_id");
-    const QString IS_SHAREABLE("is_shareable");
-    const QString HAS_MY_INVITE_LINKS("has_my_invite_links");
-    const QString TEXT("text");
+    const QString COLOR_ID = QStringLiteral("color_id");
+    const QString IS_SHAREABLE = QStringLiteral("is_shareable");
+    const QString HAS_MY_INVITE_LINKS = QStringLiteral("has_my_invite_links");
 }
 
 ChatFoldersModel::Icon ChatFoldersModel::iconForName(const QString &name) {

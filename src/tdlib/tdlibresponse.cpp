@@ -2,7 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tdlibresponse.h"
-
+#include "tdconst.h"
 #include "tdlibwrapper.h"
 
 #define DEBUG_MODULE TDLibResponse
@@ -17,7 +17,7 @@ TDLibResponse::TDLibResponse(qlonglong id, TDLibWrapper *tdLibWrapper) : QObject
 
 void TDLibResponse::handleResponseForRequestIdReceived(qlonglong requestId, const QVariantMap &response) {
     if (this->id == requestId) {
-        const QString type = response.value("@type").toString();
+        const QString type = response.value(_TYPE).toString();
         LOG_("Finished" << type);
         emit this->finished(type, response);
         disconnect(this->connection); // FIXME: is this really needed?

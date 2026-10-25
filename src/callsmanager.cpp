@@ -2,6 +2,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "callsmanager.h"
+#include "tdlib/tdconst.h"
 #include "tdlib/tdlibdata.h"
 #include "callaudio.h"
 
@@ -16,11 +17,9 @@
 #include <QDir>
 
 namespace {
-    const QString _TYPE("@type");
     const QString PROTOCOL("protocol");
     const QString UDP_P2P("udp_p2p");
     const QString MAX_LAYER("max_layer");
-    const QString ERROR("error");
 
     const auto RegisterTag = tgcalls::Register<tgcalls::InstanceImpl>();
     const auto RegisterTagV2 = tgcalls::Register<tgcalls::InstanceV2Impl>();

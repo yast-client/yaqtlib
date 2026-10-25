@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(yaqtlib CXX)
 
 if(POLICY CMP0077)
@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Qt5 COMPONENTS Core Network DBus Multimedia Positioning Qml Gui Quick LinguistTools REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 include(FindPkgConfig)
 pkg_search_module(NEMONOTIFICATIONS nemonotifications-qt5 REQUIRED)
@@ -42,6 +43,17 @@ if(USE_CALLS)
     )
 endif()
 
+
+# (Re-)generate tdconst strings
+add_custom_target(generate_tdconst
+    COMMAND
+        "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_string_constants.py"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/tdlib/tdconst.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/tdlib/tdconst.cpp"
+    VERBATIM
+)
+add_dependencies(yaqtlib generate_tdconst)
 
 target_include_directories(yaqtlib PUBLIC
     ${NEMONOTIFICATIONS_INCLUDE_DIRS}
@@ -101,6 +113,7 @@ target_sources(yaqtlib PRIVATE
     src/formattedtext.cpp
     src/tdlib/messagesender.cpp
     src/webproxymanager.cpp
+    src/tdlib/tdconst.cpp
 
     src/settings.h
     src/boolfiltermodel.h
@@ -146,4 +159,5 @@ target_sources(yaqtlib PRIVATE
     src/formattedtext.h
     src/tdlib/messagesender.h
     src/webproxymanager.h
+    src/tdlib/tdconst.h
 )

@@ -2,31 +2,10 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "forumtopicsmodel.h"
+#include "tdlib/tdconst.h"
 
 #define DEBUG_MODULE ForumTopicsModel
 #include "debuglog.h"
-
-namespace {
-    const QString _TYPE("@type");
-    const QString INFO("info");
-    const QString IS_PINNED("is_pinned");
-    const QString UNREAD_COUNT("unread_count");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString MESSAGE_THREAD_ID("message_thread_id");
-    const QString NAME("name");
-    const QString FORUM_TOPIC_ID("forum_topic_id");
-    const QString ID("id");
-    const QString ICON("icon");
-    const QString CREATOR_ID("creator_id");
-    const QString CHAT_ID("chat_id");
-    const QString TOPIC_ID("topic_id");
-    const QString TYPE_MESSAGE_TOPIC_FORUM("messageTopicForum");
-}
 
 ForumTopicsModel::ForumTopicsModel(TDLibWrapper *tdLibWrapper, Utilities *utilities, qlonglong chatId, QObject *parent) :
     QAbstractListModel(parent),
@@ -115,19 +94,19 @@ QVariant ForumTopicsModel::data(const QModelIndex &index, int role) const {
         case ForumTopic::RoleIconCustomEmojiId:
             return QString::number(topic->iconCustomEmojiId());
         case ForumTopic::RoleCreationDate:
-            return topic->info("creation_date").toInt();
+            return topic->info(CREATION_DATE).toInt();
         case ForumTopic::RoleCreatorId:
             return QVariant::fromValue(MessageSender(topic->info(CREATOR_ID).toMap()));
         case ForumTopic::RoleIsGeneral:
             return topic->isGeneral();
         case ForumTopic::RoleIsOutgoing:
-            return topic->info("is_outgoing").toBool();
+            return topic->info(IS_OUTGOING).toBool();
         case ForumTopic::RoleIsClosed:
-            return topic->info("is_closed").toBool();
+            return topic->info(IS_CLOSED).toBool();
         case ForumTopic::RoleIsHidden:
-            return topic->info("is_hidden").toBool();
+            return topic->info(IS_HIDDEN).toBool();
         case ForumTopic::RoleIsNameImplicit:
-            return topic->info("is_name_implicit").toBool();
+            return topic->info(IS_NAME_IMPLICIT).toBool();
 
         case ForumTopic::RoleLastMessageId: return topic->lastMessageId();
         case ForumTopic::RoleLastMessageSenderId: return QVariant::fromValue(topic->lastMessageSenderId());

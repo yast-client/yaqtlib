@@ -3,18 +3,11 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "readablemessagesmodel.h"
+#include "tdlib/tdconst.h"
+#include "utilities.h"
 
 #define DEBUG_MODULE ReadableMessagesModel
 #include "debuglog.h"
-
-#include "utilities.h"
-
-namespace {
-    const QString ID("id");
-    const QString CHAT_ID("chat_id");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-}
 
 ReadableMessagesModel::ReadableMessagesModel(QObject *parent) :
     JumpableMessagesModel(parent),

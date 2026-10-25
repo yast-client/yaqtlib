@@ -2,16 +2,14 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "userprofilepicturesmodel.h"
+#include "tdlib/tdconst.h"
 #include "utilities.h"
 
 namespace {
-    const QString ID("id");
-    const QString SMALL_ANIMATION("small_animation");
-    const QString ANIMATION("animation");
-    const QString PERSONAL_PHOTO("personal_photo");
-    const QString PUBLIC_PHOTO("public_photo");
-    const QString SIZES("sizes");
-    const QString PHOTO("photo");
+    const QString SMALL_ANIMATION = QStringLiteral("small_animation");
+    const QString PERSONAL_PHOTO = QStringLiteral("personal_photo");
+    const QString PUBLIC_PHOTO = QStringLiteral("public_photo");
+    const QString SIZES = QStringLiteral("sizes");
 }
 
 #define DEBUG_MODULE UserProfilePicturesModel

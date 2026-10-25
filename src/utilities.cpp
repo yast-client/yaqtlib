@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "utilities.h"
+#include "tdlib/tdconst.h"
 #include <QMap>
 #include <QVariant>
 #include <QStandardPaths>
@@ -20,24 +21,7 @@
 #include "debuglog.h"
 
 namespace {
-    const QString _TYPE("@type");
-    const QString ID("id");
-    const QString TYPE("type");
-    const QString TEXT("text");
-    const QString EMOJI("emoji");
-    const QString ANIMATED_EMOJI("animated_emoji");
-    const QString STICKER("sticker");
-    const QString CHAT_ID("chat_id");
-    const QString USER_ID("user_id");
-    const QString NAME("name");
-    const QString SENDING_STATE("sending_state");
     const QString TYPE_MESSAGE_SENDING_STATE_FAILED("messageSendingStateFailed");
-    const QString IS_PINNED("is_pinned");
-    const QString CONTAINS_UNREAD_MENTION("contains_unread_mention");
-    const QString UNREAD_REACTIONS("unread_reactions");
-    const QString LINK_PREVIEW("link_preview");
-    const QString IS_OUTGOING("is_outgoing");
-    const QString COMMUNITY_ID("community_id");
 
     const QString MESSAGE_SENDER_TYPE_USER("messageSenderUser");
     const QString MESSAGE_SENDER_TYPE_CHAT("messageSenderChat");
@@ -64,7 +48,6 @@ namespace {
     const QString MESSAGE_CONTENT_TYPE_GROUP_CALL("messageGroupCall");
     const QString MESSAGE_CONTENT_TYPE_CONTACT("messageContact");
 
-    const QString ENTITIES("entities");
     const QString TYPE_PLAIN_TEXT("plainText");
     const QString TEXT_ENTITY("textEntity");
     const QString OFFSET("offset");
@@ -75,31 +58,8 @@ namespace {
     const QString SCORE("score");
     const QString POSITION("position");
 
-    const QString SPONSORED_MESSAGE("sponsoredMessage");
-    const QString MESSAGE_SENDER_USER("messageSenderUser");
-    const QString SENDER_ID("sender_id");
-    const QString CONTENT("content");
-    const QString CAPTION("caption");
     const QString VENUE("venue");
-    const QString TITLE("title");
     const QString ADDRESS("address");
-
-    const QString MINITHUMBNAIL("minithumbnail");
-    const QString DATA("data");
-    const QString VIDEO("video");
-    const QString PHOTO("photo");
-    const QString VIDEO_NOTE("video_note");
-    const QString COVER("cover");
-    const QString ANIMATION("animation");
-    const QString DOCUMENT("document");
-    const QString AUDIO("audio");
-    const QString ALBUM_COVER_MINITHUMBNAIL("album_cover_minithumbnail");
-    const QString FILE_NAME("file_name");
-
-    const QString FIRST_NAME("first_name");
-    const QString LAST_NAME("last_name");
-    const QString PHONE_NUMBER("phone_number");
-    const QString NOTE("note");
 
     const QRegularExpression AT_METION_ID_RE("\\@(?<type>\\d+)\\((?<text>[^\\)]+)\\)");
 

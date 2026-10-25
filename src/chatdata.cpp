@@ -3,51 +3,12 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "chatdata.h"
-
+#include "tdlib/tdconst.h"
 #include "chatlistmodel.h"
 #include "utilities.h"
 
 #define DEBUG_MODULE ChatData
 #include "debuglog.h"
-
-namespace {
-    const QString _TYPE("@type");
-    const QString ID("id");
-    const QString TYPE("type");
-    const QString TITLE("title");
-    const QString PHOTO("photo");
-    const QString SMALL("small");
-    const QString ORDER("order");
-    const QString LAST_MESSAGE("last_message");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString BASIC_GROUP_ID("basic_group_id");
-    const QString SUPERGROUP_ID("supergroup_id");
-    const QString UNREAD_COUNT("unread_count");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
-    const QString AVAILABLE_REACTIONS("available_reactions");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString PERMISSIONS("permissions");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-    const QString IS_CHANNEL("is_channel");
-    const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
-    const QString PINNED_MESSAGE_ID("pinned_message_id");
-    const QString SECRET_CHAT_ID("secret_chat_id");
-    const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
-    const QString VIEW_AS_TOPICS("view_as_topics");
-
-    const QString VERIFICATION_STATUS("verification_status");
-    const QString STATUS("status");
-    const QString TYPE_USER_STATUS_ONLINE("userStatusOnline");
-
-    const QString ACCENT_COLOR_ID("accent_color_id");
-    const QString BACKGROUND_CUSTOM_EMOJI_ID("background_custom_emoji_id");
-    const QString UPGRADED_GIFT_COLORS("upgraded_gift_colors");
-    const QString PROFILE_ACCENT_COLOR_ID("profile_accent_color_id");
-    const QString PROFILE_BACKGROUND_CUSTOM_EMOJI_ID("profile_background_custom_emoji_id");
-}
 
 ChatData::ChatData(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &data) :
     BaseMessageableData(tdLibWrapper, utilities),

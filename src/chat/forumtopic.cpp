@@ -2,37 +2,8 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "forumtopic.h"
+#include "tdlib/tdconst.h"
 #include "utilities.h"
-
-namespace {
-    const QString INFO("info");
-    const QString COLOR("color");
-    const QString CUSTOM_EMOJI_ID("custom_emoji_id");
-
-    const QString LAST_MESSAGE("last_message");
-    const QString ORDER("order");
-    const QString IS_PINNED("is_pinned");
-    const QString UNREAD_COUNT("unread_count");
-    const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
-    const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString MESSAGE_THREAD_ID("message_thread_id");
-    const QString NAME("name");
-    const QString FORUM_TOPIC_ID("forum_topic_id");
-    const QString ID("id");
-    const QString ICON("icon");
-    const QString CREATION_DATE("creation_date");
-    const QString CREATOR_ID("creator_id");
-    const QString IS_GENERAL("is_general");
-    const QString IS_OUTGOING("is_outgoing");
-    const QString IS_CLOSED("is_closed");
-    const QString IS_HIDDEN("is_hidden");
-    const QString IS_NAME_IMPLICIT("is_name_implicit");
-}
 
 ForumTopic::ForumTopic(TDLibWrapper *tdLibWrapper, Utilities *utilities, const QVariantMap &forumTopic) :
     BaseMessageableData(tdLibWrapper, utilities),
@@ -71,7 +42,7 @@ QString ForumTopic::name() const {
 }
 
 bool ForumTopic::isGeneral() const {
-    return info("is_general").toBool();
+    return info(IS_GENERAL).toBool();
 }
 
 QColor ForumTopic::iconColor() const {

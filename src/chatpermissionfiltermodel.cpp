@@ -3,15 +3,11 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "chatpermissionfiltermodel.h"
+#include "tdlib/tdconst.h"
 #include "chatlistmodel.h"
 
 #define DEBUG_MODULE ChatPermissionFilterModel
 #include "debuglog.h"
-
-namespace {
-    const QString PERMISSIONS("permissions");
-    const QString STATUS("status");
-}
 
 ChatPermissionFilterModel::ChatPermissionFilterModel(QObject *parent) : QSortFilterProxyModel(parent) {
     setDynamicSortFilter(true);

@@ -2,15 +2,12 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "usersmodel.h"
+#include "tdlib/tdconst.h"
 #include "tdlib/tdlibdata.h"
 #include "utilities.h"
 
 #define DEBUG_MODULE UsersModel
 #include "debuglog.h"
-
-namespace {
-    const QString STATUS("status");
-}
 
 UsersModel::UsersModel(QObject *parent) : QAbstractListModel(parent) {}
 
@@ -65,16 +62,16 @@ QVariant UsersModel::data(const QModelIndex &index, int role) const {
     switch (static_cast<UserRole>(role)) {
         case RoleDisplay: return user;
         case RoleTitle: return Utilities::getUserName(user);
-        case RoleUserId: return user.value("id").toLongLong();
-        case RoleFirstName: return user.value("first_name").toString();
-        case RoleLastName: return user.value("last_name").toString();
-        case RoleUsername: return user.value("usernames").toMap().value("editable_username").toString();
-        case RolePhoneNumber: return user.value("phone_number");
-        case RolePhoto: return user.value("profile_photo");
-        case RoleUserStatus: return user.value(STATUS).toMap().value("@type");
-        case RoleUserLastOnline: return user.value(STATUS).toMap().value("was_online");
-        case RoleIsSupport: return user.value("is_support").toBool();
-        case RoleAccentColorId: return user.value("accent_color_id").toInt();
+        case RoleUserId: return user.value(ID).toLongLong();
+        case RoleFirstName: return user.value(FIRST_NAME).toString();
+        case RoleLastName: return user.value(LAST_NAME).toString();
+        case RoleUsername: return user.value(USERNAMES).toMap().value(EDITABLE_USERNAME).toString();
+        case RolePhoneNumber: return user.value(PHONE_NUMBER);
+        case RolePhoto: return user.value(PROFILE_PHOTO);
+        case RoleUserStatus: return user.value(STATUS).toMap().value(_TYPE);
+        case RoleUserLastOnline: return user.value(STATUS).toMap().value(WAS_ONLINE);
+        case RoleIsSupport: return user.value(IS_SUPPORT).toBool();
+        case RoleAccentColorId: return user.value(ACCENT_COLOR_ID).toInt();
     }
     return {};
 }

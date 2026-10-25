@@ -2,17 +2,11 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "mediamessagesmodel.h"
-
+#include "tdlib/tdconst.h"
 #include "utilities.h"
 
 #define DEBUG_MODULE MediaMessagesModel
 #include "debuglog.h"
-
-namespace {
-    const QString ID("id");
-    const QString CONTENT("content");
-    const QString _TYPE("@type");
-}
 
 MediaMessagesModel::MediaMessagesModel(QObject *parent) : JumpableMessagesModel(parent)
 {}

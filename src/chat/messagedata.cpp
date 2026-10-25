@@ -3,40 +3,18 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "messagedata.h"
-
+#include "tdlib/tdconst.h"
 #include "utilities.h"
 
 #define DEBUG_MODULE MessageData
 #include "debuglog.h"
 
 namespace {
-    const QString CONTENT("content");
-    const QString CHAT_ID("chat_id");
-    const QString SENDER_ID("sender_id");
-    const QString USER_ID("user_id");
-    const QString REPLY_MARKUP("reply_markup");
-    const QString DATE("date");
-    const QString _TYPE("@type");
-    const QString EDIT_DATE("edit_date");
-    const QString SUGGESTED_POST_INFO("suggested_post_info");
-    const QString CONTAINS_UNREAD_MENTION("contains_unread_mention");
-    const QString FACT_CHECK("fact_check");
-    const QString IS_PINNED("is_pinned");
-    const QString UNREAD_REACTIONS("unread_reactions");
-    const QString CONTAINS_UNREAD_POLL_VOTES("contains_unread_poll_votes");
-    const QString EPHEMERAL_CONTENT("ephemeral_content");
-
     // "interaction_info": {
     //     "@type": "messageInteractionInfo",
     //     "forward_count": 0,
     //     "view_count": 47
     // }
-    const QString INTERACTION_INFO("interaction_info");
-    const QString VIEW_COUNT("view_count");
-    const QString REACTIONS("reactions");
-
-    const QString TYPE_SPONSORED_MESSAGE("sponsoredMessage");
-    const QString MEDIA_ALBUM_ID("media_album_id");
 
     const QString TYPE_MESSAGE_DICE("messageDice");
     const QString FINAL_STATE("final_state");

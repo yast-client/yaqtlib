@@ -3,19 +3,14 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "messagesmodel.h"
-
 #include <QListIterator>
 #include <QByteArray>
 #include <QBitArray>
+#include "tdlib/tdconst.h"
 #include "utilities.h"
 
 #define DEBUG_MODULE MessagesModel
 #include "debuglog.h"
-
-namespace {
-    const QString ID("id");
-    const QString CHAT_ID("chat_id");
-}
 
 MessagesModel::MessagesModel(QObject *parent) : QAbstractListModel(parent), tdLibWrapper(nullptr), chatId(0) {}
 

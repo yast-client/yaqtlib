@@ -3,14 +3,11 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "stickermanager.h"
+#include "tdlib/tdconst.h"
 #include <QListIterator>
 
 #define DEBUG_MODULE StickerManager
 #include "debuglog.h"
-
-namespace {
-    const QString STICKERS("stickers");
-}
 
 StickerManager::StickerManager(TDLibWrapper *tdLibWrapper, QObject *parent)
     : QObject(parent),

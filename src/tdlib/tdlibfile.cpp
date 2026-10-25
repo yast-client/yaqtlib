@@ -3,33 +3,32 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tdlibfile.h"
+#include "tdconst.h"
 
 #define DEBUG_MODULE TDLibFile
 #include "debuglog.h"
 
 namespace {
-    const QString ID("id");
-    const QString EXPECTED_SIZE("expected_size");
-    const QString SIZE("size");
-    const QString LOCAL("local");
-    const QString CAN_BE_DELETED("can_be_deleted");
-    const QString CAN_BE_DOWNLOADED("can_be_downloaded");
-    const QString DOWNLOAD_OFFSET("download_offset");
-    const QString DOWNLOADED_PREFIX_SIZE("downloaded_prefix_size");
-    const QString DOWNLOADED_SIZE("downloaded_size");
-    const QString IS_DOWNLODING_ACTIVE("is_downloading_active");
-    const QString IS_DOWNLODING_COMPELETED("is_downloading_completed");
-    const QString PATH("path");
-    const QString REMOTE("remote");
-    const QString IS_UPLOADING_ACTIVE("is_uploading_active");
-    const QString IS_UPLOADING_COMPLETED("is_uploading_completed");
-    const QString UNIQUE_ID("unique_id");
-    const QString UPLOADED_SIZE("uploaded_size");
+    const QString EXPECTED_SIZE = QStringLiteral("expected_size");
+    const QString SIZE = QStringLiteral("size");
+    const QString LOCAL = QStringLiteral("local");
+    const QString CAN_BE_DELETED = QStringLiteral("can_be_deleted");
+    const QString CAN_BE_DOWNLOADED = QStringLiteral("can_be_downloaded");
+    const QString DOWNLOAD_OFFSET = QStringLiteral("download_offset");
+    const QString DOWNLOADED_PREFIX_SIZE = QStringLiteral("downloaded_prefix_size");
+    const QString DOWNLOADED_SIZE = QStringLiteral("downloaded_size");
+    const QString IS_DOWNLODING_ACTIVE = QStringLiteral("is_downloading_active");
+    const QString IS_DOWNLODING_COMPELETED = QStringLiteral("is_downloading_completed");
+    const QString PATH = QStringLiteral("path");
+    const QString REMOTE = QStringLiteral("remote");
+    const QString IS_UPLOADING_ACTIVE = QStringLiteral("is_uploading_active");
+    const QString IS_UPLOADING_COMPLETED = QStringLiteral("is_uploading_completed");
+    const QString UNIQUE_ID = QStringLiteral("unique_id");
+    const QString UPLOADED_SIZE = QStringLiteral("uploaded_size");
 
-    const QString _TYPE("@type");
-    const QString TYPE_FILE("file");
-    const QString TYPE_LOCAL_FILE("localFile");
-    const QString TYPE_REMOTE_FILE("remoteFile");
+    const QString TYPE_FILE = QStringLiteral("file");
+    const QString TYPE_LOCAL_FILE = QStringLiteral("localFile");
+    const QString TYPE_REMOTE_FILE = QStringLiteral("remoteFile");
 }
 
 // s(SignalName,signalName)

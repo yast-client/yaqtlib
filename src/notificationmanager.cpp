@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "notificationmanager.h"
+#include "tdlib/tdconst.h"
 #include "chatdata.h"
 #include <QListIterator>
 #include <QDateTime>
@@ -15,58 +16,43 @@
 #include "debuglog.h"
 
 namespace {
-    const QString _TYPE("@type");
-    const QString TYPE("type");
-    const QString ID("id");
-    const QString CHAT_ID("chat_id");
-    const QString IS_CHANNEL("is_channel");
-    const QString TOTAL_COUNT("total_count");
-    const QString DATE("date");
-    const QString TITLE("title");
-    const QString CONTENT("content");
-    const QString MESSAGE("message");
-    const QString FIRST_NAME("first_name");
-    const QString LAST_NAME("last_name");
-    const QString SENDER_ID("sender_id");
-    const QString USER_ID("user_id");
-    const QString NOTIFICATIONS("notifications");
-    const QString NOTIFICATION_GROUP_ID("notification_group_id");
-    const QString ADDED_NOTIFICATIONS("added_notifications");
-    const QString REMOVED_NOTIFICATION_IDS("removed_notification_ids");
-    const QString NOTIFICATION("notification");
-    const QString NOTIFICATION_SOUND_ID("notification_sound_id");
-    const QString TOPIC_ID("topic_id");
+    const QString NOTIFICATIONS = QStringLiteral("notifications");
+    const QString NOTIFICATION_GROUP_ID = QStringLiteral("notification_group_id");
+    const QString ADDED_NOTIFICATIONS = QStringLiteral("added_notifications");
+    const QString REMOVED_NOTIFICATION_IDS = QStringLiteral("removed_notification_ids");
+    const QString NOTIFICATION = QStringLiteral("notification");
+    const QString NOTIFICATION_SOUND_ID = QStringLiteral("notification_sound_id");
 
-    const QString CHAT_TYPE_BASIC_GROUP("chatTypeBasicGroup");
-    const QString CHAT_TYPE_SUPERGROUP("chatTypeSupergroup");
+    const QString CHAT_TYPE_BASIC_GROUP = QStringLiteral("chatTypeBasicGroup");
+    const QString CHAT_TYPE_SUPERGROUP = QStringLiteral("chatTypeSupergroup");
 
     // Notification hints
-    const QString HINT_GROUP_TYPE("x-yaqtlib.group_type");
-    const QString HINT_GROUP_ID("x-yaqtlib.group_id");        // int
-    const QString HINT_CHAT_ID("x-yaqtlib.chat_id");          // qlonglong
-    const QString HINT_TOTAL_COUNT("x-yaqtlib.total_count");  // int
-    const QString HINT_IS_CALL("x-yaqtlib.is_call");          // bool
+    const QString HINT_GROUP_TYPE = QStringLiteral("x-yaqtlib.group_type");
+    const QString HINT_GROUP_ID = QStringLiteral("x-yaqtlib.group_id");        // int
+    const QString HINT_CHAT_ID = QStringLiteral("x-yaqtlib.chat_id");          // qlonglong
+    const QString HINT_TOTAL_COUNT = QStringLiteral("x-yaqtlib.total_count");  // int
+    const QString HINT_IS_CALL = QStringLiteral("x-yaqtlib.is_call");          // bool
 
-    const QString HINT_VIBRA("x-nemo-vibrate");                     // bool
-    const QString HINT_SUPPRESS_SOUND("suppress-sound");            // bool
-    const QString HINT_DISPLAY_ON("x-nemo-display-on");             // bool
-    const QString HINT_VISIBILITY("x-nemo-visibility");             // QString
-    const QString VISIBILITY_PUBLIC("public");
+    const QString HINT_VIBRA = QStringLiteral("x-nemo-vibrate");                     // bool
+    const QString HINT_SUPPRESS_SOUND = QStringLiteral("suppress-sound");            // bool
+    const QString HINT_DISPLAY_ON = QStringLiteral("x-nemo-display-on");             // bool
+    const QString HINT_VISIBILITY = QStringLiteral("x-nemo-visibility");             // QString
+    const QString VISIBILITY_PUBLIC = QStringLiteral("public");
 
     // action & ngf event
-    const QString DEFAULT("default");
+    const QString DEFAULT = QStringLiteral("default");
 
     // Actions
-    const QString ACTION_CLOSE("close");
-    const QString ACTION_MARK_AS_READ("mark_as_read");
-    const QString ACTION_REPLY("reply");
-    const QString ACTION_REACT("react");
-    const QString ACTION_ACCEPT("accept");
-    const QString ACTION_DISCARD("discard");
+    const QString ACTION_CLOSE = QStringLiteral("close");
+    const QString ACTION_MARK_AS_READ = QStringLiteral("mark_as_read");
+    const QString ACTION_REPLY = QStringLiteral("reply");
+    const QString ACTION_REACT = QStringLiteral("react");
+    const QString ACTION_ACCEPT = QStringLiteral("accept");
+    const QString ACTION_DISCARD = QStringLiteral("discard");
 
-    const QString NGF_EVENT_RINGTONE("ringtone");
-    const QString NGF_EVENT_VIBRA("vibra");
-    const QString NGF_PROPERTY_SOUND_FILE("sound.filename");
+    const QString NGF_EVENT_RINGTONE = QStringLiteral("ringtone");
+    const QString NGF_EVENT_VIBRA = QStringLiteral("vibra");
+    const QString NGF_PROPERTY_SOUND_FILE = QStringLiteral("sound.filename");
 }
 
 NotificationManager::NotificationGroup::NotificationGroup(NotificationGroupType type, int group, qlonglong chat, int count, Notification *notification) :

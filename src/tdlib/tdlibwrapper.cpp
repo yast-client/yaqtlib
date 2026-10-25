@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tdlibwrapper.h"
+#include "tdconst.h"
 #include "tdlibdata.h"
 #include "tdlibsecrets.h"
 #include "utilities.h"
@@ -27,22 +28,9 @@
 #include "debuglog.h"
 
 namespace {
-    const QString STATUS("status");
-    const QString ID("id");
-    const QString CHAT_ID("chat_id");
-    const QString USER_ID("user_id");
-    const QString MESSAGE_ID("message_id");
     const QString MESSAGE_IDS("message_ids");
-    const QString TYPE("type");
-    const QString CAPTION("caption");
-    const QString FIRST_NAME("first_name");
-    const QString LAST_NAME("last_name");
-    const QString USERNAME("username");
-    const QString USERNAMES("usernames");
     const QString VALUE("value");
     const QString REPLY_TO("reply_to");
-    const QString _TYPE("@type");
-    const QString _EXTRA("@extra");
     const QString TYPE_CHAT_LIST_MAIN("chatListMain");
     const QString TYPE_CHAT_LIST_ARCHIVE("chatListArchive");
     const QString TYPE_CHAT_LIST_FOLDER("chatListFolder");
@@ -50,15 +38,11 @@ namespace {
     const QString REACTIONS("reactions");
     const QString REACTION_TYPE("reaction_type");
     const QString REACTION_TYPE_EMOJI("reactionTypeEmoji");
-    const QString EMOJI("emoji");
     const QString TYPE_MESSAGE_REPLY_TO_MESSAGE("messageReplyToMessage");
     const QString TYPE_INPUT_MESSAGE_REPLY_TO_MESSAGE("inputMessageReplyToMessage");
-    const QString TEXT("text");
-    const QString PHOTO("photo");
     const QString TYPE_INPUT_FILE_ID("inputFileId");
     const QString PATH("path");
     const QString CONTACT("contact");
-    const QString PHONE_NUMBER("phone_number");
     const QString INPUT_MESSAGE_CONTENT("input_message_content");
     const QString LOCATION("location");
     const QString LIMIT("limit");
@@ -67,13 +51,9 @@ namespace {
     const QString FILTER("filter");
     const QString EXTRA_RECENTLY_FOUND("recentlyFound");
     const QString CHAT_LIST("chat_list");
-    const QString DRAFT_MESSAGE("draft_message");
     const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
     const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
     const QString UNREAD_COUNT("unread_count");
-    const QString TITLE("title");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString SECRET_CHAT_ID("secret_chat_id");
     const QString TYPE_READ_CHAT_LIST("readChatList");
     const QString RETURN_LOCAL("return_local");
     const QString ACTION("action");
@@ -81,22 +61,13 @@ namespace {
     const QString BIRTHDATE("birthdate");
     const QString APPROVE("approve");
     const QString INVITE_LINK("invite_link");
-    const QString LINK("link");
     const QString EXTRA_OPEN_DIRECTLY("openDirectly");
     const QString EXTRA_IS_CHANNEL("isChannel");
-    const QString URL("url");
-    const QString BASIC_GROUP_ID("basic_group_id");
-    const QString SUPERGROUP_ID("supergroup_id");
     const QString FROM_MESSAGE_ID("from_message_id");
-    const QString TOPIC_ID("topic_id");
     const QString SOURCE("source");
-    const QString FORUM_TOPIC_ID("forum_topic_id");
     const QString TYPE_GET_FORUM_TOPIC("getForumTopic");
-    const QString NAME("name");
     const QString TYPE_SET_OPTION("setOption");
     const QString STICKER_TYPE("sticker_type");
-    const QString STICKER("sticker");
-    const QString BOT_USER_ID("bot_user_id");
     const QString PROXY("proxy");
     const QString PROXY_ID("proxy_id");
     const QString ENABLE("enable");
@@ -115,14 +86,11 @@ namespace {
     const QString CODE("code");
     const QString TYPE_GET_MESSAGE("getMessage");
     const QString NOTIFICATION_GROUP_ID("notification_group_id");
-    const QString NOTE("note");
     const QString SPONSORED_CHAT_UNIQUE_ID("sponsored_chat_unique_id");
-    const QString COMMUNITY_ID("community_id");
     const QString COMMENT("comment");
     const QString TOKEN("token");
     const QString ALLOW_WRITE_ACCESS("allow_write_access");
     const QString TYPE_GET_INTERNAL_LINK_TYPE("getInternalLinkType");
-    const QString ERROR("error");
     const QString BUTTON_ID("button_id");
     const QString TYPE_GET_LOGIN_URL_INFO("getLoginUrlInfo");
     const QString TYPE_GET_LOGIN_URL("getLoginUrl");
@@ -131,8 +99,6 @@ namespace {
     const QString MAIN_PROFILE_TAB("main_profile_tab");
     const QString UNPAID_MESSAGES_TOKEN("unpaid_messages_token");
     const QString CARRIER_ID("carrier_id");
-    const QString MESSAGE("message");
-    const QString DATA("data");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"

@@ -3,6 +3,7 @@
 //@ SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tdlibdata.h"
+#include "tdconst.h"
 #include "tdlibreceiver.h"
 #include "tdlibwrapper.h"
 #include "chatdata.h"
@@ -11,22 +12,7 @@
 #include "debuglog.h"
 
 namespace {
-    const QString _TYPE("@type");
-    const QString _EXTRA("@extra");
-    const QString ID("id");
-    const QString TYPE("type");
-    const QString CHAT_ID("chat_id");
-    const QString USER_ID("user_id");
-
-    const QString USERNAMES("usernames");
-    const QString EDITABLE_USERNAME("editable_username");
-    const QString FIRST_NAME("first_name");
-    const QString LAST_NAME("last_name");
-    const QString STATUS("status");
-    const QString IS_CONTACT("is_contact");
-
     const QString TYPE_CHAT_POSITION("chatPosition");
-    const QString LAST_MESSAGE("last_message");
     const QString TYPE_CHAT_LIST_MAIN("chatListMain");
     const QString TYPE_CHAT_LIST_ARCHIVE("chatListArchive");
     const QString TYPE_CHAT_LIST_FOLDER("chatListFolder");
@@ -36,23 +22,7 @@ namespace {
     const QString CHAT_LIST("chat_list");
 
     const QString LIST("list");
-    const QString ORDER("order");
-    const QString IS_PINNED("is_pinned");
-    const QString TITLE("title");
-    const QString PHOTO("photo");
-    const QString DRAFT_MESSAGE("draft_message");
-    const QString NOTIFICATION_SETTINGS("notification_settings");
-    const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
-    const QString UNREAD_MENTION_COUNT("unread_mention_count");
-    const QString UNREAD_REACTION_COUNT("unread_reaction_count");
-    const QString UNREAD_POLL_VOTE_COUNT("unread_poll_vote_count");
-    const QString AVAILABLE_REACTIONS("available_reactions");
     const QString PENDING_JOIN_REQUESTS("pending_join_requests");
-
-    const QString SUPERGROUP_ID("supergroup_id");
-    const QString ACTIVE_USERNAMES("active_usernames");
-
-    const QString MUTE_FOR("mute_for");
 
     QVariantMap findChatPosition(const QVariantList &positions, bool archive = false) {
         for (const QVariant &positionVariant : positions) {
