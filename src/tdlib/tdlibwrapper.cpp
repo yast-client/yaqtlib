@@ -236,6 +236,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::recentStickersUpdated, this, &TDLibWrapper::recentStickersUpdated);
     connect(tdLibReceiver, &TDLibReceiver::favoriteStickersUpdated, this, &TDLibWrapper::favoriteStickersUpdated);
     connect(tdLibReceiver, &TDLibReceiver::stickers, this, &TDLibWrapper::handleStickersReceived);
+    connect(tdLibReceiver, &TDLibReceiver::sticker, this, &TDLibWrapper::stickerReceived);
     connect(tdLibReceiver, &TDLibReceiver::installedStickerSetsUpdated, this, &TDLibWrapper::installedStickerSetsUpdated);
     connect(tdLibReceiver, &TDLibReceiver::stickerSets, this, &TDLibWrapper::handleStickerSets);
     connect(tdLibReceiver, &TDLibReceiver::stickerSet, this, &TDLibWrapper::stickerSetReceived);
@@ -316,6 +317,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierOpened, this, &TDLibWrapper::webProxyCarrierOpened);
     connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierDataReceived, this, &TDLibWrapper::webProxyCarrierDataReceived);
     connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierClosed, this, &TDLibWrapper::webProxyCarrierClosed);
+    connect(tdLibReceiver, &TDLibReceiver::animatedEmojiMessageClicked, this, &TDLibWrapper::animatedEmojiMessageClicked);
 }
 
 void TDLibWrapper::initializeTDLibData() {
@@ -2045,7 +2047,7 @@ void TDLibWrapper::summarizeMessage(qlonglong chatId, qlonglong messageId, const
     });
 }
 
-void TDLibWrapper::sendChatAction(qlonglong chatId, const QVariantMap &topicId, const QVariantMap &action) {
+void TDLibWrapper::sendChatAction(qlonglong chatId, const QVariantMap &action, const QVariantMap &topicId) {
     LOG("Sending chat action" << chatId << action.value(_TYPE).toString());
     QVariantMap request{
         {_TYPE, "sendChatAction"},
@@ -2060,7 +2062,7 @@ void TDLibWrapper::sendChatAction(qlonglong chatId, const QVariantMap &topicId, 
 }
 
 void TDLibWrapper::sendChatAction(qlonglong chatId, TDLibWrapper::ChatActionType type, const QVariantMap &topicId) {
-    sendChatAction(chatId, topicId, {{_TYPE, getChatActionTypeString(type)}});
+    sendChatAction(chatId, {{_TYPE, getChatActionTypeString(type)}}, topicId);
 }
 
 void TDLibWrapper::searchEmojis(const QString &text) {
@@ -2628,6 +2630,13 @@ void TDLibWrapper::getForumTopic(qlonglong chatId, int forumTopicId) {
 }
 
 void TDLibWrapper::handleStickersReceived(const QVariantList &stickers, const QVariant &extra) {
+    auto handleUnknown = [this, stickers, extra]() {
+        LOG("Unknown stickers received" << extra << stickers.length());
+        emit stickersReceived(stickers, extra);
+    };
+    if (extra.userType() != QMetaType::QString)
+        return handleUnknown();
+
     const QString extraString = extra.toString();
     if (extraString == "recent") {
         LOG("Recent stickers received" << stickers.length());
@@ -2635,10 +2644,7 @@ void TDLibWrapper::handleStickersReceived(const QVariantList &stickers, const QV
     } else if (extraString == "favorite") {
         LOG("Favorite stickers received" << stickers.length());
         emit favoriteStickersReceived(stickers);
-    } else {
-        LOG("Unknown stickers received" << extra << stickers.length());
-        emit stickersReceived(stickers, extra);
-    }
+    } else handleUnknown();
 }
 
 void TDLibWrapper::addFavoriteSticker(int fileId) {
@@ -3150,4 +3156,19 @@ void TDLibWrapper::reportWebProxyCarrierError(int carrierId, const QString &mess
         {CARRIER_ID, carrierId},
         {ERROR, QVariantMap{{_TYPE, "webProxyCarrierErrorLoadFailed"}, {MESSAGE, message}}}}
     );
+}
+
+void TDLibWrapper::clickAnimatedEmojiMessage(qlonglong chatId, qlonglong messageId) {
+    LOG("Clicking animated emoji message" << chatId << messageId);
+    sendRequestWithId({
+        {_TYPE, "clickAnimatedEmojiMessage"},
+        {CHAT_ID, chatId},
+        {MESSAGE_ID, messageId}
+    }, this, [this, chatId, messageId](const QString &type, const QVariantMap &sticker) {
+        if (type != STICKER) return;
+        LOG("Clicked animated emoji message" << chatId << messageId);
+        QVariantMap cleanedSticker = tdLibReceiver->cleanupMap(sticker);
+        cleanedSticker.remove(_EXTRA);
+        emit animatedEmojiMessageClicked(chatId, messageId, cleanedSticker);
+    });
 }

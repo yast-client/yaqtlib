@@ -368,7 +368,7 @@ public:
     Q_INVOKABLE void translateText(const QVariantMap &text, const QString &languageCode, const QString &extra);
     Q_INVOKABLE void translateMessageText(qlonglong chatId, qlonglong messageId, const QString &languageCode);
     Q_INVOKABLE void summarizeMessage(qlonglong chatId, qlonglong messageId, const QString &translateToLanguageCode = QString());
-    Q_INVOKABLE void sendChatAction(qlonglong chatId, const QVariantMap &topicId = QVariantMap(), const QVariantMap &action = QVariantMap());
+    Q_INVOKABLE void sendChatAction(qlonglong chatId, const QVariantMap &action = QVariantMap(), const QVariantMap &topicId = QVariantMap());
     Q_INVOKABLE void sendChatAction(qlonglong chatId, ChatActionType type, const QVariantMap &topicId = QVariantMap());
     Q_INVOKABLE void searchEmojis(const QString &text);
     Q_INVOKABLE void toggleSupergroupIsForum(qlonglong supergroupId, bool isForum, bool hasForumTabs = false);
@@ -464,6 +464,7 @@ public:
     Q_INVOKABLE void processWebProxyCarrierMessage(int carrierId, bool isBytes, const QString &message);
     Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, WebProxyCarrierError error);
     Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, const QString &message = {});
+    Q_INVOKABLE void clickAnimatedEmojiMessage(qlonglong chatId, qlonglong messageId);
 
 signals:
     void authorizationStateChanged();
@@ -501,6 +502,7 @@ signals:
     void favoriteStickersUpdated(const QList<int> &stickerIds);
     void favoriteStickersReceived(const QVariantList &stickers);
     void stickersReceived(const QVariantList &stickers, const QVariant &extra);
+    void stickerReceived(const QVariantMap &sticker, const QVariant &extra);
     void installedStickerSetsUpdated(const QString &stickerType, const QVariantList &stickerSetIds);
     void installedStickerSetsReceived(StickerType stickerType, const QVariantList &stickerSets);
     void stickerSetsReceived(const QVariantList &stickerSets);
@@ -583,6 +585,7 @@ signals:
     void webProxyCarrierOpened(int carrierId, const QVariantMap &carrier);
     void webProxyCarrierDataReceived(int carrierId, const QString &data);
     void webProxyCarrierClosed(int carrierId);
+    void animatedEmojiMessageClicked(qlonglong chatId, qlonglong messageId, const QVariantMap &sticker);
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);

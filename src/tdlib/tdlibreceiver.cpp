@@ -479,8 +479,15 @@ void TDLibReceiver::processUpdateFavoriteStickers(const QVariantMap &data) {
 }
 
 void TDLibReceiver::processStickers(const QVariantMap &data) {
-    LOG("Received stickers");
-    emit stickers(cleanupList(data.value(STICKERS).toList()), data.value(_EXTRA));
+    const QVariantList stickersList = cleanupList(data.value(STICKERS).toList());
+    LOG("Received stickers" << stickersList.size());
+    emit stickers(stickersList, data.value(_EXTRA));
+}
+
+void TDLibReceiver::processSticker(const QVariantMap &data) {
+    LOG("Received a sticker");
+    QVariantMap stickerData = cleanupMap(data);
+    emit sticker(stickerData, stickerData.take(_EXTRA));
 }
 
 void TDLibReceiver::processUpdateInstalledStickerSets(const QVariantMap &data) {
@@ -721,8 +728,7 @@ void TDLibReceiver::processUpdateActiveEmojiReactions(const QVariantMap &data) {
 // Recursively removes (some) unused entries from QVariantMaps to reduce
 // memory usage. QStrings allocated by QVariantMaps are the top consumers
 // of memory.
-const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *updated)
-{
+const QVariantMap TDLibReceiver::cleanupMap(const QVariantMap& map, bool *updated) {
     const QString type(map.value(_TYPE).toString());
     if (type == TYPE_STICKER) {
         QVariantMap sticker(map);
@@ -1483,4 +1489,11 @@ void TDLibReceiver::processUpdateWebProxyCarrierClosed(const QVariantMap &data) 
     int id = data.value(CARRIER_ID).toInt();
     LOG("Web proxy carrier closed" << id);
     emit webProxyCarrierClosed(id);
+}
+
+void TDLibReceiver::processUpdateAnimatedEmojiMessageClicked(const QVariantMap &data) {
+    qlonglong chatId = data.value(CHAT_ID).toLongLong();
+    qlonglong messageId = data.value(MESSAGE_ID).toLongLong();
+    LOG("Animated emoji message clicked" << chatId << messageId);
+    emit animatedEmojiMessageClicked(chatId, messageId, cleanupMap(data.value(STICKER).toMap()));
 }

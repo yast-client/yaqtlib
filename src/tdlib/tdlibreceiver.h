@@ -66,6 +66,7 @@ signals:
     void recentStickersUpdated(bool isAttached, const QList<int> &stickerIds);
     void favoriteStickersUpdated(const QList<int> &stickerIds);
     void stickers(const QVariantList &stickers, const QVariant &extra);
+    void sticker(const QVariantMap &sticker, const QVariant &extra);
     void installedStickerSetsUpdated(const QString &stickerType, const QVariantList &stickerSetIds);
     void stickerSets(const QVariantList &stickerSets, int totalCount, const QString &extra);
     void stickerSet(const QString &stickerSetId, const QVariantMap &stickerSet);
@@ -169,6 +170,7 @@ signals:
     void webProxyCarrierOpened(int carrierId, const QVariantMap &carrier);
     void webProxyCarrierDataReceived(int carrierId, const QString &data);
     void webProxyCarrierClosed(int carrierId);
+    void animatedEmojiMessageClicked(qlonglong chatId, qlonglong messageId, const QVariantMap &sticker);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -212,6 +214,7 @@ private:
         {"updateRecentStickers", &TDLibReceiver::processUpdateRecentStickers},
         {"updateFavoriteStickers", &TDLibReceiver::processUpdateFavoriteStickers},
         {"stickers", &TDLibReceiver::processStickers},
+        {"sticker", &TDLibReceiver::processSticker},
         {"updateInstalledStickerSets", &TDLibReceiver::processUpdateInstalledStickerSets},
         {"stickerSets", &TDLibReceiver::processStickerSets},
         {"stickerSet", &TDLibReceiver::processStickerSet},
@@ -309,6 +312,7 @@ private:
         {"updateWebProxyCarrierOpened", &TDLibReceiver::processUpdateWebProxyCarrierOpened},
         {"updateWebProxyCarrierData", &TDLibReceiver::processUpdateWebProxyCarrierData},
         {"updateWebProxyCarrierClosed", &TDLibReceiver::processUpdateWebProxyCarrierClosed},
+        {"updateAnimatedEmojiMessageClicked", &TDLibReceiver::processUpdateAnimatedEmojiMessageClicked},
 
         // Abstract handlers defined as normal ones
         {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
@@ -367,6 +371,7 @@ private:
     void processUpdateRecentStickers(const QVariantMap &data);
     void processUpdateFavoriteStickers(const QVariantMap &data);
     void processStickers(const QVariantMap &data);
+    void processSticker(const QVariantMap &data);
     void processUpdateInstalledStickerSets(const QVariantMap &data);
     void processStickerSets(const QVariantMap &data);
     void processStickerSet(const QVariantMap &data);
@@ -469,6 +474,7 @@ private:
     void processUpdateWebProxyCarrierOpened(const QVariantMap &data);
     void processUpdateWebProxyCarrierData(const QVariantMap &data);
     void processUpdateWebProxyCarrierClosed(const QVariantMap &data);
+    void processUpdateAnimatedEmojiMessageClicked(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);
