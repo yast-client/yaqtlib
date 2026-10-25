@@ -47,6 +47,7 @@ public:
         RoleChatActionsText,
         RoleChatActionsProgress,
         RoleViewAsTopics,
+        RoleIsOnline,
 
         RoleAccentColorId,
         RoleBackgroundCustomEmojiId,
@@ -108,6 +109,7 @@ public:
     bool updateLastReadOutboxMessageId(qlonglong messageId);
     QVector<int> updateLastMessage(const QVariantMap &message);
     QVector<int> updateGroup(const TDLibData::Group *group);
+    bool updateUserStatus(const QVariantMap &status);
     QVector<int> updateAccentColors(int accentColorId, const QString &backgroundCustomEmojiId, const QVariantMap &upgradedGiftColors, int profileAccentColorId, const QString &profileBackgroundCustomEmojiId);
 
 public:
@@ -118,4 +120,5 @@ public:
     TDLibWrapper::ChatType chatType;
     TDLibWrapper::ChatMemberStatus memberStatus;
     QHash<MessageSender, ChatAction> chatActions;
+    bool online = false;
 };

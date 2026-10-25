@@ -32,12 +32,15 @@ namespace {
     const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
     const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
     const QString IS_CHANNEL("is_channel");
-    const QString VERIFICATION_STATUS("verification_status");
     const QString IS_MARKED_AS_UNREAD("is_marked_as_unread");
     const QString PINNED_MESSAGE_ID("pinned_message_id");
     const QString SECRET_CHAT_ID("secret_chat_id");
     const QString UNREAD_UNMUTED_COUNT("unread_unmuted_count");
     const QString VIEW_AS_TOPICS("view_as_topics");
+
+    const QString VERIFICATION_STATUS("verification_status");
+    const QString STATUS("status");
+    const QString TYPE_USER_STATUS_ONLINE("userStatusOnline");
 
     const QString ACCENT_COLOR_ID("accent_color_id");
     const QString BACKGROUND_CUSTOM_EMOJI_ID("background_custom_emoji_id");
@@ -74,6 +77,9 @@ void ChatData::updateChatData(const QVariantMap &data) {
     case TDLibWrapper::ChatTypeSupergroup:
         groupId = type.value(SUPERGROUP_ID).toLongLong();
         break;
+    case TDLibWrapper::ChatTypePrivate:
+    case TDLibWrapper::ChatTypeSecret:
+        this->updateUserStatus(tdLibWrapper->data()->getUserInformation(chatId).value(STATUS).toMap());
     default:
         break;
     }
@@ -186,23 +192,23 @@ QVector<int> ChatData::updateLastMessage(const QVariantMap &message) {
     chatData.insert(LAST_MESSAGE, message);
 
     QVector<int> changedRoles;
-    changedRoles.append(ChatData::RoleDisplay);
+    changedRoles.append(RoleDisplay);
     if (prevLastMessageId != lastMessageId())
-        changedRoles.append(ChatData::RoleLastMessageId);
+        changedRoles.append(RoleLastMessageId);
     if (prevSenderId != lastMessageSenderId())
-        changedRoles.append(ChatData::RoleLastMessageSenderId);
+        changedRoles.append(RoleLastMessageSenderId);
     if (prevLastMessageDate != lastMessageDate())
-        changedRoles.append(ChatData::RoleLastMessageDate);
+        changedRoles.append(RoleLastMessageDate);
     if (prevLastMessageText != lastMessageText())
-        changedRoles.append(ChatData::RoleLastMessageText);
+        changedRoles.append(RoleLastMessageText);
     if (prevLastMessageMinithumbnail != lastMessageMinithumbnail())
-        changedRoles.append(ChatData::RoleLastMessageMinithumbnail);
+        changedRoles.append(RoleLastMessageMinithumbnail);
     if (prevLastMessageIsService != lastMessageIsService())
-        changedRoles.append(ChatData::RoleLastMessageIsService);
+        changedRoles.append(RoleLastMessageIsService);
     if (prevLastMessageSendingState != lastMessageSendingState())
-        changedRoles.append(ChatData::RoleLastMessageSendingState);
+        changedRoles.append(RoleLastMessageSendingState);
     if (prevLastMessageIsOutgoing != lastMessageIsOutgoing())
-        changedRoles.append(ChatData::RoleLastMessageIsOutgoing);
+        changedRoles.append(RoleLastMessageIsOutgoing);
     return changedRoles;
 }
 
@@ -214,17 +220,27 @@ QVector<int> ChatData::updateGroup(const TDLibData::Group *group) {
         const TDLibWrapper::ChatMemberStatus memberStatus = group->chatMemberStatus();
         if (this->memberStatus != memberStatus) {
             this->memberStatus = memberStatus;
-            changedRoles.append(ChatData::RoleChatMemberStatus);
+            changedRoles.append(RoleChatMemberStatus);
         }
         const QVariantMap verificationStatus = group->groupInfo.value(VERIFICATION_STATUS).toMap();
         if (this->verificationStatus != verificationStatus) {
             this->verificationStatus = verificationStatus;
-            changedRoles.append(ChatData::RoleVerificationStatus);
+            changedRoles.append(RoleVerificationStatus);
         }
     }
     return changedRoles;
 }
 
+bool ChatData::updateUserStatus(const QVariantMap &status) {
+    if (status.isEmpty()) return false;
+
+    bool online = status.value(_TYPE).toString() == TYPE_USER_STATUS_ONLINE;
+    if (this->online != online) {
+        this->online = online;
+        return true;
+    }
+    return false;
+}
 
 
 ChatData::ChatAction::ChatAction(const QVariantMap &action) {

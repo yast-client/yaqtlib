@@ -298,18 +298,22 @@ void TDLibData::handleUserUpdated(const QVariantMap &user) {
     updateUserInformation(userId, user);
 }
 
-void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &userStatusInformation) {
+void TDLibData::handleUserStatusUpdated(qlonglong userId, const QVariantMap &status) {
     if (userId == this->myId) {
         LOG("Current user status information updated");
-        this->userInformation.insert(STATUS, userStatusInformation);
+        this->userInformation.insert(STATUS, status);
         emit myUserUpdated();
     }
     QVariantMap updatedUserInformation = this->usersById.value(userId);
-    if (updatedUserInformation.value(STATUS) == userStatusInformation)
+    if (updatedUserInformation.value(STATUS) == status)
         return;
-    LOG("User status information updated:" << userId << userStatusInformation.value(_TYPE).toString());
-    updatedUserInformation.insert(STATUS, userStatusInformation);
+    VERBOSE("User status information updated" << userId << status.value(_TYPE).toString());
+    updatedUserInformation.insert(STATUS, status);
     updateUserInformation(userId, updatedUserInformation);
+
+    ChatData *chat = this->chats.value(userId); // user and chat IDs match in TDLib
+    if (chat && chat->updateUserStatus(status))
+        emit chatRolesUpdated(userId, {ChatData::RoleIsOnline});
 }
 
 void TDLibData::updateUserInformation(qlonglong userId, const QVariantMap &userInformation) {
