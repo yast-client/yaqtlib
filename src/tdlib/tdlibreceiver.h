@@ -171,6 +171,7 @@ signals:
     void webProxyCarrierDataReceived(int carrierId, const QString &data);
     void webProxyCarrierClosed(int carrierId);
     void animatedEmojiMessageClicked(qlonglong chatId, qlonglong messageId, const QVariantMap &sticker);
+    void hashtagsReceived(const QStringList &hashtags, const QString &extra);
 
 private:
     typedef void (TDLibReceiver::*Handler)(const QVariantMap &);
@@ -313,6 +314,7 @@ private:
         {"updateWebProxyCarrierData", &TDLibReceiver::processUpdateWebProxyCarrierData},
         {"updateWebProxyCarrierClosed", &TDLibReceiver::processUpdateWebProxyCarrierClosed},
         {"updateAnimatedEmojiMessageClicked", &TDLibReceiver::processUpdateAnimatedEmojiMessageClicked},
+        {"hashtags", &TDLibReceiver::processHashtags},
 
         // Abstract handlers defined as normal ones
         {"loginUrlInfoOpen", &TDLibReceiver::processLoginUrlInfoOpen},
@@ -475,6 +477,7 @@ private:
     void processUpdateWebProxyCarrierData(const QVariantMap &data);
     void processUpdateWebProxyCarrierClosed(const QVariantMap &data);
     void processUpdateAnimatedEmojiMessageClicked(const QVariantMap &data);
+    void processHashtags(const QVariantMap &data);
 
 public:
     void processError(const QVariantMap &data);

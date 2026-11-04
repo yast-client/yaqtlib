@@ -465,6 +465,11 @@ public:
     Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, WebProxyCarrierError error);
     Q_INVOKABLE void reportWebProxyCarrierError(int carrierId, const QString &message = {});
     Q_INVOKABLE void clickAnimatedEmojiMessage(qlonglong chatId, qlonglong messageId);
+    Q_INVOKABLE void searchHashtags(const QString &prefix, const QString &extra = {}, int limit = 20);
+    Q_INVOKABLE void removeRecentHashtag(const QString &hashtag);
+    Q_INVOKABLE void getSearchedForTags(const QString &prefix = {}, const QString &extra = {}, int limit = 20);
+    Q_INVOKABLE void removeSearchedForTag(const QString &tag);
+    Q_INVOKABLE void clearSearchedForTags(bool cashtags = false);
 
 signals:
     void authorizationStateChanged();
@@ -586,6 +591,9 @@ signals:
     void webProxyCarrierDataReceived(int carrierId, const QString &data);
     void webProxyCarrierClosed(int carrierId);
     void animatedEmojiMessageClicked(qlonglong chatId, qlonglong messageId, const QVariantMap &sticker);
+    void hashtagsReceived(const QStringList &hashtags, const QString &extra);
+    void hashtagsChanged();
+    void searchedForTagsChanged();
 
     // Link types
     void internalLinkTypeProxyReceived(const QString &server, int port, const QVariantMap &type);

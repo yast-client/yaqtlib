@@ -49,7 +49,6 @@ namespace {
     const QString OFFSET("offset");
     const QString QUERY("query");
     const QString FILTER("filter");
-    const QString EXTRA_RECENTLY_FOUND("recentlyFound");
     const QString CHAT_LIST("chat_list");
     const QString LAST_READ_INBOX_MESSAGE_ID("last_read_inbox_message_id");
     const QString LAST_READ_OUTBOX_MESSAGE_ID("last_read_outbox_message_id");
@@ -61,8 +60,6 @@ namespace {
     const QString BIRTHDATE("birthdate");
     const QString APPROVE("approve");
     const QString INVITE_LINK("invite_link");
-    const QString EXTRA_OPEN_DIRECTLY("openDirectly");
-    const QString EXTRA_IS_CHANNEL("isChannel");
     const QString FROM_MESSAGE_ID("from_message_id");
     const QString SOURCE("source");
     const QString TYPE_GET_FORUM_TOPIC("getForumTopic");
@@ -79,7 +76,6 @@ namespace {
     const QString NOTIFICATION_SOUND_ID("notification_sound_id");
     const QString FILE_ID("file_id");
     const QString TYPE_LOAD_CHATS("loadChats");
-    const QString EXTRA_LOAD_CHATS_FOR_FOLDER("loadChatsForFolder");
     const QString CALL_ID("call_id");
     const QString PROTOCOL("protocol");
     const QString CLEAR_DRAFT("clear_draft");
@@ -95,10 +91,17 @@ namespace {
     const QString TYPE_GET_LOGIN_URL_INFO("getLoginUrlInfo");
     const QString TYPE_GET_LOGIN_URL("getLoginUrl");
     const QString TYPE_GET_EXTERNAL_LINK_INFO("getExternalLinkInfo");
-    const QString EXTRA_LOGIN_URL("openLoginUrl");
     const QString MAIN_PROFILE_TAB("main_profile_tab");
     const QString UNPAID_MESSAGES_TOKEN("unpaid_messages_token");
     const QString CARRIER_ID("carrier_id");
+
+    const QString EXTRA_RECENTLY_FOUND("recentlyFound");
+    const QString EXTRA_OPEN_DIRECTLY("openDirectly");
+    const QString EXTRA_LOAD_CHATS_FOR_FOLDER("loadChatsForFolder");
+    const QString EXTRA_IS_CHANNEL("isChannel");
+    const QString EXTRA_LOGIN_URL("openLoginUrl");
+    const QString EXTRA_HASHTAGS("hashtags");
+    const QString EXTRA_SEARCHED_FOR_TAGS("searchedForTags");
 
     const QStringList ALL_FILE_TYPES(QStringList()
                                      << "fileTypeAnimation"
@@ -284,6 +287,7 @@ void TDLibWrapper::initializeTDLibReceiver() {
     connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierDataReceived, this, &TDLibWrapper::webProxyCarrierDataReceived);
     connect(tdLibReceiver, &TDLibReceiver::webProxyCarrierClosed, this, &TDLibWrapper::webProxyCarrierClosed);
     connect(tdLibReceiver, &TDLibReceiver::animatedEmojiMessageClicked, this, &TDLibWrapper::animatedEmojiMessageClicked);
+    connect(tdLibReceiver, &TDLibReceiver::hashtagsReceived, this, &TDLibWrapper::hashtagsReceived);
 }
 
 void TDLibWrapper::initializeTDLibData() {
@@ -1763,21 +1767,27 @@ void TDLibWrapper::handleErrorReceived(int code, const QString &message, const Q
 void TDLibWrapper::handleOkReceived(const QVariant &extra) {
     const QString extraString = extra.toString();
     if (extra.userType() == QMetaType::QString && !extraString.isEmpty()) {
-        QStringList parts(extraString.split(':'));
+        if (extraString == EXTRA_HASHTAGS)
+            emit hashtagsChanged();
+        else if (extraString == EXTRA_SEARCHED_FOR_TAGS)
+            emit searchedForTagsChanged();
+        else {
+            QStringList parts(extraString.split(':'));
 
-        if (parts.size() == 2 && parts.at(0) == TYPE_LOAD_CHATS) {
-            bool forArchive = parts.at(1).size();
-            LOG("Chats chunk loaded archive:" << forArchive);
-            if (forArchive)
-                emit archiveChatListChatsLoaded();
-            else
-                emit mainChatListChatsLoaded();
-            return;
-        } else if (parts.size() == 2 && parts.at(0) == EXTRA_LOAD_CHATS_FOR_FOLDER) {
-            int folderId = parts.at(1).toInt();
-            LOG("Folder chats chunk loaded" << folderId);
-            emit folderChatListChatsLoaded(folderId);
-            return;
+            if (parts.size() == 2 && parts.at(0) == TYPE_LOAD_CHATS) {
+                bool forArchive = parts.at(1).size();
+                LOG("Chats chunk loaded archive:" << forArchive);
+                if (forArchive)
+                    emit archiveChatListChatsLoaded();
+                else
+                    emit mainChatListChatsLoaded();
+                return;
+            } else if (parts.size() == 2 && parts.at(0) == EXTRA_LOAD_CHATS_FOR_FOLDER) {
+                int folderId = parts.at(1).toInt();
+                LOG("Folder chats chunk loaded" << folderId);
+                emit folderChatListChatsLoaded(folderId);
+                return;
+            }
         }
     }
 
@@ -3137,4 +3147,29 @@ void TDLibWrapper::clickAnimatedEmojiMessage(qlonglong chatId, qlonglong message
         cleanedSticker.remove(_EXTRA);
         emit animatedEmojiMessageClicked(chatId, messageId, cleanedSticker);
     });
+}
+
+void TDLibWrapper::searchHashtags(const QString &prefix, const QString &extra, int limit) {
+    LOG("Searching hashtags" << prefix << limit);
+    sendRequest({{_TYPE, "searchHashtags"}, {"prefix", prefix}, {LIMIT, limit}, {_EXTRA, extra}});
+}
+
+void TDLibWrapper::removeRecentHashtag(const QString &hashtag) {
+    LOG("Removing recent hashtag" << hashtag);
+    sendRequest({{_TYPE, "removeRecentHashtag"}, {"hashtag", hashtag}, {_EXTRA, EXTRA_HASHTAGS}});
+}
+
+void TDLibWrapper::getSearchedForTags(const QString &prefix, const QString &extra, int limit) {
+    LOG("Getting searched for tags" << prefix << limit);
+    sendRequest({{_TYPE, "getSearchedForTags"}, {"tag_prefix", prefix}, {LIMIT, limit}, {_EXTRA, extra}});
+}
+
+void TDLibWrapper::removeSearchedForTag(const QString &tag) {
+    LOG("Removing searched for tag" << tag);
+    sendRequest({{_TYPE, "removeSearchedForTag"}, {"tag", tag}, {_EXTRA, EXTRA_SEARCHED_FOR_TAGS}});
+}
+
+void TDLibWrapper::clearSearchedForTags(bool cashtags) {
+    LOG("Clearing searched for tags, cashtags:" << cashtags);
+    sendRequest({{_TYPE, "clearSearchedForTags"}, {"clear_cashtags", cashtags}, {_EXTRA, EXTRA_SEARCHED_FOR_TAGS}});
 }

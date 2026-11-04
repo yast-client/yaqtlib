@@ -91,6 +91,9 @@ public:
         return hasRoleInVector(changedRoles, QList<int>{role});
     }
 
+    Q_INVOKABLE static bool isHashtagBeginning(const QString &text);
+    Q_INVOKABLE static bool isHashtagOrCashtagBeginning(const QString &text);
+
 private:
     struct FormattedTextReplacement;
 

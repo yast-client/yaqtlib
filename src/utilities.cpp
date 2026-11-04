@@ -973,3 +973,34 @@ bool Utilities::hasRoleInVector(const QVector<int> &changedRoles, const QList<in
         return neededRoles.contains(role);
     });
 }
+
+bool Utilities::isHashtagBeginning(const QString &text) {
+    if (text.isEmpty() || text.at(0) != '#') return false;
+
+    // 256 +1 ('#'), and >= as full hashtag is not beginning
+    if (text.length() >= 257) return false;
+
+    for (const QChar &c : text.midRef(1))
+        if (!c.isLetter() && !c.isDigit() && c != '_' && c != 0x200c && c != 0xb7 && !((0xd80 <= c && c <= 0xdff)))
+            return false;
+    return true;
+}
+
+bool Utilities::isHashtagOrCashtagBeginning(const QString &text) {
+    if (text.isEmpty()) return false;
+    if (isHashtagBeginning(text)) return true;
+
+    if (text.at(0) == '$') {
+        // 256 +1 ('$'), and >= as full cashtag is not beginning
+        if (text.length() >= 9) return false;
+
+        QStringRef ref = text.midRef(1);
+        if (QStringLiteral("1INCH").startsWith(ref)) return true;
+
+        for (const QChar &c : ref)
+            if (!(c <= 'Z' && c >= 'A'))
+                return false;
+        return true;
+    }
+    return false;
+}

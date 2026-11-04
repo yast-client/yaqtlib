@@ -1429,3 +1429,10 @@ void TDLibReceiver::processUpdateAnimatedEmojiMessageClicked(const QVariantMap &
     LOG("Animated emoji message clicked" << chatId << messageId);
     emit animatedEmojiMessageClicked(chatId, messageId, cleanupMap(data.value(STICKER).toMap()));
 }
+
+void TDLibReceiver::processHashtags(const QVariantMap &data) {
+    QStringList hashtags = data.value("hashtags").toStringList();
+    const QString extra = data.value(_EXTRA).toString();
+    LOG("Received hashtags" << extra << hashtags.length());
+    emit hashtagsReceived(hashtags, extra);
+}
