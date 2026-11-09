@@ -101,7 +101,6 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private:
-    void init();
     void updateTDLibWrapper(TDLibWrapper* tdlib);
     void updateFileInfo(const QVariantMap &fileInfo);
     bool downloadFile();
@@ -109,32 +108,32 @@ private:
     void emitQueuedSignals();
 
 private:
-    TDLibWrapper *tdLibWrapper;
-    uint queuedSignals;
+    TDLibWrapper *tdLibWrapper = nullptr;
+    uint queuedSignals = 0;
     uint firstQueuedSignal;
-    bool autoLoad;
-    int downloadHoldOffTimer;
-    bool clearWithInvalidFileInfo;
+    bool autoLoad = false;
+    int downloadHoldOffTimer = 0;
+    bool clearWithInvalidFileInfo = false;
     // file
     QVariantMap infoMap;
-    int id;
-    qlonglong expected_size;
-    qlonglong size;
+    int id = 0;
+    qlonglong expected_size = 0;
+    qlonglong size = 0;
     // localFile
     QString path;
-    qlonglong download_offset;
-    qlonglong downloaded_prefix_size;
-    qlonglong downloaded_size;
-    bool can_be_deleted;
-    bool can_be_downloaded;
-    bool is_downloading_active;
-    bool is_downloading_completed;
+    qlonglong download_offset = 0;
+    qlonglong downloaded_prefix_size = 0;
+    qlonglong downloaded_size = 0;
+    bool can_be_deleted = false;
+    bool can_be_downloaded = false;
+    bool is_downloading_active = false;
+    bool is_downloading_completed = false;
     // remoteFile
     QString remote_id;
     QString unique_id;
-    qlonglong uploaded_size;
-    bool is_uploading_active;
-    bool is_uploading_completed;
+    qlonglong uploaded_size = 0;
+    bool is_uploading_active = false;
+    bool is_uploading_completed = false;
 };
 
 inline TDLibWrapper *TDLibFile::getTDLibWrapper() const { return tdLibWrapper; }

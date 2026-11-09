@@ -63,11 +63,11 @@ enum TDLibFileSignal {
 };
 
 TDLibFile::TDLibFile() {
-    init();
+    firstQueuedSignal = SignalCount;
 }
 
 TDLibFile::TDLibFile(TDLibWrapper *tdlib, QObject *parent) : QObject(parent) {
-    init();
+    firstQueuedSignal = SignalCount;
     updateTDLibWrapper(tdlib);
     // Reset queued signals
     firstQueuedSignal = SignalCount;
@@ -75,34 +75,12 @@ TDLibFile::TDLibFile(TDLibWrapper *tdlib, QObject *parent) : QObject(parent) {
 }
 
 TDLibFile::TDLibFile(TDLibWrapper *tdlib, const QVariantMap &fileInfo, QObject *parent) : QObject(parent) {
-    init();
+    firstQueuedSignal = SignalCount;
     updateTDLibWrapper(tdlib);
     updateFileInfo(fileInfo);
     // Reset queued signals
     firstQueuedSignal = SignalCount;
     queuedSignals = 0;
-}
-
-void TDLibFile::init() {
-    tdLibWrapper = Q_NULLPTR;
-    queuedSignals = 0;
-    firstQueuedSignal = SignalCount;
-    autoLoad = false;
-    clearWithInvalidFileInfo = false;
-    downloadHoldOffTimer = 0;
-    id = 0;
-    expected_size = 0;
-    size = 0;
-    download_offset = 0;
-    downloaded_prefix_size = 0;
-    downloaded_size = 0;
-    can_be_deleted = false;
-    can_be_downloaded = false;
-    is_downloading_active = false;
-    is_downloading_completed = false;
-    uploaded_size = 0;
-    is_uploading_active = false;
-    is_uploading_completed = false;
 }
 
 void TDLibFile::queueSignal(uint signal) {
@@ -146,9 +124,8 @@ void TDLibFile::setTDLibWrapper(QObject* obj) {
 
 void TDLibFile::updateTDLibWrapper(TDLibWrapper* tdlib) {
     if (tdlib != tdLibWrapper) {
-        if (tdLibWrapper) {
+        if (tdLibWrapper)
             tdLibWrapper->disconnect(this);
-        }
         tdLibWrapper = tdlib;
         if (tdlib) {
             connect(tdlib, SIGNAL(fileUpdated(int,QVariantMap)), SLOT(handleFileUpdated(int,QVariantMap)));
@@ -229,7 +206,7 @@ void TDLibFile::timerEvent(QTimerEvent *) {
 }
 
 void TDLibFile::handleFileUpdated(const QVariantMap &fileInfo) {
-    LOG("File" << fileId << "updated");
+    LOG("File" << id << "updated");
     setFileInfo(fileInfo);
     emitQueuedSignals();
 }
