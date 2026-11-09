@@ -172,7 +172,7 @@ bool TDLibFile::load() {
 }
 
 bool TDLibFile::downloadFile() {
-    constexpr int DownloadHoldOffMs = 1000;
+    constexpr int DownloadHoldOffMs = 500;
 
     if (id && tdLibWrapper && !downloadHoldOffTimer.isActive() &&
         !is_downloading_active && !is_downloading_completed && can_be_downloaded) {
