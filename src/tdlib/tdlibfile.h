@@ -29,8 +29,6 @@ class TDLibFile : public QObject {
     Q_PROPERTY(bool isUploadingActive READ isUploadingActive NOTIFY uploadingActiveChanged)
     Q_PROPERTY(bool isUploadingCompleted READ isUploadingCompleted NOTIFY uploadingCompletedChanged)
 
-    enum { DownloadHoldOffMs = 1000 };
-
 public:
     TDLibFile();
     TDLibFile(TDLibWrapper *tdlib, QObject *parent = nullptr);
