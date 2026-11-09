@@ -5,6 +5,7 @@
 #pragma once
 
 #include "tdlibwrapper.h"
+#include <QBasicTimer>
 
 class TDLibFile : public QObject {
     Q_OBJECT
@@ -110,7 +111,7 @@ private:
     uint queuedSignals = 0;
     uint firstQueuedSignal;
     bool autoLoad = false;
-    int downloadHoldOffTimer = 0;
+    QBasicTimer downloadHoldOffTimer;
     bool clearWithInvalidFileInfo = false;
     // file
     QVariantMap infoMap;

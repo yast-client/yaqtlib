@@ -167,10 +167,7 @@ bool TDLibFile::cancel() {
 
 bool TDLibFile::load() {
     // Manual load ignores hold-off timer
-    if (downloadHoldOffTimer) {
-        killTimer(downloadHoldOffTimer);
-        downloadHoldOffTimer = 0;
-    }
+    downloadHoldOffTimer.stop();
     return downloadFile();
 }
 
@@ -179,7 +176,7 @@ bool TDLibFile::downloadFile() {
 
     if (id && tdLibWrapper && !downloadHoldOffTimer.isActive() &&
         !is_downloading_active && !is_downloading_completed && can_be_downloaded) {
-        downloadHoldOffTimer = startTimer(DownloadHoldOffMs);
+        downloadHoldOffTimer.start(DownloadHoldOffMs, this);
         tdLibWrapper->downloadFile(id);
         return true;
     }
@@ -188,23 +185,19 @@ bool TDLibFile::downloadFile() {
 
 void TDLibFile::setFileInfo(const QVariantMap &fileInfo) {
     updateFileInfo(fileInfo);
-    if (is_downloading_completed && downloadHoldOffTimer) {
+    if (is_downloading_completed)
         // Don't need this timer anymore
-        killTimer(downloadHoldOffTimer);
-        downloadHoldOffTimer = 0;
-    }
-    if (autoLoad) {
-        downloadFile();
-    }
+        downloadHoldOffTimer.stop();
+    if (autoLoad) downloadFile();
     emitQueuedSignals();
 }
 
-void TDLibFile::timerEvent(QTimerEvent *) {
-    killTimer(downloadHoldOffTimer);
-    downloadHoldOffTimer = 0;
-    if (autoLoad) {
-        downloadFile();
-    }
+void TDLibFile::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == downloadHoldOffTimer.timerId()) {
+        downloadHoldOffTimer.stop();
+        if (autoLoad) downloadFile();
+    } else
+        QObject::timerEvent(event);
 }
 
 void TDLibFile::handleFileUpdated(const QVariantMap &fileInfo) {
