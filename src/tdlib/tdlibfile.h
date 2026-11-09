@@ -35,34 +35,34 @@ public:
     TDLibFile(TDLibWrapper *tdlib, QObject *parent = nullptr);
     TDLibFile(TDLibWrapper *tdlib, const QVariantMap &fileInfo, QObject *parent = nullptr);
 
-    TDLibWrapper *getTDLibWrapper() const;
+    inline TDLibWrapper *getTDLibWrapper() const { return tdLibWrapper; }
     void setTDLibWrapper(QObject* obj);
 
-    const QVariantMap &getFileInfo() const;
+    inline const QVariantMap &getFileInfo() const { return infoMap; }
     void setFileInfo(const QVariantMap &fileInfo);
 
-    bool isAutoLoad() const;
+    inline bool isAutoLoad() const { return autoLoad; }
     void setAutoLoad(bool autoLoad);
 
-    bool getClearWithInvalidFileInfo() const;
+    inline bool getClearWithInvalidFileInfo() const { return clearWithInvalidFileInfo; }
     void setClearWithInvalidFileInfo(bool clearWithInvalidFileInfo);
 
-    int getId() const;
-    qlonglong getExpectedSize() const;
-    qlonglong getSize() const;
-    const QString &getPath() const;
-    qlonglong getDownloadOffset() const;
-    qlonglong getDownloadedPrefixSize() const;
-    qlonglong getDownloadedSize() const;
-    bool canBeDeleted() const;
-    bool canBeDownloaded() const;
-    bool isDownloadingActive() const;
-    bool isDownloadingCompleted() const;
-    const QString &getRemoteId() const;
-    const QString &getUniqueId() const;
-    qlonglong getUploadedSize() const;
-    bool isUploadingActive() const;
-    bool isUploadingCompleted() const;
+    inline int getId() const { return id; }
+    inline qlonglong getExpectedSize() const { return expected_size; }
+    inline qlonglong getSize() const { return size; }
+    inline const QString &getPath() const { return path; }
+    inline qlonglong getDownloadOffset() const { return download_offset; }
+    inline qlonglong getDownloadedPrefixSize() const { return downloaded_prefix_size; }
+    inline qlonglong getDownloadedSize() const { return downloaded_size; }
+    inline bool canBeDeleted() const { return can_be_deleted; }
+    inline bool canBeDownloaded() const { return can_be_downloaded; }
+    inline bool isDownloadingActive() const { return is_downloading_active; }
+    inline bool isDownloadingCompleted() const { return is_downloading_completed; }
+    inline const QString &getRemoteId() const { return remote_id; }
+    inline const QString &getUniqueId() const { return unique_id; }
+    inline qlonglong getUploadedSize() const { return uploaded_size; }
+    inline bool isUploadingActive() const { return is_uploading_active; }
+    inline bool isUploadingCompleted() const { return is_uploading_completed; }
 
     Q_INVOKABLE bool cancel();
     Q_INVOKABLE bool load();
@@ -134,24 +134,3 @@ private:
     bool is_uploading_active = false;
     bool is_uploading_completed = false;
 };
-
-inline TDLibWrapper *TDLibFile::getTDLibWrapper() const { return tdLibWrapper; }
-inline const QVariantMap &TDLibFile::getFileInfo() const { return infoMap; }
-inline bool TDLibFile::isAutoLoad() const { return autoLoad; }
-inline bool TDLibFile::getClearWithInvalidFileInfo() const { return clearWithInvalidFileInfo; }
-inline int TDLibFile::getId() const { return id; }
-inline qlonglong TDLibFile::getExpectedSize() const { return expected_size; }
-inline qlonglong TDLibFile::getSize() const { return size; }
-inline const QString &TDLibFile::getPath() const { return path; }
-inline qlonglong TDLibFile::getDownloadOffset() const { return download_offset; }
-inline qlonglong TDLibFile::getDownloadedPrefixSize() const { return downloaded_prefix_size; }
-inline qlonglong TDLibFile::getDownloadedSize() const { return downloaded_size; }
-inline bool TDLibFile::canBeDeleted() const { return can_be_deleted; }
-inline bool TDLibFile::canBeDownloaded() const { return can_be_downloaded; }
-inline bool TDLibFile::isDownloadingActive() const { return is_downloading_active; }
-inline bool TDLibFile::isDownloadingCompleted() const { return is_downloading_completed; }
-inline const QString &TDLibFile::getRemoteId() const { return remote_id; }
-inline const QString &TDLibFile::getUniqueId() const { return unique_id; }
-inline qlonglong TDLibFile::getUploadedSize() const { return uploaded_size; }
-inline bool TDLibFile::isUploadingActive() const { return is_uploading_active; }
-inline bool TDLibFile::isUploadingCompleted() const { return is_uploading_completed; }
