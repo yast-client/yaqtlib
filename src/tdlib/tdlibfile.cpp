@@ -228,12 +228,10 @@ void TDLibFile::timerEvent(QTimerEvent *) {
     }
 }
 
-void TDLibFile::handleFileUpdated(int fileId, const QVariantMap &fileInfo) {
-    if (id == fileId) {
-        LOG("File" << fileId << "updated");
-        setFileInfo(fileInfo);
-        emitQueuedSignals();
-    }
+void TDLibFile::handleFileUpdated(const QVariantMap &fileInfo) {
+    LOG("File" << fileId << "updated");
+    setFileInfo(fileInfo);
+    emitQueuedSignals();
 }
 
 bool TDLibFile::getFile() {

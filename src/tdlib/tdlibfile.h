@@ -92,7 +92,10 @@ signals:
     void uploadingCompletedChanged();
 
 private slots:
-    void handleFileUpdated(int fileId, const QVariantMap &fileInfo);
+    void handleFileUpdated(const QVariantMap &fileInfo);
+    inline void handleFileUpdated(int fileId, const QVariantMap &fileInfo) {
+        if (id == fileId) handleFileUpdated(fileInfo);
+    }
 
 protected:
     void timerEvent(QTimerEvent *event) override;
