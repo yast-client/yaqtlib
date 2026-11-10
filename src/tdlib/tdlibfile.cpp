@@ -321,31 +321,31 @@ void TDLibFile::updateFileInfo(const QVariantMap &file) {
 
         const QVariantMap remote(file.value(REMOTE).toMap());
         if (remote.value(_TYPE).toString() == TYPE_REMOTE_FILE) {
-            ll = file.value(UPLOADED_SIZE).toLongLong();
+            ll = remote.value(UPLOADED_SIZE).toLongLong();
             if (uploaded_size != ll) {
                 uploaded_size = ll;
                 fileChanged = true;
                 queueSignal(SignalUploadedSizeChanged);
             }
-            b = file.value(IS_UPLOADING_ACTIVE).toBool();
+            b = remote.value(IS_UPLOADING_ACTIVE).toBool();
             if (is_uploading_active != b) {
                 is_uploading_active = b;
                 fileChanged = true;
                 queueSignal(SignalUploadingActiveChanged);
             }
-            b = file.value(IS_UPLOADING_COMPLETED).toBool();
+            b = remote.value(IS_UPLOADING_COMPLETED).toBool();
             if (is_uploading_completed != b) {
                 is_uploading_completed = b;
                 fileChanged = true;
                 queueSignal(SignalUploadingCompletedChanged);
             }
-            s = local.value(ID).toString();
+            s = remote.value(ID).toString();
             if (remote_id != s) {
                 remote_id = s;
                 fileChanged = true;
                 queueSignal(SignalRemoteIdChanged);
             }
-            s = local.value(UNIQUE_ID).toString();
+            s = remote.value(UNIQUE_ID).toString();
             if (unique_id != s) {
                 unique_id = s;
                 fileChanged = true;
