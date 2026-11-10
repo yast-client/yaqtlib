@@ -17,8 +17,8 @@ namespace {
     const QString DOWNLOAD_OFFSET = QStringLiteral("download_offset");
     const QString DOWNLOADED_PREFIX_SIZE = QStringLiteral("downloaded_prefix_size");
     const QString DOWNLOADED_SIZE = QStringLiteral("downloaded_size");
-    const QString IS_DOWNLODING_ACTIVE = QStringLiteral("is_downloading_active");
-    const QString IS_DOWNLODING_COMPELETED = QStringLiteral("is_downloading_completed");
+    const QString IS_DOWNLOADING_ACTIVE = QStringLiteral("is_downloading_active");
+    const QString IS_DOWNLOADING_COMPELETED = QStringLiteral("is_downloading_completed");
     const QString PATH = QStringLiteral("path");
     const QString REMOTE = QStringLiteral("remote");
     const QString IS_UPLOADING_ACTIVE = QStringLiteral("is_uploading_active");
@@ -299,13 +299,13 @@ void TDLibFile::updateFileInfo(const QVariantMap &file) {
                 fileChanged = true;
                 queueSignal(SignalCanBeDownloadedChanged);
             }
-            b = local.value(IS_DOWNLODING_ACTIVE).toBool();
+            b = local.value(IS_DOWNLOADING_ACTIVE).toBool();
             if (is_downloading_active != b) {
                 is_downloading_active = b;
                 fileChanged = true;
                 queueSignal(SignalDownloadingActiveChanged);
             }
-            b = local.value(IS_DOWNLODING_COMPELETED).toBool();
+            b = local.value(IS_DOWNLOADING_COMPELETED).toBool();
             if (is_downloading_completed != b) {
                 is_downloading_completed = b;
                 fileChanged = true;
