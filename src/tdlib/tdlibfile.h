@@ -7,45 +7,33 @@
 #include "tdlibwrapper.h"
 #include <QBasicTimer>
 
-class TDLibFile : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QObject* tdlib READ getTDLibWrapper WRITE setTDLibWrapper NOTIFY tdlibChanged)
-    Q_PROPERTY(QVariantMap fileInformation READ getFileInfo WRITE setFileInfo NOTIFY fileInfoChanged)
-    Q_PROPERTY(bool autoLoad READ isAutoLoad WRITE setAutoLoad NOTIFY autoLoadChanged)
-    Q_PROPERTY(bool clearWithInvalidFileInfo READ getClearWithInvalidFileInfo WRITE setClearWithInvalidFileInfo NOTIFY clearWithInvalidFileInfoChanged)
-    Q_PROPERTY(int fileId READ getId NOTIFY idChanged)
-    Q_PROPERTY(qlonglong expectedSize READ getExpectedSize NOTIFY expectedSizeChanged)
-    Q_PROPERTY(qlonglong size READ getSize NOTIFY sizeChanged)
-    Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
-    Q_PROPERTY(qlonglong downloadOffset READ getDownloadOffset NOTIFY downloadOffsetChanged)
-    Q_PROPERTY(qlonglong downloadedPrefixSize READ getDownloadedPrefixSize NOTIFY downloadedPrefixSizeChanged)
-    Q_PROPERTY(qlonglong downloadedSize READ getDownloadedSize NOTIFY downloadedSizeChanged)
-    Q_PROPERTY(bool canBeDeleted READ canBeDeleted NOTIFY canBeDeletedChanged)
-    Q_PROPERTY(bool canBeDownloaded READ canBeDownloaded NOTIFY canBeDownloadedChanged)
-    Q_PROPERTY(bool isDownloadingActive READ isDownloadingActive NOTIFY downloadingActiveChanged)
-    Q_PROPERTY(bool isDownloadingCompleted READ isDownloadingCompleted NOTIFY downloadingCompletedChanged)
-    Q_PROPERTY(QString remoteId READ getRemoteId NOTIFY remoteIdChanged)
-    Q_PROPERTY(QString uniqueId READ getUniqueId NOTIFY uniqueIdChanged)
-    Q_PROPERTY(qlonglong uploadedSize READ getUploadedSize NOTIFY uploadedSizeChanged)
-    Q_PROPERTY(bool isUploadingActive READ isUploadingActive NOTIFY uploadingActiveChanged)
-    Q_PROPERTY(bool isUploadingCompleted READ isUploadingCompleted NOTIFY uploadingCompletedChanged)
-
+class TDLibFileBase {
 public:
-    TDLibFile();
-    TDLibFile(TDLibWrapper *tdlib, QObject *parent = nullptr);
-    TDLibFile(TDLibWrapper *tdlib, const QVariantMap &fileInfo, QObject *parent = nullptr);
+    TDLibFileBase() {}
+    TDLibFileBase(const QVariantMap &fileInfo);
 
-    inline TDLibWrapper *getTDLibWrapper() const { return tdLibWrapper; }
-    void setTDLibWrapper(QObject* obj);
+    enum class Change {
+        None = 0,
+        Id = 1 << 1,
+        ExpectedSize = 1 << 2,
+        Size = 1 << 3,
+        Path = 1 << 4,
+        DownloadOffset = 1 << 5,
+        DownloadedPrefixSize = 1 << 6,
+        DownloadedSize = 1 << 7,
+        CanBeDeleted = 1 << 8,
+        CanBeDownloaded = 1 << 9,
+        DownloadingActive = 1 << 10,
+        DownloadingCompleted = 1 << 11,
+        RemoteId = 1 << 12,
+        UniqueId = 1 << 13,
+        UploadedSize = 1 << 14,
+        UploadingActive = 1 << 15,
+        UploadingCompleted = 1 << 16
+    };
+    Q_DECLARE_FLAGS(Changes, Change)
 
-    inline const QVariantMap &getFileInfo() const { return infoMap; }
-    void setFileInfo(const QVariantMap &fileInfo);
-
-    inline bool isAutoLoad() const { return autoLoad; }
-    void setAutoLoad(bool autoLoad);
-
-    inline bool getClearWithInvalidFileInfo() const { return clearWithInvalidFileInfo; }
-    void setClearWithInvalidFileInfo(bool clearWithInvalidFileInfo);
+    Changes updateFileInfo(const QVariantMap &fileInfo);
 
     inline int getId() const { return id; }
     inline qlonglong getExpectedSize() const { return expected_size; }
@@ -64,57 +52,8 @@ public:
     inline bool isUploadingActive() const { return is_uploading_active; }
     inline bool isUploadingCompleted() const { return is_uploading_completed; }
 
-    Q_INVOKABLE bool cancel();
-    Q_INVOKABLE bool load();
-    Q_INVOKABLE bool getFile();
-
-signals:
-    void tdlibChanged();
-    void fileInfoChanged();
-    void autoLoadChanged();
-    void clearWithInvalidFileInfoChanged();
-    void idChanged();
-    void expectedSizeChanged();
-    void sizeChanged();
-    void pathChanged();
-    void downloadOffsetChanged();
-    void downloadedPrefixSizeChanged();
-    void downloadedSizeChanged();
-    void canBeDeletedChanged();
-    void canBeDownloadedChanged();
-    void downloadingActiveChanged();
-    void downloadingCompletedChanged();
-    void remoteIdChanged();
-    void uniqueIdChanged();
-    void uploadedSizeChanged();
-    void uploadingActiveChanged();
-    void uploadingCompletedChanged();
-
-private slots:
-    void handleFileUpdated(const QVariantMap &fileInfo);
-    inline void handleFileUpdated(int fileId, const QVariantMap &fileInfo) {
-        if (id == fileId) handleFileUpdated(fileInfo);
-    }
-
 protected:
-    void timerEvent(QTimerEvent *event) override;
-
-private:
-    void updateTDLibWrapper(TDLibWrapper* tdlib);
-    void updateFileInfo(const QVariantMap &fileInfo);
-    bool downloadFile();
-    void queueSignal(uint signal);
-    void emitQueuedSignals();
-
-private:
-    TDLibWrapper *tdLibWrapper = nullptr;
-    uint queuedSignals = 0;
-    uint firstQueuedSignal;
-    bool autoLoad = false;
-    QBasicTimer downloadHoldOffTimer;
-    bool clearWithInvalidFileInfo = false;
     // file
-    QVariantMap infoMap;
     int id = 0;
     qlonglong expected_size = 0;
     qlonglong size = 0;
@@ -133,4 +72,85 @@ private:
     qlonglong uploaded_size = 0;
     bool is_uploading_active = false;
     bool is_uploading_completed = false;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(TDLibFileBase::Changes)
+
+class TDLibFile : public QObject, public TDLibFileBase {
+    Q_OBJECT
+    Q_PROPERTY(QObject* tdlib READ getTDLibWrapper WRITE setTDLibWrapper NOTIFY tdlibChanged)
+    Q_PROPERTY(QVariantMap fileInformation READ getFileInfo WRITE setFileInfo NOTIFY fileInfoChanged)
+    Q_PROPERTY(bool autoLoad READ isAutoLoad WRITE setAutoLoad NOTIFY autoLoadChanged)
+    Q_PROPERTY(int fileId READ getId NOTIFY idChanged)
+    Q_PROPERTY(qlonglong expectedSize READ getExpectedSize NOTIFY expectedSizeChanged)
+    Q_PROPERTY(qlonglong size READ getSize NOTIFY sizeChanged)
+    Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
+    Q_PROPERTY(qlonglong downloadOffset READ getDownloadOffset NOTIFY downloadOffsetChanged)
+    Q_PROPERTY(qlonglong downloadedPrefixSize READ getDownloadedPrefixSize NOTIFY downloadedPrefixSizeChanged)
+    Q_PROPERTY(qlonglong downloadedSize READ getDownloadedSize NOTIFY downloadedSizeChanged)
+    Q_PROPERTY(bool canBeDeleted READ canBeDeleted NOTIFY canBeDeletedChanged)
+    Q_PROPERTY(bool canBeDownloaded READ canBeDownloaded NOTIFY canBeDownloadedChanged)
+    Q_PROPERTY(bool isDownloadingActive READ isDownloadingActive NOTIFY downloadingActiveChanged)
+    Q_PROPERTY(bool isDownloadingCompleted READ isDownloadingCompleted NOTIFY downloadingCompletedChanged)
+    Q_PROPERTY(QString remoteId READ getRemoteId NOTIFY remoteIdChanged)
+    Q_PROPERTY(QString uniqueId READ getUniqueId NOTIFY uniqueIdChanged)
+    Q_PROPERTY(qlonglong uploadedSize READ getUploadedSize NOTIFY uploadedSizeChanged)
+    Q_PROPERTY(bool isUploadingActive READ isUploadingActive NOTIFY uploadingActiveChanged)
+    Q_PROPERTY(bool isUploadingCompleted READ isUploadingCompleted NOTIFY uploadingCompletedChanged)
+
+public:
+    TDLibFile(TDLibWrapper *tdLibWrapper = nullptr, QObject *parent = nullptr);
+    TDLibFile(TDLibWrapper *tdLibWrapper, const QVariantMap &fileInfo, QObject *parent = nullptr);
+
+    inline TDLibWrapper *getTDLibWrapper() const { return tdLibWrapper; }
+    void setTDLibWrapper(QObject* obj);
+
+    Changes updateFileInfo(const QVariantMap &fileInfo, bool *wasReset = nullptr) = delete;
+
+    inline const QVariantMap &getFileInfo() const { return infoMap; }
+    void setFileInfo(const QVariantMap &fileInfo);
+
+    inline bool isAutoLoad() const { return autoLoad; }
+    void setAutoLoad(bool autoLoad);
+
+    Q_INVOKABLE bool cancel();
+    Q_INVOKABLE bool load();
+    Q_INVOKABLE bool getFile();
+
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
+private:
+    void processTDLibWrapper();
+    bool downloadFile();
+
+private slots:
+    void handleFileUpdated(int fileId, const QVariantMap &fileInfo);
+
+private:
+    TDLibWrapper *tdLibWrapper = nullptr;
+    bool autoLoad = false;
+    QBasicTimer downloadHoldOffTimer;
+    QVariantMap infoMap;
+
+signals:
+    void tdlibChanged();
+    void fileInfoChanged();
+    void autoLoadChanged();
+    void idChanged();
+    void expectedSizeChanged();
+    void sizeChanged();
+    void pathChanged();
+    void downloadOffsetChanged();
+    void downloadedPrefixSizeChanged();
+    void downloadedSizeChanged();
+    void canBeDeletedChanged();
+    void canBeDownloadedChanged();
+    void downloadingActiveChanged();
+    void downloadingCompletedChanged();
+    void remoteIdChanged();
+    void uniqueIdChanged();
+    void uploadedSizeChanged();
+    void uploadingActiveChanged();
+    void uploadingCompletedChanged();
 };

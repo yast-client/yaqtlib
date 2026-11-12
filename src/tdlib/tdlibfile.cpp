@@ -18,7 +18,7 @@ namespace {
     const QString DOWNLOADED_PREFIX_SIZE = QStringLiteral("downloaded_prefix_size");
     const QString DOWNLOADED_SIZE = QStringLiteral("downloaded_size");
     const QString IS_DOWNLOADING_ACTIVE = QStringLiteral("is_downloading_active");
-    const QString IS_DOWNLOADING_COMPELETED = QStringLiteral("is_downloading_completed");
+    const QString IS_DOWNLOADING_COMPLETED = QStringLiteral("is_downloading_completed");
     const QString PATH = QStringLiteral("path");
     const QString REMOTE = QStringLiteral("remote");
     const QString IS_UPLOADING_ACTIVE = QStringLiteral("is_uploading_active");
@@ -27,132 +27,142 @@ namespace {
     const QString UPLOADED_SIZE = QStringLiteral("uploaded_size");
 
     const QString TYPE_FILE = QStringLiteral("file");
-    const QString TYPE_LOCAL_FILE = QStringLiteral("localFile");
-    const QString TYPE_REMOTE_FILE = QStringLiteral("remoteFile");
 }
 
-// s(SignalName,signalName)
-#define QUEUED_SIGNALS(s) \
-    s(TdLib,tdlib) \
-    s(FileInfo,fileInfo) \
-    s(AutoLoad,autoLoad) \
-    s(ClearWithInvalidFileInfo,clearWithInvalidFileInfo) \
-    s(Id,id) \
-    s(ExpectedSize,expectedSize) \
-    s(Size,size) \
-    s(Path,path) \
-    s(DownloadOffset,downloadOffset) \
-    s(DownloadedPrefixSize,downloadedPrefixSize) \
-    s(DownloadedSize,downloadedSize) \
-    s(CanBeDeleted,canBeDeleted) \
-    s(CanBeDownloaded,canBeDownloaded) \
-    s(DownloadingActive,downloadingActive) \
-    s(DownloadingCompleted,downloadingCompleted) \
-    s(RemoteId,remoteId) \
-    s(UniqueId,uniqueId) \
-    s(UploadedSize,uploadedSize) \
-    s(UploadingActive,uploadingActive) \
-    s(UploadingCompleted,uploadingCompleted)
-
-typedef void (TDLibFile::*TDLibFileSignalEmitter)();
-enum TDLibFileSignal {
-    #define SIGNAL_ENUM_(Name,name) Signal##Name##Changed,
-    QUEUED_SIGNALS(SIGNAL_ENUM_)
-    #undef SIGNAL_ENUM_
-    SignalCount
-};
-
-TDLibFile::TDLibFile() {
-    firstQueuedSignal = SignalCount;
-}
-
-TDLibFile::TDLibFile(TDLibWrapper *tdlib, QObject *parent) : QObject(parent) {
-    firstQueuedSignal = SignalCount;
-    updateTDLibWrapper(tdlib);
-    // Reset queued signals
-    firstQueuedSignal = SignalCount;
-    queuedSignals = 0;
-}
-
-TDLibFile::TDLibFile(TDLibWrapper *tdlib, const QVariantMap &fileInfo, QObject *parent) : QObject(parent) {
-    firstQueuedSignal = SignalCount;
-    updateTDLibWrapper(tdlib);
+TDLibFileBase::TDLibFileBase(const QVariantMap &fileInfo) {
     updateFileInfo(fileInfo);
-    // Reset queued signals
-    firstQueuedSignal = SignalCount;
-    queuedSignals = 0;
 }
 
-void TDLibFile::queueSignal(uint signal) {
-    const uint signalBit = 1 << signal;
-    if (queuedSignals) {
-        queuedSignals |= signalBit;
-        if (firstQueuedSignal > signal) {
-            firstQueuedSignal = signal;
-        }
-    } else {
-        queuedSignals = signalBit;
-        firstQueuedSignal = signal;
+/*
+{
+    "@type": "file",
+    "expected_size": 0,
+    "id": 12,
+    "size": 0,
+    "local": {
+        "@type": "localFile",
+        "can_be_deleted": false,
+        "can_be_downloaded": true,
+        "download_offset": 0,
+        "downloaded_prefix_size": 0,
+        "downloaded_size": 0,
+        "is_downloading_active": true,
+        "is_downloading_completed": false,
+        "path": ""
+    },
+    "remote": {
+        "@type": "remoteFile",
+        "id": "AQADAgATXYBrly4AAwIAA2E2itkW____9UdPDiSysLQ4fwIAARgE",
+        "is_uploading_active": false,
+        "is_uploading_completed": true,
+        "unique_id": "AQADXYBrly4AAzh_AgAB",
+        "uploaded_size": 0
     }
 }
+*/
 
-void TDLibFile::emitQueuedSignals() {
-    static const TDLibFileSignalEmitter emitSignal[] = {
-        #define SIGNAL_EMITTER_(Name,name) &TDLibFile::name##Changed,
-        QUEUED_SIGNALS(SIGNAL_EMITTER_)
-        #undef SIGNAL_EMITTER_
-    };
-    if (queuedSignals) {
-        // Reset first queued signal before emitting the signals.
-        // Signal handlers may emit new signals.
-        uint i = firstQueuedSignal;
-        firstQueuedSignal = SignalCount;
-        for (; i < SignalCount && queuedSignals; i++) {
-            const uint signalBit = 1 << i;
-            if (queuedSignals & signalBit) {
-                queuedSignals &= ~signalBit;
-                emit (this->*(emitSignal[i]))();
-            }
+TDLibFileBase::Changes TDLibFileBase::updateFileInfo(const QVariantMap &file) {
+    Changes changes;
+    auto updateField = [&changes]<typename T>(T &member, const T &newValue, Change change) {
+        if (member != newValue) {
+            member = newValue;
+            changes |= change;
         }
+    };
+
+    if (!file.isEmpty() && file.value(_TYPE).toString() == TYPE_FILE) {
+        int newId = file.value(ID).toInt();
+        if (id != newId) {
+            LOG("File id has changed" << id << "=>" << newId);
+            id = newId;
+            changes |= Change::Id;
+        }
+
+        updateField(expected_size, file.value(EXPECTED_SIZE).toLongLong(), Change::ExpectedSize);
+        updateField(size, file.value(SIZE).toLongLong(), Change::Size);
+
+        const QVariantMap local(file.value(LOCAL).toMap());
+        updateField(download_offset, local.value(DOWNLOAD_OFFSET).toLongLong(), Change::DownloadOffset);
+        updateField(downloaded_prefix_size, local.value(DOWNLOADED_PREFIX_SIZE).toLongLong(), Change::DownloadedPrefixSize);
+        updateField(downloaded_size, local.value(DOWNLOADED_SIZE).toLongLong(), Change::DownloadedSize);
+        updateField(can_be_deleted, local.value(CAN_BE_DELETED).toBool(), Change::CanBeDeleted);
+        updateField(can_be_downloaded, local.value(CAN_BE_DOWNLOADED).toBool(), Change::CanBeDownloaded);
+        updateField(is_downloading_active, local.value(IS_DOWNLOADING_ACTIVE).toBool(), Change::DownloadingActive);
+        updateField(is_downloading_completed, local.value(IS_DOWNLOADING_COMPLETED).toBool(), Change::DownloadingCompleted);
+        updateField(path, local.value(PATH).toString(), Change::Path);
+
+        const QVariantMap remote(file.value(REMOTE).toMap());
+        updateField(uploaded_size, remote.value(UPLOADED_SIZE).toLongLong(), Change::UploadedSize);
+        updateField(is_uploading_active, remote.value(IS_UPLOADING_ACTIVE).toBool(), Change::UploadingActive);
+        updateField(is_uploading_completed, remote.value(IS_UPLOADING_COMPLETED).toBool(), Change::UploadingCompleted);
+        updateField(remote_id, remote.value(ID).toString(), Change::RemoteId);
+        updateField(unique_id, remote.value(UNIQUE_ID).toString(), Change::UniqueId);
+    } else {
+        if (id) {
+            LOG("File id has reset" << id << "=> 0");
+            id = 0;
+            changes |= Change::Id;
+        }
+
+        updateField(expected_size, 0ll, Change::ExpectedSize);
+        updateField(size, 0ll, Change::Size);
+
+        updateField(download_offset, 0ll, Change::DownloadOffset);
+        updateField(downloaded_prefix_size, 0ll, Change::DownloadedPrefixSize);
+        updateField(downloaded_size, 0ll, Change::DownloadedSize);
+        updateField(can_be_deleted, false, Change::CanBeDeleted);
+        updateField(can_be_downloaded, false, Change::CanBeDownloaded);
+        updateField(is_downloading_active, false, Change::DownloadingActive);
+        updateField(is_downloading_completed, false, Change::DownloadingCompleted);
+        updateField(path, {}, Change::Path);
+
+        updateField(uploaded_size, 0ll, Change::UploadedSize);
+        updateField(is_uploading_active, false, Change::UploadingActive);
+        updateField(is_uploading_completed, false, Change::UploadingCompleted);
+        updateField(remote_id, {}, Change::RemoteId);
+        updateField(unique_id, {}, Change::UniqueId);
+    }
+
+    return changes;
+}
+
+
+TDLibFile::TDLibFile(TDLibWrapper *tdLibWrapper, QObject *parent) : QObject(parent), tdLibWrapper(tdLibWrapper) {
+    processTDLibWrapper();
+}
+
+TDLibFile::TDLibFile(TDLibWrapper *tdLibWrapper, const QVariantMap &fileInfo, QObject *parent) :
+    QObject(parent),
+    TDLibFileBase(fileInfo),
+    tdLibWrapper(tdLibWrapper),
+    infoMap(fileInfo)
+{
+    processTDLibWrapper();
+}
+
+void TDLibFile::processTDLibWrapper() {
+    if (tdLibWrapper) {
+        connect(tdLibWrapper, SIGNAL(fileUpdated(int, QVariantMap)), SLOT(handleFileUpdated(int, QVariantMap)));
+        if (autoLoad) downloadFile();
     }
 }
 
 void TDLibFile::setTDLibWrapper(QObject* obj) {
-    updateTDLibWrapper(qobject_cast<TDLibWrapper*>(obj));
-    emitQueuedSignals();
-}
-
-void TDLibFile::updateTDLibWrapper(TDLibWrapper* tdlib) {
-    if (tdlib != tdLibWrapper) {
+    TDLibWrapper *tdlib = qobject_cast<TDLibWrapper*>(obj);
+    if (tdLibWrapper != tdlib) {
         if (tdLibWrapper)
             tdLibWrapper->disconnect(this);
-        tdLibWrapper = tdlib;
-        if (tdlib) {
-            connect(tdlib, SIGNAL(fileUpdated(int,QVariantMap)), SLOT(handleFileUpdated(int,QVariantMap)));
-            if (autoLoad) {
-                downloadFile();
-            }
-        }
-        queueSignal(SignalTdLibChanged);
+        this->tdLibWrapper = tdlib;
+        processTDLibWrapper();
+        emit tdlibChanged();
     }
 }
 
 void TDLibFile::setAutoLoad(bool enableAutoLoad) {
     if (autoLoad != enableAutoLoad) {
         autoLoad = enableAutoLoad;
-        queueSignal(SignalAutoLoadChanged);
-        if (autoLoad) {
-            downloadFile();
-        }
-        emitQueuedSignals();
-    }
-}
-
-void TDLibFile::setClearWithInvalidFileInfo(bool clearWithInvalidFileInfo) {
-    if (this->clearWithInvalidFileInfo != clearWithInvalidFileInfo) {
-        this->clearWithInvalidFileInfo = clearWithInvalidFileInfo;
-        queueSignal(SignalClearWithInvalidFileInfoChanged);
-        emitQueuedSignals();
+        emit autoLoadChanged();
+        if (autoLoad) downloadFile();
     }
 }
 
@@ -184,12 +194,42 @@ bool TDLibFile::downloadFile() {
 }
 
 void TDLibFile::setFileInfo(const QVariantMap &fileInfo) {
-    updateFileInfo(fileInfo);
+    Changes changes = TDLibFileBase::updateFileInfo(fileInfo);
+    if (changes) {
+        this->infoMap = fileInfo;
+        emit fileInfoChanged();
+
+        uint bits = static_cast<uint>(changes), change;
+        while (bits) {
+            change = bits & -bits;
+            bits ^= change;
+
+            switch (static_cast<Change>(change)) {
+            case Change::Id: emit idChanged(); break;
+            case Change::ExpectedSize: emit expectedSizeChanged(); break;
+            case Change::Size: emit sizeChanged(); break;
+            case Change::Path: emit pathChanged(); break;
+            case Change::DownloadOffset: emit downloadOffsetChanged(); break;
+            case Change::DownloadedPrefixSize: emit downloadedPrefixSizeChanged(); break;
+            case Change::DownloadedSize: emit downloadedSizeChanged(); break;
+            case Change::CanBeDeleted: emit canBeDeletedChanged(); break;
+            case Change::CanBeDownloaded: emit canBeDownloadedChanged(); break;
+            case Change::DownloadingActive: emit downloadingActiveChanged(); break;
+            case Change::DownloadingCompleted: emit downloadingCompletedChanged(); break;
+            case Change::RemoteId: emit remoteIdChanged(); break;
+            case Change::UniqueId: emit uniqueIdChanged(); break;
+            case Change::UploadedSize: emit uploadedSizeChanged(); break;
+            case Change::UploadingActive: emit uploadingActiveChanged(); break;
+            case Change::UploadingCompleted: emit uploadingCompletedChanged(); break;
+            case Change::None: break;
+            }
+        }
+    }
+
     if (is_downloading_completed)
         // Don't need this timer anymore
         downloadHoldOffTimer.stop();
     if (autoLoad) downloadFile();
-    emitQueuedSignals();
 }
 
 void TDLibFile::timerEvent(QTimerEvent *event) {
@@ -200,10 +240,11 @@ void TDLibFile::timerEvent(QTimerEvent *event) {
         QObject::timerEvent(event);
 }
 
-void TDLibFile::handleFileUpdated(const QVariantMap &fileInfo) {
-    LOG("File" << id << "updated");
-    setFileInfo(fileInfo);
-    emitQueuedSignals();
+void TDLibFile::handleFileUpdated(int fileId, const QVariantMap &fileInfo) {
+    if (id == fileId) {
+        LOG("File" << id << "updated");
+        setFileInfo(fileInfo);
+    }
 }
 
 bool TDLibFile::getFile() {
@@ -212,223 +253,4 @@ bool TDLibFile::getFile() {
         return true;
     }
     return false;
-}
-
-/*
-{
-    "@type": "file",
-    "expected_size": 0,
-    "id": 12,
-    "size": 0,
-    "local": {
-        "@type": "localFile",
-        "can_be_deleted": false,
-        "can_be_downloaded": true,
-        "download_offset": 0,
-        "downloaded_prefix_size": 0,
-        "downloaded_size": 0,
-        "is_downloading_active": true,
-        "is_downloading_completed": false,
-        "path": ""
-    },
-    "remote": {
-        "@type": "remoteFile",
-        "id": "AQADAgATXYBrly4AAwIAA2E2itkW____9UdPDiSysLQ4fwIAARgE",
-        "is_uploading_active": false,
-        "is_uploading_completed": true,
-        "unique_id": "AQADXYBrly4AAzh_AgAB",
-        "uploaded_size": 0
-    }
-}
-*/
-
-void TDLibFile::updateFileInfo(const QVariantMap &file) {
-    if (file.value(_TYPE).toString() == TYPE_FILE) {
-        QString s;
-        qlonglong ll;
-        bool b, fileChanged = false;
-        int i = file.value(ID).toInt();
-        if (id != i) {
-            LOG("File id has changed" << id << "=>" << i);
-            id = i;
-            fileChanged = true;
-            queueSignal(SignalIdChanged);
-        }
-        ll = file.value(EXPECTED_SIZE).toLongLong();
-        if (expected_size != ll) {
-            expected_size = ll;
-            fileChanged = true;
-            queueSignal(SignalExpectedSizeChanged);
-        }
-        ll = file.value(SIZE).toLongLong();
-        if (size != ll) {
-            size = ll;
-            fileChanged = true;
-            queueSignal(SignalSizeChanged);
-        }
-
-        const QVariantMap local(file.value(LOCAL).toMap());
-        if (local.value(_TYPE).toString() == TYPE_LOCAL_FILE) {
-            ll = local.value(DOWNLOAD_OFFSET).toLongLong();
-            if (download_offset != ll) {
-                download_offset = ll;
-                fileChanged = true;
-                queueSignal(SignalDownloadOffsetChanged);
-            }
-            ll = local.value(DOWNLOADED_PREFIX_SIZE).toLongLong();
-            if (downloaded_prefix_size != ll) {
-                downloaded_prefix_size = ll;
-                fileChanged = true;
-                queueSignal(SignalDownloadedPrefixSizeChanged);
-            }
-            ll = local.value(DOWNLOADED_SIZE).toLongLong();
-            if (downloaded_size != ll) {
-                downloaded_size = ll;
-                fileChanged = true;
-                queueSignal(SignalDownloadedSizeChanged);
-            }
-            b = local.value(CAN_BE_DELETED).toBool();
-            if (can_be_deleted != b) {
-                can_be_deleted = b;
-                fileChanged = true;
-                queueSignal(SignalCanBeDeletedChanged);
-            }
-            b = local.value(CAN_BE_DOWNLOADED).toBool();
-            if (can_be_downloaded != b) {
-                can_be_downloaded = b;
-                fileChanged = true;
-                queueSignal(SignalCanBeDownloadedChanged);
-            }
-            b = local.value(IS_DOWNLOADING_ACTIVE).toBool();
-            if (is_downloading_active != b) {
-                is_downloading_active = b;
-                fileChanged = true;
-                queueSignal(SignalDownloadingActiveChanged);
-            }
-            b = local.value(IS_DOWNLOADING_COMPELETED).toBool();
-            if (is_downloading_completed != b) {
-                is_downloading_completed = b;
-                fileChanged = true;
-                queueSignal(SignalDownloadingCompletedChanged);
-            }
-            s = local.value(PATH).toString();
-            if (path != s) {
-                path = s;
-                fileChanged = true;
-                queueSignal(SignalPathChanged);
-            }
-        }
-
-        const QVariantMap remote(file.value(REMOTE).toMap());
-        if (remote.value(_TYPE).toString() == TYPE_REMOTE_FILE) {
-            ll = remote.value(UPLOADED_SIZE).toLongLong();
-            if (uploaded_size != ll) {
-                uploaded_size = ll;
-                fileChanged = true;
-                queueSignal(SignalUploadedSizeChanged);
-            }
-            b = remote.value(IS_UPLOADING_ACTIVE).toBool();
-            if (is_uploading_active != b) {
-                is_uploading_active = b;
-                fileChanged = true;
-                queueSignal(SignalUploadingActiveChanged);
-            }
-            b = remote.value(IS_UPLOADING_COMPLETED).toBool();
-            if (is_uploading_completed != b) {
-                is_uploading_completed = b;
-                fileChanged = true;
-                queueSignal(SignalUploadingCompletedChanged);
-            }
-            s = remote.value(ID).toString();
-            if (remote_id != s) {
-                remote_id = s;
-                fileChanged = true;
-                queueSignal(SignalRemoteIdChanged);
-            }
-            s = remote.value(UNIQUE_ID).toString();
-            if (unique_id != s) {
-                unique_id = s;
-                fileChanged = true;
-                queueSignal(SignalUniqueIdChanged);
-            }
-        }
-
-        if (fileChanged) {
-            infoMap = file;
-            queueSignal(SignalFileInfoChanged);
-        }
-    } else if (clearWithInvalidFileInfo) {
-        if (id != 0) {
-            LOG("File id has reset" << id << "=>" << 0);
-            id = 0;
-            queueSignal(SignalIdChanged);
-        }
-        if (expected_size != 0) {
-            expected_size = 0;
-            queueSignal(SignalExpectedSizeChanged);
-        }
-        if (size != 0) {
-            size = 0;
-            queueSignal(SignalSizeChanged);
-        }
-
-        if (download_offset != 0) {
-            download_offset = 0;
-            queueSignal(SignalDownloadOffsetChanged);
-        }
-        if (downloaded_prefix_size != 0) {
-            downloaded_prefix_size = 0;
-            queueSignal(SignalDownloadedPrefixSizeChanged);
-        }
-        if (downloaded_size != 0) {
-            downloaded_size = 0;
-            queueSignal(SignalDownloadedSizeChanged);
-        }
-        if (can_be_deleted) {
-            can_be_deleted = false;
-            queueSignal(SignalCanBeDeletedChanged);
-        }
-        if (can_be_downloaded) {
-            can_be_downloaded = false;
-            queueSignal(SignalCanBeDownloadedChanged);
-        }
-        if (is_downloading_active) {
-            is_downloading_active = false;
-            queueSignal(SignalDownloadingActiveChanged);
-        }
-        if (is_downloading_completed) {
-            is_downloading_completed = false;
-            queueSignal(SignalDownloadingCompletedChanged);
-        }
-        if (!path.isEmpty()) {
-            path = "";
-            queueSignal(SignalPathChanged);
-        }
-
-        if (uploaded_size != 0) {
-            uploaded_size = 0;
-            queueSignal(SignalUploadedSizeChanged);
-        }
-        if (is_uploading_active) {
-            is_uploading_active = false;
-            queueSignal(SignalUploadingActiveChanged);
-        }
-        if (is_uploading_completed) {
-            is_uploading_completed = false;
-            queueSignal(SignalUploadingCompletedChanged);
-        }
-        if (!remote_id.isEmpty()) {
-            remote_id = "";
-            queueSignal(SignalRemoteIdChanged);
-        }
-        if (!unique_id.isEmpty()) {
-            unique_id = "";
-            queueSignal(SignalUniqueIdChanged);
-        }
-
-        if (!infoMap.isEmpty()) {
-            infoMap.clear();
-            queueSignal(SignalFileInfoChanged);
-        }
-    }
 }
