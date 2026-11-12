@@ -14,7 +14,6 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 include(FindPkgConfig)
 pkg_search_module(NEMONOTIFICATIONS nemonotifications-qt5 REQUIRED)
-pkg_search_module(LIBPULSE libpulse REQUIRED)
 
 set(CMAKE_INSTALL_MESSAGE NEVER)
 set(CMAKE_AUTOMOC ON)
@@ -31,6 +30,10 @@ if(USE_CALLS)
     include(tgcalls.cmake)
     target_link_libraries(yaqtlib tgcalls)
     target_include_directories(yaqtlib PUBLIC tgcalls)
+
+    pkg_search_module(LIBPULSE libpulse REQUIRED)
+    target_include_directories(yaqtlib PUBLIC ${LIBPULSE_INCLUDE_DIRS})
+    target_link_libraries(yaqtlib ${LIBPULSE_LIBRARIES})
 
     target_compile_definitions(yaqtlib PUBLIC USE_CALLS)
 
@@ -57,7 +60,6 @@ add_dependencies(yaqtlib generate_tdconst)
 
 target_include_directories(yaqtlib PUBLIC
     ${NEMONOTIFICATIONS_INCLUDE_DIRS}
-    ${LIBPULSE_INCLUDE_DIRS}
     tdlib/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
@@ -67,7 +69,6 @@ target_link_libraries(yaqtlib
     Qt5::Multimedia
     Qt5::Positioning
     ${NEMONOTIFICATIONS_LIBRARIES}
-    ${LIBPULSE_LIBRARIES}
     TDLib
 )
 
