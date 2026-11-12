@@ -377,12 +377,12 @@ void FullFormattedText::handleCustomEmojiStickersReceived(const QVariantList &st
     for (const QVariant &stickerVariant : stickers) {
         const QVariantMap sticker = stickerVariant.toMap();
         // TODO: handle needs_repainting somehow
-        qlonglong customEmojiId = sticker.value("full_type").toMap().value("custom_emoji_id").toLongLong();
+        qlonglong customEmojiId = sticker.value("full_type").toMap().value(CUSTOM_EMOJI_ID).toLongLong();
         if (!customEmojiId || customEmojiFiles.contains(customEmojiId)) continue;
 
         // TODO: actually animate TGS and WEBM stickers somehow (NOTE: with rich textFormat animated images seem to actually play!..)
         bool isStatic = sticker.value("format").toMap().value(_TYPE).toString() == "stickerFormatWebp";
-        const QVariantMap fileInfo = isStatic ? sticker.value("sticker").toMap() : sticker.value("thumbnail").toMap().value("file").toMap();
+        const QVariantMap fileInfo = isStatic ? sticker.value(STICKER).toMap() : sticker.value("thumbnail").toMap().value("file").toMap();
         if (fileInfo.isEmpty()) continue;
 
         TDLibFile *file = new TDLibFile(tdLibWrapper, fileInfo, this);
